@@ -8,16 +8,16 @@
 
 namespace inhere\server;
 
-use inhere\server\interfaces\IServerManager;
 use Swoole\Http\Server as SwHttpServer;
 use Swoole\Websocket\Server as SwWSServer;
 use Swoole\Process as SwProcess;
 use Swoole\Server as SwServer;
 use Swoole\Server\Port as SwServerPort;
 
+use inhere\server\interfaces\IServerManager;
+
 use inhere\librarys\console\Input;
 use inhere\librarys\console\Output;
-
 use inhere\librarys\collections\Config;
 use inhere\librarys\utils\SFLogger;
 
@@ -556,9 +556,9 @@ abstract class AServerManager implements IServerManager
         // $this->cliOut->write(get_included_files());
     }
 
-    public function onWorkerStop(SwServer $server)
+    public function onWorkerStop(SwServer $server, $workerId)
     {
-        $this->addLog("The swoole worker process stopped.");
+        $this->addLog("The swoole #<info>$workerId</info> worker process stopped.");
     }
 
     /**

@@ -43,7 +43,7 @@ class WSServerHandler extends AbstractServerHandler
         $this->addLog("Client [fd: {$request->fd}] open connection.");
 
         // var_dump($request->fd, $request->get, $request->server);
-        // $server->push($request->fd, "hello, welcome\n");
+        $server->push($request->fd, "hello, welcome\n");
     }
 
     /**
@@ -53,10 +53,10 @@ class WSServerHandler extends AbstractServerHandler
      */
     public function onMessage(SwServer $server, $frame)
     {
-        $this->addLog("[fd: {$frame->fd}] Message: {$frame->data}");
+        $this->addLog("Client [fd: {$frame->fd}] Message: {$frame->data}");
 
         // $this->handleAllMessage($server, $frame->fd, $frame->data);
-        // $server->push($frame->fd, "server: {$frame->data}");
+        $server->push($frame->fd, "server: {$frame->data}");
     }
 
     /**

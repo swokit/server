@@ -78,7 +78,7 @@ class HttpServer extends TcpServer
 
     protected function init()
     {
-        $this->swooleSpecialEvents['TCP'] = [
+        $this->swooleSpecialEvents['tcp'] = [
             'Connect' => 'onTcpConnect',
             'Close'   => 'onTcpClose',
             'Receive' => 'onTcpReceive',
@@ -242,13 +242,14 @@ class HttpServer extends TcpServer
         $enableStatic = $this->config->get('http_server.enable_static', false);
 
         if ( $enableStatic && $this->handleStaticAssets($request, $response, $uri) ) {
-            $this->addLog("Access static asset: $uri");
+            $this->addLog("Access asset: $uri");
             return true;
         }
 
         $this->addLog("$method $uri", [
             'app name' => \Slim::$app->config->get('name'),
             'GET' => $request->get,
+            'POST' => $request->post,
         ]);
 
         // test: `curl 127.0.0.1:9501/ping`
