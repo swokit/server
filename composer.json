@@ -1,0 +1,28 @@
+{
+  "name": "inhere/php-server",
+  "type": "library",
+  "description": "a php server powerd by swoole",
+  "keywords": [ "library", "server", "swoole", "http", "webSocket", "tcp", "udp" ],
+  "homepage": "https://github.com/inhere/php-server",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "inhere",
+      "email": "in.798@qq.com",
+      "homepage": "http://www.yzone.net/"
+    }
+  ],
+  "require": {
+    "php": ">=5.5.0",
+    "ext-swoole": "*",
+    "inhere/php-librarys": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "inhere\\server\\" : "src/"
+    }
+  },
+  "suggest": {
+    "inhere/simple-print-tool": "Very lightweight data printing tools"
+  }
+}
