@@ -13,6 +13,7 @@ use inhere\librarys\console\Interact;
 
 use Swoole\Process as SwProcess;
 use Swoole\Server as SwServer;
+use Swoole\Server\Port as SwServerPort;
 
 /**
  * Class TcpServer
@@ -209,7 +210,6 @@ class TcpServer extends AServerManager
 
     /**
      * Show server info
-     * @return static
      */
     protected function showInformation()
     {

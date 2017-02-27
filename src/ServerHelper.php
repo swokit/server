@@ -10,6 +10,8 @@ namespace inhere\server;
 
 use inhere\librarys\helpers\PhpHelper;
 
+use Swoole\Websocket\Server as SwWSServer;
+
 /**
  * Class ServerHelper
  * @package inhere\server
@@ -32,6 +34,7 @@ class ServerHelper
 
     /**
      * get Pid By PidFile
+     * @param string $pidFile
      * @return int
      */
     public static function getPidByPidFile($pidFile)
@@ -48,6 +51,19 @@ class ServerHelper
 
         return 0;
     }
+
+    /**
+     * send message to all client user
+     * @param SwWSServer $server
+     * @param array $data
+     */
+    public static function broadcastMessage(SwWSServer $server, $data)
+    {
+        foreach($server->connections as $fd) {
+            $server->push($fd, json_encode((array)$data));
+        }
+    }
+
 
 //////////////////////////////////////////////////////////////////////
 /// some help method(from workman)
@@ -67,7 +83,9 @@ class ServerHelper
 
     /**
      * Set unix user and group for current process.
-     * @return true|string
+     * @param $user
+     * @param string $group
+     * @return string|true
      */
     public static function setUserAndGroup($user, $group = '')
     {

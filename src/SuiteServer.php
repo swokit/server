@@ -13,16 +13,12 @@ use inhere\server\interfaces\IUdpListenHandler;
 use inhere\server\interfaces\IServerHandler;
 
 use inhere\exceptions\InvalidArgumentException;
-use inhere\exceptions\LogicException;
 use inhere\librarys\env\Server as ServerEnv;
 use inhere\librarys\console\Interact;
 
 use Swoole\Server as SwServer;
 use Swoole\Http\Server as SwHttpServer;
-use Swoole\Websocket\Server as SwWSServer;;
-use Swoole\Http\Response as SwResponse;
-use Swoole\Http\Request as SwRequest;
-use Swoole\Process as SwProcess;
+use Swoole\Websocket\Server as SwWSServer;
 use Swoole\Server\Port as SwServerPort;
 
 /**
@@ -263,7 +259,8 @@ class SuiteServer extends AServerManager
     /**
      * register Swoole Port Events
      * @param  SwServerPort $port Port instance or port server name.
-     * @param  array  $events
+     * @param  $handler
+     * @param  array $events
      */
     public function registerAttachServerEvents($port, $handler, array $events)
     {
@@ -436,7 +433,6 @@ class SuiteServer extends AServerManager
 
     /**
      * Show server info
-     * @return static
      */
     protected function showInformation()
     {

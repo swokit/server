@@ -82,13 +82,6 @@ class WSServer extends HttpServer
         return $config;
     }
 
-    public function sendMessageToAll($value='')
-    {
-        foreach($server->connections as $fd) {
-            $server->push($fd, json_encode($data));
-        }
-    }
-
 //////////////////////////////////////////////////////////////////////
 /// swoole event handler
 //////////////////////////////////////////////////////////////////////
@@ -97,10 +90,10 @@ class WSServer extends HttpServer
 
     /**
      * webSocket 连接上时
-     * @param  SwServer  $server
+     * @param  SwWSServer  $server
      * @param  SwRequest $request
      */
-    public function onOpen(SwServer $server, SwRequest $request)
+    public function onOpen(SwWSServer $server, SwRequest $request)
     {
         $this->addLog("Client [fd: {$request->fd}] open connection.");
 
@@ -110,14 +103,18 @@ class WSServer extends HttpServer
 
     /**
      * webSocket 收到消息时
-     * @param  SwServer $server
-     * @param           $frame
+     * @param  SwWSServer $server
+     * @param  Frame  $frame
      */
-    public function onMessage(SwServer $server, $frame)
+    public function onMessage(SwWSServer $server, Frame $frame)
     {
         $this->addLog("Client [fd: {$frame->fd}] send message: {$frame->data}");
 
-        // $this->handleAllMessage($server, $frame->fd, $frame->data);
+
+        // send message to all
+        // ServerHelper::broadcastMessage($server, $frame->data);
+
+        // send message to fd.
         $server->push($frame->fd, "server: {$frame->data}");
     }
 

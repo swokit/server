@@ -12,7 +12,6 @@ use Swoole\Http\Server as SwHttpServer;
 use Swoole\Websocket\Server as SwWSServer;
 use Swoole\Process as SwProcess;
 use Swoole\Server as SwServer;
-use Swoole\Server\Port as SwServerPort;
 
 use inhere\server\interfaces\IServerManager;
 
@@ -421,7 +420,6 @@ abstract class AServerManager implements IServerManager
 
     /**
      * Show server info
-     * @return static
      */
     protected function showInformation()
     {

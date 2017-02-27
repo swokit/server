@@ -9,6 +9,8 @@
 namespace inhere\server\handlers;
 
 use Swoole\Server as SwServer;
+use Swoole\Websocket\Frame;
+use Swoole\Websocket\Server as SwWSServer;
 use Swoole\Http\Response as SwResponse;
 use Swoole\Http\Request as SwRequest;
 
@@ -35,10 +37,10 @@ class WSServerHandler extends AbstractServerHandler
 
     /**
      * webSocket 连接上时
-     * @param  SwServer  $server
+     * @param  SwWSServer  $server
      * @param  SwRequest $request
      */
-    public function onOpen(SwServer $server, SwRequest $request)
+    public function onOpen(SwWSServer $server, SwRequest $request)
     {
         $this->addLog("Client [fd: {$request->fd}] open connection.");
 
@@ -48,14 +50,17 @@ class WSServerHandler extends AbstractServerHandler
 
     /**
      * webSocket 收到消息时
-     * @param  SwServer $server
-     * @param           $frame
+     * @param  SwWSServer $server
+     * @param  Frame  $frame
      */
-    public function onMessage(SwServer $server, $frame)
+    public function onMessage(SwWSServer $server, Frame $frame)
     {
         $this->addLog("Client [fd: {$frame->fd}] Message: {$frame->data}");
 
-        // $this->handleAllMessage($server, $frame->fd, $frame->data);
+        // send message to all
+        // ServerHelper::broadcastMessage($server, $frame->data);
+
+        // send message to fd.
         $server->push($frame->fd, "server: {$frame->data}");
     }
 

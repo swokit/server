@@ -78,7 +78,7 @@ class HttpServer extends TcpServer
 
     protected function init()
     {
-        $this->swooleSpecialEvents['tcp'] = [
+        $this->swooleProtocolEvents['tcp'] = [
             'Connect' => 'onTcpConnect',
             'Close'   => 'onTcpClose',
             'Receive' => 'onTcpReceive',
