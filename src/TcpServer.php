@@ -51,7 +51,7 @@ class TcpServer extends AServerManager
         }
 
         // append current protocol event
-        $this->swooleEvents = array_merge($this->swooleEvents, $this->swooleProtocolEvents[$type]);
+        $this->addSwooleEvents($this->swooleProtocolEvents[$type]);
 
         $this->addLog("Create a $type server on <default>{$opts['host']}:{$opts['port']}</default>", [], 'info');
 

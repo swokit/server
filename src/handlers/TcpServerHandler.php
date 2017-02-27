@@ -10,6 +10,24 @@ namespace inhere\server\handlers;
 
 use Swoole\Server as SwServer;
 
+/*
+Tcp config:
+
+    'main_server' => [
+        'host' => '0.0.0.0',
+        'port' => '8662',
+        'type' => 'tcp', // tcp udp
+
+        // 运行模式
+        // SWOOLE_PROCESS 业务代码在Worker进程中执行 SWOOLE_BASE 业务代码在Reactor进程中直接执行
+        'mode' => 'process',
+
+        // use outside's event handler
+        'event_handler' => '', // e.g \inhere\server\handlers\TcpServerHandler::class
+        'event_list'   => [], // e.g [ 'onReceive', ]
+    ],
+*/
+
 /**
  * Class TcpServerHandler
  * @package inhere\server\handlers

@@ -1,5 +1,24 @@
 # php server
 
+## run 
+
+- create a instance 
+
+```
+$server = new TcpServer($config);
+
+....
+
+TcpServer::run();
+```
+
+- auto create instance
+
+```
+TcpServer::run();
+```
+
+
 ## swoole supported event
 
 ```
@@ -36,24 +55,6 @@
 // Task 任务相关 (若配置了 task_worker_num 则必须注册这两个事件)
 'onTask',   // 处理异步任务
 'onFinish', // 处理异步任务的结
-```
-
-## run 
-
-- create a instance 
-
-```
-$server = new TcpServer($config);
-
-....
-
-TcpServer::run();
-```
-
-- auto create instance
-
-```
-TcpServer::run();
 ```
 
 ## 注意事项
@@ -102,3 +103,4 @@ Server text // 返回了消息
 ```
 
 > NOTICE: 增加端口监听后，必须要调用 `$port->set()`. 不然不会触发监听服务上的事件,即使传入空数组也行，但不能不调用。
+

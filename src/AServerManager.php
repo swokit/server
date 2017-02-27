@@ -45,6 +45,12 @@ abstract class AServerManager implements IServerManager
     public $config;
 
     /**
+     * The application instance
+     * @var object
+     */
+    public $app;
+
+    /**
      * server manager
      * @var static
      */
@@ -89,25 +95,41 @@ abstract class AServerManager implements IServerManager
     /**
      * @var array
      */
+    protected $supportedEvents = [
+        // basic
+        'start', 'shutdown', 'workerStart', 'workerStop', 'workerError', 'managerStart', 'managerStop',
+        // special
+        'pipeMessage',
+        // tcp/udp
+        'connect', 'receive', 'packet', 'close',
+        // task
+        'task', 'finish',
+        // http server
+        'request',
+        // webSocket server
+        'message', 'open', 'handShake'
+    ];
+
+    /**
+     * @var array
+     */
     protected $swooleEvents = [
-        // 不设置为默认的回调名称
-        // 'event'  => 'handler',
-        'Start'     => 'onMasterStart',
-        'Shutdown'  => 'onMasterStop',
+        // 'event'  => 'callback',
+        'start'     => 'onMasterStart',
+        'shutdown'  => 'onMasterStop',
 
-        // 设置为默认的回调名称，`on + eventName`
-        'onManagerStart',
-        'onManagerStop',
+        'managerStart' => 'onManagerStart',
+        'managerStop'  => 'onManagerStop' ,
 
-        'onWorkerStart',
-        'onWorkerStop',
-        'onWorkerError',
+        'workerStart' => 'onWorkerStart',
+        'workerStop'  => 'onWorkerStop',
+        'workerError' => 'onWorkerError',
 
-        'onPipeMessage',
+        'pipeMessage' => 'onPipeMessage',
 
         // Task 任务相关 (若配置了 task_worker_num 则必须注册这两个事件)
-        'onTask',   // 处理异步任务
-        'onFinish', // 处理异步任务的结果
+        'task'   => 'onTask',
+        'finish' => 'onFinish',
     ];
 
     /**
@@ -455,11 +477,8 @@ abstract class AServerManager implements IServerManager
      */
     protected function registerMainServerEvents(array $events)
     {
-        foreach ($events as $event => $callback ) {
-            // ['onConnect'] --> 'Connect' , 'onConnect
-            if ( is_int($event) ) {
-                $event = substr($callback,2);
-            }
+        foreach ($events as $default => $callback ) {
+            $event = substr( is_int($default) ? $callback : $default ,2);
 
             // e.g $server->on('Request', [$this, 'onRequest']);
             if ( method_exists($this, $callback) ) {
@@ -611,6 +630,35 @@ abstract class AServerManager implements IServerManager
 //////////////////////////////////////////////////////////////////////
 /// getter/setter method
 //////////////////////////////////////////////////////////////////////
+
+    /**
+     * @param array $events
+     */
+    public function addSwooleEvents(array $events)
+    {
+        foreach ($events as $key => $value) {
+            $this->addSwooleEvent( is_int($key) ? lcfirst(substr($value,2)) : $key,$value);
+        }
+    }
+
+    /**
+     * @param string $event
+     * @param string $callback
+     */
+    public function addSwooleEvent($event, $callback)
+    {
+        if ( !isset($this->swooleEvents) ) {
+            $this->swooleEvents[$event] = $callback;
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function getSwooleEvents()
+    {
+        return $this->swooleEvents;
+    }
 
     /**
      * set Config

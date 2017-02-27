@@ -26,7 +26,7 @@ class HttpServer extends TcpServer
 
     /**
      * The application instance.
-     * @var \slimExt\base\App
+     * @var object
      */
     public $app;
 
@@ -50,7 +50,7 @@ class HttpServer extends TcpServer
      * handle Request Callback
      * @var \Closure
      */
-    public $handleRequest;
+    public $requestHandler;
 
     /**
      * 静态文件类型
@@ -79,9 +79,9 @@ class HttpServer extends TcpServer
     protected function init()
     {
         $this->swooleProtocolEvents['tcp'] = [
-            'Connect' => 'onTcpConnect',
-            'Close'   => 'onTcpClose',
-            'Receive' => 'onTcpReceive',
+            'connect' => 'onTcpConnect',
+            'close'   => 'onTcpClose',
+            'receive' => 'onTcpReceive',
         ];
 
         return parent::init();
@@ -111,7 +111,7 @@ class HttpServer extends TcpServer
         }
 
         // append current protocol event
-        $this->swooleEvents = array_merge($this->swooleEvents, $this->swooleProtocolEvents[self::PROTOCOL_HTTP]);
+        $this->addSwooleEvents($this->swooleProtocolEvents[self::PROTOCOL_HTTP]);
 
         $this->addLog("Create a $type main server on <default>{$opts['host']}:{$opts['port']}</default>");
 
@@ -261,10 +261,10 @@ class HttpServer extends TcpServer
         // $this->collectionRequestData($request);
 
         try {
-            if ( !($cb = $this->handleRequest) || !($cb instanceof \Closure) ) {
-                $this->addLog("Please setting the 'handleRequest' property to handle http request.", [], 'error');
+            if ( !($cb = $this->requestHandler) || !($cb instanceof \Closure) ) {
+                $this->addLog("Please setting the 'requestHandler' property to handle http request.", [], 'error');
 
-                throw new \LogicException("Please setting the 'handleRequest' property.");
+                throw new \LogicException("Please setting the 'requestHandler' property.");
             }
 
             $bodyContent = $cb($this, $request, $response);

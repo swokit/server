@@ -20,6 +20,8 @@ use Swoole\Server as SwServer;
 use Swoole\Http\Server as SwHttpServer;
 use Swoole\Websocket\Server as SwWSServer;
 use Swoole\Server\Port as SwServerPort;
+use Swoole\Http\Response as SwResponse;
+use Swoole\Http\Request as SwRequest;
 
 /**
  * Class SuiteServer
@@ -51,24 +53,6 @@ class SuiteServer extends AServerManager
     protected $eventCallbacks = [];
 
     /**
-     * @var array
-     */
-    protected $supportedEvents = [
-        // basic
-        'Start', 'Shutdown', 'WorkerStart', 'WorkerStop', 'WorkerError', 'ManagerStart', 'ManagerStop',
-        // special
-        'PipeMessage',
-        // tcp/udp
-        'Connect', 'Receive', 'Packet', 'Close',
-        // task
-        'Task', 'Finish',
-        // http server
-        'Request',
-        // webSocket server
-        'Message', 'Open', 'HandShake'
-    ];
-
-    /**
      * attached listen port server callback(`Closure`)
      *
      * [
@@ -87,38 +71,16 @@ class SuiteServer extends AServerManager
      */
     public $attachedNames = [];
 
-    /**
-     * The application instance(Created by `$createApplication`)
-     * @var object
-     */
-    public $app;
-
-    /**
-     * create and register our application
-     * @var \Closure
-     */
-    public $createApplication;
-
-    /**
-     * handle request (for http server)
-     * @var \Closure
-     */
-    public $requestHandler;
-
     protected function init()
     {
         parent::init();
 
         // register main server event method
         if ( $methods = $this->config->get('main_server.event_list') ) {
-            foreach ($methods as $method) {
-                if ( !in_array($method, $this->swooleEvents) ) {
-                    $this->swooleEvents[] = $method;
-                }
-            }
+            $this->addSwooleEvents($methods);
         }
 
-        // regiser attach server from config
+        // register attach server from config
         if ( $attachServers = $this->config['attach_servers'] ) {
             foreach ($attachServers as $name => $config) {
                 $this->attachListenServer($name, $config);
@@ -189,7 +151,7 @@ class SuiteServer extends AServerManager
             $this->addLog("Create a $type server on <default>{$host}:{$port}</default>");
 
             $this->serverHandler = trim($opts['event_handler']);
-            $this->swooleEvents = array_merge($this->swooleEvents, $protocolEvents);
+            $this->addSwooleEvents($protocolEvents);
 
             // attach registered listen port server to main server
             $this->attachListenPortServers($server);
@@ -234,12 +196,7 @@ class SuiteServer extends AServerManager
         // register event to swoole
         foreach ($events as $key => $method) {
             // swoole event name
-            // ['onConnect'] --> 'Connect' , 'onConnect
-            if ( is_int($key) ) {
-                $name = substr($method, 2);
-            } else {
-                $name = $key;
-            }
+            $name = substr( is_int($key) ? $method : $key ,2);
 
             // is a Closure callback, add by self::on()
             if ( $cb = $this->getEventCallback($name) ) {
@@ -323,6 +280,7 @@ class SuiteServer extends AServerManager
     {
         return $this->serverHandler;
     }
+
 
 //////////////////////////////////////////////////////////////////////
 /// attach listen port server
