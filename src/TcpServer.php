@@ -88,58 +88,6 @@ class TcpServer extends AServerManager
         $this->createReloadWorker($this->server);
     }
 
-    /**
-     * create Reload Worker
-     * @see https://wiki.swoole.com/wiki/page/390.html
-     * @param  SwServer $server
-     */
-    protected function createReloadWorker(SwServer $server)
-    {
-        $mgr = $this;
-
-        // 创建用户自定义的工作进程worker
-        $this->reloadWorker = new SwProcess(function(SwProcess $process) use ($server, $mgr)
-        {
-            $mgr->addLog("The reloader worker process success started. (PID:{$process->pid})");
-
-            ServerHelper::setProcessTitle("swoole: reloader[Unavailable] ({$mgr->name})");
-
-            //创建一个inotify句柄
-//            $fd = inotify_init();
-
-            //监听文件，仅监听修改操作，如果想要监听所有事件可以使用 IN_ALL_EVENTS
-//            $watch_descriptor = inotify_add_watch($fd, PROJECT_PATH . '/src', IN_MODIFY);
-
-//            swoole_event_add($fd, function ($fd) use($mgr) {
-//                $events = inotify_read($fd);
-//
-//                if ($events) {
-//                    foreach ($events as $event) {
-//                        $mgr->addLog("inotify Event :" . var_export($event, 1) );
-//                    }
-//                }
-//            });
-
-            while (true) {
-                $msg = $process->read();
-
-                // 重启所有worker进程
-                if ( $msg === 'reload' ) {
-                    $onlyReloadTaskWorker = false;
-
-                    $server->reload($onlyReloadTaskWorker);
-                } else {
-                    foreach($server->connections as $conn) {
-                        $server->send($conn, $msg);
-                    }
-                }
-            }
-        });
-
-        // addProcess添加的用户进程中无法使用task投递任务，请使用 $server->sendMessage() 接口与工作进程通信
-        $server->addProcess($this->reloadWorker);
-    }
-
     public function createApplication(\Closure $callback = null)
     {
         if ($callback) {
@@ -220,7 +168,10 @@ class TcpServer extends AServerManager
         $panelData = [
             'Operate System' => $sEnv->get('os'),
             'PHP Version' => PHP_VERSION,
-            'Swoole Version' => SWOOLE_VERSION,
+            'Swoole Info' => [
+                'version' => SWOOLE_VERSION,
+                'coroutine' => class_exists('\Swoole\Coroutine', false) ? 'yes' : 'no',
+            ],
             'Swoole Config' => [
                 'dispatch_mode'   => $swOpts['dispatch_mode'],
                 'worker_num'      => $swOpts['worker_num'],
@@ -231,9 +182,10 @@ class TcpServer extends AServerManager
             'HTTP Server' => $http,
             'WebSocket Server' => $this->config->get('web_socket_server'),
             'Server Class' => '<primary>' . static::class . '</primary>',
-            'Project Info' => [
-                'Name' => $this->name,
-                'Path' => $this->config->get('root_path'),
+            'Project Config' => [
+                'name' => $this->name,
+                'path' => $this->config->get('root_path'),
+                'auto_reload' => $this->config->get('auto_reload'),
             ],
         ];
 

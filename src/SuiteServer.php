@@ -425,9 +425,10 @@ class SuiteServer extends AServerManager
                 'port' => $main['port'],
                 'class' => static::class
             ],
-            'Project Info' => [
-                'Name' => $this->name,
-                'Path' => $this->config->get('root_path'),
+            'Project Config' => [
+                'name' => $this->name,
+                'path' => $this->config->get('root_path'),
+                'auto_reload' => $this->config->get('auto_reload'),
             ],
         ];
 
@@ -441,36 +442,7 @@ class SuiteServer extends AServerManager
      */
     public function getDefaultConfig()
     {
-        return [
-            // basic config
-            'name' => '',
-            'debug' => false,
-            'root_path' => '',
-            'auto_reload' => true, // will create a process auto reload server
-            'pid_file'  => '/tmp/swoole_server.pid',
-
-            // 当前server的日志配置(不是swoole的日志)
-            'log_service' => [
-                // 'name' => 'swoole_server_log'
-                // 'basePath' => PROJECT_PATH . '/temp/logs/test_server',
-                // 'logThreshold' => 0,
-            ],
-
-            // the swoole runtime setting
-            'swoole' => [
-                // 'user'    => 'www-data',
-                'worker_num'    => 4,
-                'task_worker_num' => 2, // 启用 task worker,必须为Server设置onTask和onFinish回调
-                'daemonize'     => 0,
-                'max_request'   => 1000,
-                'dispatch_mode' => 1,
-                // 'log_file' , // '/tmp/swoole.log', // 不设置log_file会打印到屏幕
-
-                // 使用SSL必须在编译swoole时加入--enable-openssl选项 并且配置下面两项
-                // 'ssl_cert_file' => __DIR__.'/config/ssl.crt',
-                // 'ssl_key_file' => __DIR__.'/config/ssl.key',
-            ],
-
+        $config = [
             'main_server' => [
                 'host' => '0.0.0.0',
                 'port' => '8662',
@@ -482,25 +454,27 @@ class SuiteServer extends AServerManager
 
                 // use outside's event handler
                 'event_handler' => '', // e.g '\inhere\server\handlers\HttpServerHandler'
-                'event_list'   => [], // e.g [ 'onReceive', ]
+                'event_list'   => [], // e.g [ 'onRequest', ]
             ],
             'attach_servers' => [
-//                'tcp1' => [
-//                    'host' => '0.0.0.0',
-//                    'port' => '9661',
-//                    'type' => 'tcp',
+               // 'tcp1' => [
+               //     'host' => '0.0.0.0',
+               //     'port' => '9661',
+               //     'type' => 'tcp',
 
                     // setting event handler
-//                    'event_handler' => '', // e.g '\inhere\server\listeners\TcpListenHandler'
-//                    'event_list'   => [], // e.g [ 'onReceive', ]
-//                ],
+               //     'event_handler' => '', // e.g '\inhere\server\listeners\TcpListenHandler'
+               //     'event_list'   => [], // e.g [ 'onReceive', ]
+               // ],
 
-//                'udp1' => [
-//                    'host' => '0.0.0.0',
-//                    'port' => '9660',
-//                ]
+               // 'udp1' => [
+               //     'host' => '0.0.0.0',
+               //     'port' => '9660',
+               // ]
             ],
         ];
+
+        return array_merge(parent::getDefaultConfig(), $config);
     }
 
 }

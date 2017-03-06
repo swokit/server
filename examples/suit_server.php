@@ -84,6 +84,7 @@ $mgr->attachListenServer('test2', function(\Swoole\Server $srv, $mgr)
 // register our application
 //
 
+/*
 $mgr->createApplication = function($mgr) {
     // 实例化slim对象
     return require PROJECT_PATH . '/bootstrap/app_for_sw.php';
@@ -112,5 +113,6 @@ $mgr->requestHandler = function (SuiteServer $mgr, \Swoole\Http\Request $request
 
     return (string)$resp->getBody();
 };
+*/
 
 SuiteServer::run();

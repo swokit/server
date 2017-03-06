@@ -17,6 +17,7 @@ use inhere\server\interfaces\IServerManager;
 
 use inhere\librarys\console\Input;
 use inhere\librarys\console\Output;
+use inhere\librarys\console\Interact;
 use inhere\librarys\collections\Config;
 use inhere\librarys\utils\SFLogger;
 
@@ -293,6 +294,9 @@ abstract class AServerManager implements IServerManager
 
         $this->beforeServerStart();
 
+        // create Reload Worker
+        $this->createHotReloader($this->server);
+
         // 对于Server的配置即 $server->set() 中传入的参数设置，必须关闭/重启整个Server才可以重新加载
         $this->server->start();
 
@@ -561,7 +565,7 @@ abstract class AServerManager implements IServerManager
     {
         $taskMark = $server->taskworker ? 'task-worker' : 'event-worker';
 
-        $this->addLog("The <primary>{$workerId}</primary> {$taskMark} process success started. (PID:{$server->worker_pid})");
+        $this->addLog("The #<primary>{$workerId}</primary> {$taskMark} process success started. (PID:{$server->worker_pid})");
 
         ServerHelper::setProcessTitle("swoole: {$taskMark} ({$this->name})");
 
@@ -831,6 +835,50 @@ abstract class AServerManager implements IServerManager
 
         // stop success
         $this->cliOut->success("The swoole server({$this->name}) process stop success.", $quit);
+    }
+
+    /**
+     * create code hot reload worker
+     * @see https://wiki.swoole.com/wiki/page/390.html
+     * @param  SwServer $server
+     */
+    protected function createHotReloader(SwServer $server)
+    {
+        $mgr = $this;
+
+        // 创建用户自定义的工作进程worker
+        $this->reloadWorker = new SwProcess(function(SwProcess $process) use ($server, $mgr)
+        {
+            $mgr->addLog("The reloader worker process success started. (PID: {$process->pid})");
+
+            ServerHelper::setProcessTitle("swoole: reloader[Unavailable] ({$mgr->name})");
+
+            $kit = new AutoReloader($server->master_pid);
+            $kit->addWatch(PROJECT_PATH . '/src');
+            $kit->addWatch(PROJECT_PATH . '/config');
+
+            Interact::panel($kit->getWatchedDirs(), 'Watched Directory');
+
+            $kit->run();
+
+            // while (true) {
+            //     $msg = $process->read();
+
+            //     // 重启所有worker进程
+            //     if ( $msg === 'reload' ) {
+            //         $onlyReloadTaskWorker = false;
+
+            //         $server->reload($onlyReloadTaskWorker);
+            //     } else {
+            //         foreach($server->connections as $conn) {
+            //             $server->send($conn, $msg);
+            //         }
+            //     }
+            // }
+        });
+
+        // addProcess添加的用户进程中无法使用task投递任务，请使用 $server->sendMessage() 接口与工作进程通信
+        $server->addProcess($this->reloadWorker);
     }
 
 //////////////////////////////////////////////////////////////////////
