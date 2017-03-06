@@ -1,7 +1,7 @@
 <?php
 /**
  * create http server by swoole.
- * RUN: php bin/http_server.php
+ * RUN: `php bin/suit_server.php` see more
  */
 define('PROJECT_PATH', dirname(__DIR__));
 
@@ -10,8 +10,6 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 use inhere\server\SuiteServer;
 
 date_default_timezone_set('Asia/Chongqing');
-
-$daemonize = 0;
 
 $config = [
     'debug' => true,
@@ -25,7 +23,10 @@ $config = [
 
     // main server
     'main_server' => [
-        'event_handler' => '\inhere\server\handlers\TcpServerHandler',
+        'type' => 'ws', // http https tcp udp ws wss
+
+        'event_handler' => '\inhere\server\handlers\WSServerHandler',
+        'event_list' => ['onRequest']
     ],
 
     // attach port server by config
@@ -44,7 +45,7 @@ $config = [
         'user'    => 'www-data',
         'worker_num'    => 4,
         'task_worker_num' => 2,
-        'daemonize'     => $daemonize,
+        'daemonize'     => 0,
         'max_request'   => 10000,
         'dispatch_mode' => 1,
         'log_file' => PROJECT_PATH . '/temp/logs/suite_server_swoole.log',
@@ -88,7 +89,7 @@ $mgr->createApplication = function($mgr) {
     return require PROJECT_PATH . '/bootstrap/app_for_sw.php';
 };
 
-$mgr->handleRequest = function (SuiteServer $mgr, \Swoole\Http\Request $request, \Swoole\Http\Response $response)
+$mgr->requestHandler = function (SuiteServer $mgr, \Swoole\Http\Request $request, \Swoole\Http\Response $response)
 {
     $ioc = $mgr->app->container;
 

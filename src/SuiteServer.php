@@ -194,9 +194,7 @@ class SuiteServer extends AServerManager
         }
 
         // register event to swoole
-        foreach ($events as $key => $method) {
-            // swoole event name
-            $name = substr( is_int($key) ? $method : $key ,2);
+        foreach ($events as $name => $method) {
 
             // is a Closure callback, add by self::on()
             if ( $cb = $this->getEventCallback($name) ) {
@@ -396,22 +394,28 @@ class SuiteServer extends AServerManager
     {
         $sEnv = new ServerEnv;
         $swOpts = $this->config->get('swoole');
-        $http = $this->config->get('http_server');
+        $main = $this->config->get('main_server');
         unset($http['static_setting']);
         $panelData = [
             'Operate System' => $sEnv->get('os'),
             'PHP Version' => PHP_VERSION,
-            'Swoole Version' => SWOOLE_VERSION,
+            'Swoole Info' => [
+                'version' => SWOOLE_VERSION,
+                'coroutine' => class_exists('\Swoole\Coroutine', false) ? 'yes' : 'no',
+            ],
             'Swoole Config' => [
                 'dispatch_mode'   => $swOpts['dispatch_mode'],
                 'worker_num'      => $swOpts['worker_num'],
                 'task_worker_num' => $swOpts['task_worker_num'],
                 'max_request'     => $swOpts['max_request'],
             ],
-            'TCP Server' => $this->config->get('tcp_server'),
-            'HTTP Server' => $http,
-            'WebSocket Server' => $this->config->get('web_socket_server'),
-            'Server Class' => '<primary>' . static::class . '</primary>',
+            'Main Server' => [
+                'type' => $main['type'],
+                'mode' => $main['mode'],
+                'host' => $main['host'],
+                'port' => $main['port'],
+                'class' => static::class
+            ],
             'Project Info' => [
                 'Name' => $this->name,
                 'Path' => $this->config->get('root_path'),

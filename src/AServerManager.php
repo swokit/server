@@ -477,8 +477,7 @@ abstract class AServerManager implements IServerManager
      */
     protected function registerMainServerEvents(array $events)
     {
-        foreach ($events as $default => $callback ) {
-            $event = substr( is_int($default) ? $callback : $default ,2);
+        foreach ($events as $event => $callback ) {
 
             // e.g $server->on('Request', [$this, 'onRequest']);
             if ( method_exists($this, $callback) ) {
@@ -642,13 +641,13 @@ abstract class AServerManager implements IServerManager
     }
 
     /**
-     * @param string $event
-     * @param string $callback
+     * @param string $event  The event name
+     * @param string $cbName The callback name
      */
-    public function addSwooleEvent($event, $callback)
+    public function addSwooleEvent($event, $cbName)
     {
-        if ( !isset($this->swooleEvents) ) {
-            $this->swooleEvents[$event] = $callback;
+        if ( !isset($this->swooleEvents[$event]) ) {
+            $this->swooleEvents[$event] = $cbName;
         }
     }
 
