@@ -30,7 +30,7 @@ class WSServerHandler extends AbstractServerHandler
     {
         // var_dump($request->get, $request->post);
         $response->header("Content-Type", "text/html; charset=utf-8");
-        $response->end("<h1>Hello Swoole. #".rand(1000, 9999)."\n</h1>");
+        $response->end("<h1>Hello Swoole. #".rand(1000, 9999)."</h1>\n");
     }
 
     ////////////////////// WS Server event //////////////////////

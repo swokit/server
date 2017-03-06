@@ -32,8 +32,9 @@ class TcpListenHandler extends AbstractServerHandler implements ITcpListenHandle
      */
     public function onReceive(SwServer $server, $fd, $fromId, $data)
     {
+        $data = trim($data);
         $this->addLog("Receive data [$data] from client [FD:$fd].");
-        // $server->send($fd, 'I have been received your message.');
+        $server->send($fd, "I have been received your message.\n");
 
         // $this->onTaskReceive($server, $fd, $fromId, $data);
 

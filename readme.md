@@ -1,6 +1,6 @@
 # php server
 
-## run 
+## simple run 
 
 - create a instance 
 
@@ -18,43 +18,10 @@ TcpServer::run();
 TcpServer::run();
 ```
 
-
-## swoole supported event
+## use `SuiteServer`
 
 ```
-'onStart' // 'onMasterStart',
-'onShutdown' // 'onMasterStop',
-
-'onManagerStart',
-'onManagerStop',
-
-'onWorkerStart',
-'onWorkerStop',
-'onWorkerError',
-
-// 当工作进程收到由sendMessage发送的管道消息时会触发onPipeMessage事件。worker/task进程都可能会触发
-'onPipeMessage',
-
-// hhtp server 可注册的事件
-'onRequest',
-
-// TCP server 可注册的事件
-'onConnect',
-'onReceive',
-'onClose',
-
-// UDP server 可注册的事件
-'onPacket',
-// 'onClose',
-
-// WebSocket server 可注册的事件
-'onOpen',
-'onHandShake',
-'onMessage',
-
-// Task 任务相关 (若配置了 task_worker_num 则必须注册这两个事件)
-'onTask',   // 处理异步任务
-'onFinish', // 处理异步任务的结
+SuiteServer::run($config);
 ```
 
 ## 注意事项

@@ -1,5 +1,5 @@
 {
-  "name": "inhere/php-server",
+  "name": "inhere/server",
   "type": "library",
   "description": "a php server powerd by swoole",
   "keywords": [ "library", "server", "swoole", "http", "webSocket", "tcp", "udp" ],

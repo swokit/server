@@ -148,7 +148,7 @@ class SuiteServer extends AServerManager
 
         // server instanced
         if ( $server ) {
-            $this->addLog("Create a $type server on <default>{$host}:{$port}</default>");
+            $this->addLog("Create the main swoole server. on <default>{$host}:{$port}</default>(<info>$type</info>)");
 
             $this->serverHandler = trim($opts['event_handler']);
             $this->addSwooleEvents($protocolEvents);
@@ -158,18 +158,6 @@ class SuiteServer extends AServerManager
         }
 
         return $server;
-    }
-
-    /**
-     * @param SwServer $server
-     */
-    protected function attachListenPortServers(SwServer $server)
-    {
-        foreach ($this->attachedListeners as $name => $cb) {
-            $this->addLog("Attach the <info>$name</info> listen server to the main server.");
-
-            $cb($server, $this);
-        }
     }
 
     /**
@@ -207,27 +195,6 @@ class SuiteServer extends AServerManager
                 // if use Custom Handler
             } else if ( $isCustomHandler && method_exists($this, $method) ) {
                 $this->server->on($name, array($this, $method));
-            }
-        }
-    }
-
-    /**
-     * register Swoole Port Events
-     * @param  SwServerPort $port Port instance or port server name.
-     * @param  $handler
-     * @param  array $events
-     */
-    public function registerAttachServerEvents($port, $handler, array $events)
-    {
-        foreach ($events as $event => $method ) {
-            // ['onConnect'] --> 'Connect', 'onConnect
-            if ( is_int($event) ) {
-                $event = substr($method,2);
-            }
-
-            // e.g $server->on('Request', [$this, 'onRequest']);
-            if ( method_exists($this, $method) ) {
-                $port->on($event, [$this, $method]);
             }
         }
     }
@@ -285,6 +252,46 @@ class SuiteServer extends AServerManager
 //////////////////////////////////////////////////////////////////////
 
     /**
+     * @param SwServer $server
+     */
+    protected function attachListenPortServers(SwServer $server)
+    {
+        foreach ($this->attachedListeners as $name => $cb) {
+            $msg = "Attach the listen server <info>$name</info> to the main server.";
+
+            $port = $cb($server, $this);
+
+            if ($port) {
+                $type = $port->type === SWOOLE_SOCK_TCP ? 'tcp' : 'udp';
+                $msg .= " on <default>{$port->host}:{$port->port}</default>($type)";
+            }
+
+            $this->addLog($msg);
+        }
+    }
+
+    /**
+     * register Swoole Port Events
+     * @param  SwServerPort $port Port instance or port server name.
+     * @param  $handler
+     * @param  array $events
+     */
+    public function registerAttachServerEvents($port, $handler, array $events)
+    {
+        foreach ($events as $event => $method ) {
+            // ['onConnect'] --> 'Connect', 'onConnect
+            if ( is_int($event) ) {
+                $event = substr($method,2);
+            }
+
+            // e.g $server->on('Request', [$this, 'onRequest']);
+            if ( method_exists($handler, $method) ) {
+                $port->on($event, [$handler, $method]);
+            }
+        }
+    }
+
+    /**
      * attach add listen port to main server.
      * @param $name
      * @param \Closure|array $config
@@ -332,6 +339,8 @@ class SuiteServer extends AServerManager
                 $port->set($mgr->config['swoole']);
 
                 $mgr->registerAttachServerEvents($port, $handler, (array)$config['event_list']);
+
+                return $port;
             };
 
         } elseif ( $config instanceof \Closure ) {
