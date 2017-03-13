@@ -201,8 +201,11 @@ class TcpServer extends AServerManager
             'name' => '',
             'debug' => false,
             'root_path' => '',
-            'auto_reload' => true, // will create a process auto reload server
             'pid_file'  => '/tmp/swoole_server.pid',
+            'auto_reload' => [
+                'enable' =>  true, // will create a process auto reload server
+                'dirs' => '',
+            ],
             // 当前server的日志配置(不是swoole的日志)
             'log_service' => [
                 // 'name' => 'swoole_server_log'

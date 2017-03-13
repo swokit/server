@@ -3,6 +3,7 @@
 !README.md
 !.gitkeep
 composer.lock
+*.log
 *.pid
 *.swp
 *.patch

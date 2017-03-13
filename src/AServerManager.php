@@ -153,14 +153,16 @@ abstract class AServerManager implements IServerManager
     /**
      * BaseServer constructor.
      * @param array $config
+     * @param Input|null $input
+     * @param Output|null $output
      */
-    public function __construct(array $config = [])
+    public function __construct(array $config = [], Input $input = null, Output $output = null)
     {
         ServerHelper::checkRuntimeEnv();
         self::$mgr = $this;
 
-        $this->cliIn = new Input;
-        $this->cliOut = new Output;
+        $this->cliIn = $input ?: new Input();
+        $this->cliOut = $output ?: new Output();
 
         $this->config = new Config($this->getDefaultConfig());
 
@@ -196,8 +198,12 @@ abstract class AServerManager implements IServerManager
             'name' => '',
             'debug' => false,
             'root_path' => '',
-            'auto_reload' => true, // will create a process auto reload server
             'pid_file'  => '/tmp/swoole_server.pid',
+
+            'auto_reload' => [
+                'enable' =>  true, // will create a process auto reload server
+                'dirs' => '',
+            ],
 
             // 当前server的日志配置(不是swoole的日志)
             'log_service' => [
@@ -845,19 +851,28 @@ abstract class AServerManager implements IServerManager
     protected function createHotReloader(SwServer $server)
     {
         $mgr = $this;
+        $reload = $this->config->get('auto_reload');
+
+        if ( !$reload['enable'] || !$reload['dirs'] ) {
+            return false;
+        }
+
+        $reload['masterPid'] = $server->master_pid;
 
         // 创建用户自定义的工作进程worker
-        $this->reloadWorker = new SwProcess(function(SwProcess $process) use ($server, $mgr)
+        $this->reloadWorker = new SwProcess(function(SwProcess $process) use ($reload, $mgr)
         {
             $mgr->addLog("The reloader worker process success started. (PID: {$process->pid})");
 
-            ServerHelper::setProcessTitle("swoole: reloader[Unavailable] ({$mgr->name})");
+            ServerHelper::setProcessTitle("swoole: reloader ({$mgr->name})");
 
-            $kit = new AutoReloader($server->master_pid);
-            $kit->addWatch(PROJECT_PATH . '/src');
-            $kit->addWatch(PROJECT_PATH . '/config');
+            $kit = new AutoReloader($reload['masterPid']);
+            $dirs = array_map('trim', explode(',', $reload['dirs']));
+            foreach ($dirs as $dir) {
+                $kit->addWatch(PROJECT_PATH . '/' . $dir);
+            }
 
-            Interact::panel($kit->getWatchedDirs(), 'Watched Directory');
+            Interact::section('Watched Directory', $kit->getWatchedDirs());
 
             $kit->run();
 

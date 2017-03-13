@@ -5,6 +5,7 @@
  * Date: 2017-02-27
  * Time: 11:37
  */
+
 return [
     'debug' => true,
     'name' => 'slim',
@@ -14,7 +15,10 @@ return [
         'basePath' => PROJECT_PATH . '/examples/logs/suite_server',
         'logThreshold' => 0,
     ],
-
+    'auto_reload' => [
+        'enable' =>  true, // will create a process auto reload server
+        'dirs' => 'src,config',
+    ],
     // main server
     'main_server' => [
         'type' => 'ws', // http https tcp udp ws wss
