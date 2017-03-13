@@ -8,7 +8,7 @@
 
 define('PROJECT_PATH', dirname(__DIR__));
 
-require dirname(__DIR__) . '/vendor/autoload.php';
+require dirname(__DIR__) . '/../../autoload.php';
 
 use inhere\server\SuiteServer;
 

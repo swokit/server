@@ -3,6 +3,7 @@
 !README.md
 !.gitkeep
 composer.lock
+*.pid
 *.swp
 *.patch
 .DS_Store
