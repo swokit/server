@@ -15,7 +15,8 @@
   "require": {
     "php": ">=5.5.0",
     "ext-swoole": "*",
-    "inhere/php-librarys": "^1.0"
+    "inhere/console": "dev-master",
+    "inhere/php-librarys": "dev-master"
   },
   "autoload": {
     "psr-4": {

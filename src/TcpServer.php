@@ -8,8 +8,8 @@
 
 namespace inhere\server;
 
+use inhere\console\utils\Interact;
 use inhere\librarys\env\Server as ServerEnv;
-use inhere\librarys\console\Interact;
 
 use Swoole\Process as SwProcess;
 use Swoole\Server as SwServer;

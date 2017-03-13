@@ -15,9 +15,9 @@ use Swoole\Server as SwServer;
 
 use inhere\server\interfaces\IServerManager;
 
-use inhere\librarys\console\Input;
-use inhere\librarys\console\Output;
-use inhere\librarys\console\Interact;
+use inhere\console\io\Input;
+use inhere\console\io\Output;
+use inhere\console\utils\Interact;
 use inhere\librarys\collections\Config;
 use inhere\librarys\utils\SFLogger;
 

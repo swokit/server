@@ -14,7 +14,7 @@ use inhere\server\interfaces\IServerHandler;
 
 use inhere\exceptions\InvalidArgumentException;
 use inhere\librarys\env\Server as ServerEnv;
-use inhere\librarys\console\Interact;
+use inhere\console\utils\Interact;
 
 use Swoole\Server as SwServer;
 use Swoole\Http\Server as SwHttpServer;
