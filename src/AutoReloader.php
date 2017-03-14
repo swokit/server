@@ -14,16 +14,20 @@ namespace inhere\server;
 
 //设置服务器程序的主进程PID
 $kit = new AutoReloader(26527);
-
 //设置要监听的源码目录
 $kit->watch(dirname(__DIR__).'/bootstrap');
-
 //监听后缀为.php的文件
 $kit->addFileType('php');
-
 $kit->run();
 
-
+//
+$kit = new AutoReloader(26527);
+$kit
+    ->addWatches($dirs)
+    ->setReloadHandler(function($pid) use (\swoole_server $server, $onlyReloadTask) {
+        $server->reload($onlyReloadTask);
+    })
+    ->run();
 */
 
 /**
@@ -47,23 +51,7 @@ class AutoReloader
      * swoole server master process id
      * @var int
      */
-    protected $pid;
-
-    protected $reloadFileTypes = [
-        '.php' => true
-    ];
-
-    /**
-     * 添加的监控目录列表
-     * @var array
-     */
-    protected $watchedDirs = array();
-
-    /**
-     * 监控目录列表中所有被监控的文件列表
-     * @var array
-     */
-    protected $watchedFiles = [];
+    protected $pid = 0;
 
     /**
      * 监控到文件变动后延迟5秒后执行reload
@@ -76,9 +64,35 @@ class AutoReloader
      */
     protected $reloading = false;
 
-    public function putLog($log)
+    /**
+     * 设置自定义的回调处理reload
+     * @var callable
+     */
+    protected $reloadHandler;
+
+    /**
+     * 监控的文件类型
+     * @var array
+     */
+    protected $watchedTypes = [
+        '.php' => true
+    ];
+
+    /**
+     * 添加的监控目录列表
+     * @var array
+     */
+    protected $watchedDirs = [];
+
+    /**
+     * 监控目录列表中所有被监控的文件列表
+     * @var array
+     */
+    protected $watchedFiles = [];
+
+    public static function make($mPid)
     {
-        echo "[".date('Y-m-d H:i:s')."]\t".$log."\n";
+        return new self($mPid);
     }
 
     /**
@@ -87,14 +101,9 @@ class AutoReloader
      */
     public function __construct($serverPid)
     {
-        $this->pid = $serverPid;
-
-        if ( posix_kill($serverPid, 0) === false ) {
-            throw new NotFound("Process #$serverPid not found.");
-        }
-
+        $this->pid = (int)$serverPid;
         $this->inotify = inotify_init();
-        $this->events = IN_MODIFY | IN_DELETE | IN_CREATE | IN_MOVE;
+        $this->eventMask = IN_MODIFY | IN_DELETE | IN_CREATE | IN_MOVE;
 
         $this->addWatchEvent();
     }
@@ -123,7 +132,7 @@ class AutoReloader
                     $fileType = strrchr($ev['name'], '.');
 
                     //非重启类型
-                    if (!isset($this->reloadFileTypes[$fileType])) {
+                    if (!isset($this->watchedTypes[$fileType])) {
                         continue;
                     }
                 }
@@ -139,20 +148,32 @@ class AutoReloader
         });
     }
 
+    /**
+     * reload
+     */
     public function reload()
     {
-        $this->putLog("reloading");
+        // 调用自定义的回调处理reload
+        if ( $cb = $this->doReload ) {
+            $cb($this->pid);
 
-        // 向主进程发送信号
-        posix_kill($this->pid, SIGUSR1);
+        // 直接向主进程发送 SIGUSR1 信号
+        } else {
+            $this->putLog('begin reloading ... ...');
+
+            // 检查进程
+            if ( posix_kill($this->pid, 0) === false ) {
+                throw new NotFound("The process #$this->pid not found.");
+            }
+
+            posix_kill($this->pid, SIGUSR1);
+        }
 
         // 清理所有监听
-        $this->clearWatch();
+        $this->clearWatched();
 
         // 重新监听
-        foreach($this->watchedDirs as $root) {
-            $this->addWatch($root);
-        }
+        $this->addWatchs($this->watchedDirs);
 
         // 继续进行reload
         $this->reloading = false;
@@ -161,13 +182,14 @@ class AutoReloader
     /**
      * 添加监控文件类型
      * @param $type
+     * @return $this
      */
     public function addFileType($type)
     {
-        $type = '.' . trim($type, '.');
+        $type = '.' . trim($type, '. ');
 
-        if ( isset($this->reloadFileTypes[$type]) ) {
-            $this->reloadFileTypes[$type] = true;
+        if ( !isset($this->watchedTypes[$type]) ) {
+            $this->watchedTypes[$type] = true;
         }
 
         return $this;
@@ -179,28 +201,38 @@ class AutoReloader
      */
     public function addInotifyEvent($inotifyEvent)
     {
-        $this->events |= $inotifyEvent;
+        $this->eventMask |= $inotifyEvent;
     }
 
     /**
-     * 清理所有inotify监听
+     * add Watches
+     * @param array  $dirs
+     * @param string $basePath
+     * @return $this
      */
-    public function clearWatch()
+    public function addWatches(array $dirs, $basePath = '')
     {
-        foreach($this->watchedFiles as $wd) {
-            inotify_rm_watch($this->inotify, $wd);
+        $basePath = $basePath ? rtrim($basePath, '/') . '/' : '';
+
+        foreach ($dirs as $dir) {
+            $this->addWatch($basePath . $dir);
         }
 
-        $this->watchedFiles = [];
+        return $this;
     }
 
     /**
-     * @param string $target file or dir path
+     * @param string $target The file or dir path
      * @param bool $root
      * @return bool
      */
     public function addWatch($target, $root = true)
     {
+        //
+        if ( !$target ) {
+            return false;
+        }
+
         //目录/文件不存在
         if ( !file_exists($target) ) {
             throw new \RuntimeException("[$target] is not a directory or file.");
@@ -211,12 +243,10 @@ class AutoReloader
             return false;
         }
 
-        $isDir = is_dir($target);
-
-        $wd = inotify_add_watch($this->inotify, $target, $this->events);
+        $wd = inotify_add_watch($this->inotify, $target, $this->eventMask);
         $this->watchedFiles[$target] = $wd;
 
-        if (!is_dir($target)) {
+        if ( !is_dir($target) ) {
             return true;
         }
 
@@ -241,13 +271,37 @@ class AutoReloader
             //检测文件类型
             $fileType = strrchr($f, '.');
 
-            if ( isset($this->reloadFileTypes[$fileType]) ) {
-                $wd = inotify_add_watch($this->inotify, $path, $this->events);
+            if ( isset($this->watchedTypes[$fileType]) ) {
+                $wd = inotify_add_watch($this->inotify, $path, $this->eventMask);
                 $this->watchedFiles[$path] = $wd;
             }
         }
 
         return true;
+    }
+
+    /**
+     * 清理所有inotify监听
+     * @return $this
+     */
+    public function clearWatched()
+    {
+        foreach($this->watchedFiles as $wd) {
+            inotify_rm_watch($this->inotify, $wd);
+        }
+
+        $this->watchedFiles = [];
+
+        return $this;
+    }
+
+    /**
+     * set Reload Handler
+     * @param callable $cb
+     */
+    public function setReloadHandler(callable $cb)
+    {
+        $this->reloadHandler = $cb;
     }
 
     /**
@@ -266,5 +320,10 @@ class AutoReloader
     public function getWatchedFiles()
     {
         return $this->watchedFiles;
+    }
+
+    public function putLog($log)
+    {
+        echo "[".date('Y-m-d H:i:s')."]\t".$log."\n";
     }
 }

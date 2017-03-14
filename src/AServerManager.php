@@ -784,7 +784,7 @@ abstract class AServerManager implements IServerManager
      * @param  int      $masterPid
      * @param  boolean  $onlyTaskWorker
      */
-    protected function doReloadWorkers($masterPid, $onlyTaskWorker = false)
+    public function doReloadWorkers($masterPid, $onlyTaskWorker = false)
     {
         // SIGUSR1: 向管理进程发送信号，将平稳地重启所有worker进程; 也可在PHP代码中调用`$server->reload()`完成此操作
         $sig = SIGUSR1;
@@ -865,12 +865,18 @@ abstract class AServerManager implements IServerManager
             $mgr->addLog("The reloader worker process success started. (PID: {$process->pid})");
 
             ServerHelper::setProcessTitle("swoole: reloader ({$mgr->name})");
-
             $kit = new AutoReloader($reload['masterPid']);
+
+            $onlyReloadTask = isset($reload['only_reload_task']) ? (bool)$reload['only_reload_task'] : false;
             $dirs = array_map('trim', explode(',', $reload['dirs']));
-            foreach ($dirs as $dir) {
-                $kit->addWatch(PROJECT_PATH . '/' . $dir);
-            }
+
+            $kit
+                ->addWatches($dirs)
+                ->setReloadHandler(function($pid) use ($mgr, $onlyReloadTask) {
+                    $mgr->addLog("Begin reload workers process. (Master PID: {$pid})");
+                    $mgr->server->reload($onlyReloadTask);
+                    // $mgr->doReloadWorkers($pid, $onlyReloadTask);
+                });
 
             Interact::section('Watched Directory', $kit->getWatchedDirs());
 
@@ -878,7 +884,6 @@ abstract class AServerManager implements IServerManager
 
             // while (true) {
             //     $msg = $process->read();
-
             //     // 重启所有worker进程
             //     if ( $msg === 'reload' ) {
             //         $onlyReloadTaskWorker = false;

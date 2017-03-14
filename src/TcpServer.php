@@ -80,14 +80,6 @@ class TcpServer extends AServerManager
         }
     }
 
-    public function beforeServerStart(\Closure $callback = null)
-    {
-        parent::beforeServerStart($callback);
-
-        // you can override it on the subclass.
-        $this->createReloadWorker($this->server);
-    }
-
     public function createApplication(\Closure $callback = null)
     {
         if ($callback) {
