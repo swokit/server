@@ -19,18 +19,15 @@ use Swoole\Http\Request as SwRequest;
  * @package inhere\server\handlers
  *
  */
-class WSServerHandler extends AbstractServerHandler
+class WSServerHandler extends HttpServerHandler
 {
     /**
      * 处理http请求(如果需要的话)
-     * @param  SwRequest  $request
-     * @param  SwResponse $response
+     * @inheritdoc
      */
     public function onRequest(SwRequest $request, SwResponse $response)
     {
-        // var_dump($request->get, $request->post);
-        $response->header("Content-Type", "text/html; charset=utf-8");
-        $response->end("<h1>Hello Swoole. #".rand(1000, 9999)."</h1>\n");
+        parent::onRequest($request, $response);
     }
 
     ////////////////////// WS Server event //////////////////////

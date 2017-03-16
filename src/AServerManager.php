@@ -368,7 +368,7 @@ abstract class AServerManager implements IServerManager
             }
 
             // run is daemonize
-            $this->daemonize = (bool)$this->cliIn->getBool('d', $this->config->get('swoole.daemonize', false));
+            $this->daemonize = (bool)$this->cliIn->getBool('d', $this->config->get('swoole.daemonize'));
             $this->setConfig(['swoole' => [ 'daemonize' => $this->daemonize ]]);
 
             // if isn't daemonize mode, don't save swoole log to file
@@ -401,11 +401,8 @@ abstract class AServerManager implements IServerManager
                 exit(0);
                 break;
 
-            case 'stat':
-                $this->cliOut->notice("Sorry, The function un-completed!", 0);
-                // $stats = $this->server->stats();
-                // $this->cliOut->panel($stats, 'Server Stat Information');
-                // exit(0);
+            case 'status':
+                $this->showRuntimeStatus();
                 break;
 
             default:
@@ -422,7 +419,7 @@ abstract class AServerManager implements IServerManager
      */
     protected function checkInputCommand($command)
     {
-        $supportCommands = ['start', 'reload', 'restart', 'stop', 'info', 'stat'];
+        $supportCommands = ['start', 'reload', 'restart', 'stop', 'info', 'status'];
 
         // show help info
         if (
@@ -470,10 +467,22 @@ abstract class AServerManager implements IServerManager
     }
 
     /**
+     * show server runtime status information
+     */
+    protected function showRuntimeStatus()
+    {
+        $this->cliOut->notice("Sorry, The function un-completed!", 0);
+    }
+
+    /**
      * @return SwServer
      */
     abstract protected function createMainServer();
 
+    /**
+     * before Server Start
+     * @param \Closure|null $callback
+     */
     public function beforeServerStart(\Closure $callback = null)
     {
         if ( $callback ) {
@@ -847,6 +856,7 @@ abstract class AServerManager implements IServerManager
      * create code hot reload worker
      * @see https://wiki.swoole.com/wiki/page/390.html
      * @param  SwServer $server
+     * @return bool
      */
     protected function createHotReloader(SwServer $server)
     {
@@ -899,6 +909,8 @@ abstract class AServerManager implements IServerManager
 
         // addProcess添加的用户进程中无法使用task投递任务，请使用 $server->sendMessage() 接口与工作进程通信
         $server->addProcess($this->reloadWorker);
+
+        return true;
     }
 
 //////////////////////////////////////////////////////////////////////
@@ -918,8 +930,8 @@ abstract class AServerManager implements IServerManager
         }
 
         $this->cliOut->helpPanel(
-        // Usage
-            "$scriptName {start|reload|restart|stop|stat} [-d]",
+            // Usage
+            "$scriptName {start|reload|restart|stop|status} [-d]",
             // Commands
             [
                 'start'   => 'Start the server',
@@ -927,7 +939,7 @@ abstract class AServerManager implements IServerManager
                 'restart' => 'Stop the server, After start the server.',
                 'stop'    => 'Stop the server',
                 'info'    => 'Show the server information for current project',
-                'stat'    => 'Show the started server stat information',
+                'status'    => 'Show the started server status information',
                 'help'    => 'Display this help message',
             ],
             // Options

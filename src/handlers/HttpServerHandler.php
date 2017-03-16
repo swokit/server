@@ -53,12 +53,6 @@ http config:
 class HttpServerHandler extends AbstractServerHandler
 {
     /**
-     * create and register our application
-     * @var \Closure
-     */
-    public $createApplication;
-
-    /**
      * handle request (for http server)
      * @var \Closure
      */
@@ -103,8 +97,8 @@ class HttpServerHandler extends AbstractServerHandler
         $this->mgr->onWorkerStart($server, $workerId);
 
         // create application
-        if ( !$server->taskworker &&  ($callback = $this->createApplication) ) {
-            $this->mgr->app = $callback($this);
+        if ( !$server->taskworker &&  ($callback = $this->createApplication()) ) {
+            $this->mgr->app = $callback($this->mgr);
 
             $this->addLog("The app instance has been created, on the worker {$workerId}.");
         }
@@ -144,13 +138,7 @@ class HttpServerHandler extends AbstractServerHandler
         // $this->collectionRequestData($request);
 
         try {
-            if ( !($cb = $this->requestHandler) || !($cb instanceof \Closure) ) {
-                $this->addLog("Please setting the 'requestHandler' property to handle http request.", [], 'error');
-
-                throw new \LogicException("Please setting the 'requestHandler' property.");
-            }
-
-            $bodyContent = $cb($this, $request, $response);
+            $bodyContent = $this->handleDynamicRequest($request, $response);
 
             // open gzip
             $response->gzip(1);
@@ -163,21 +151,34 @@ class HttpServerHandler extends AbstractServerHandler
         return true;
     }
 
-
     /**
-     * @param \Closure $closure
+     * create and register our application
+     * @return callable|null
      */
-    public function setCreateApplication(\Closure $closure)
+    protected function createApplication()
     {
-        $this->createApplication = $closure;
+        /*
+        return function($mgr) {
+
+        };
+        */
+
+        return null;
     }
 
     /**
-     * @param \Closure $closure
+     * handle the Dynamic Request
+     * @param SwRequest $request
+     * @param SwResponse $response
+     * @return string
      */
-    public function setRequestHandler(\Closure $closure)
+    protected function handleDynamicRequest(SwRequest $request, SwResponse $response)
     {
-        $this->requestHandler = $closure;
+        $this->addLog("Please implements the method 'handleDynamicRequest' on the subclass.");
+
+        // throw new \LogicException("Please setting the 'requestHandler' property.");
+
+        return '';
     }
 
     /**
@@ -212,7 +213,7 @@ class HttpServerHandler extends AbstractServerHandler
         // $this->addLog("begin match ext for the asset $uri, result: " . preg_match("/\.($extReg)/i", $uri, $matches), $exts);
 
         // 资源后缀匹配失败 返回交给php继续处理
-        if ( 1 !== preg_match("/\.($extReg)/i", $uri, $matches) ) {
+        if ( 1 !== preg_match("/.($extReg)/i", $uri, $matches) ) {
             return false;
         }
 

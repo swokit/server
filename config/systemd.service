@@ -1,0 +1,40 @@
+#
+# the systemd service config for swoole server
+#
+# 使用systemd管理，server 必须启动为守护进程
+#
+# 编写完成后需要reload守护进程使其生效
+#
+#  sudo systemctl --system daemon-reload
+#
+# 'echo.service' 当前文件名
+#
+# 启动服务
+# sudo systemctl start echo.service
+#reload服务
+# sudo systemctl reload echo.service
+# 关闭服务
+# sudo systemctl stop echo.service
+
+[Unit]
+# After 指令约定了启动的顺序，必须在network和syslog启动后才启动echo服务
+
+Description=Echo Http Server
+After=network.target
+After=syslog.target
+
+[Service]
+# Service 中填写了应用程序的路径信息，请修改为实际项目对应的路径
+# Restart=always 表示如果进程挂掉会自动拉起
+
+Type=forking
+PIDFile=/opt/servers/echo/server.pid
+ExecStart=/home/htf/bin/php /opt/servers/echo/server.php
+ExecStop=/bin/kill $MAINPID
+ExecReload=/bin/kill -USR1 $MAINPID
+Restart=always
+
+[Install]
+# WantedBy 约定了在哪些环境下启动，multi-user.target graphical.target表示在图形界面和命令行环境都会启动
+
+WantedBy=multi-user.target graphical.target

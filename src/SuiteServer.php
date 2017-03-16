@@ -20,8 +20,6 @@ use Swoole\Server as SwServer;
 use Swoole\Http\Server as SwHttpServer;
 use Swoole\Websocket\Server as SwWSServer;
 use Swoole\Server\Port as SwServerPort;
-use Swoole\Http\Response as SwResponse;
-use Swoole\Http\Request as SwRequest;
 
 /**
  * Class SuiteServer
@@ -404,7 +402,6 @@ class SuiteServer extends AServerManager
         $sEnv = new ServerEnv;
         $swOpts = $this->config->get('swoole');
         $main = $this->config->get('main_server');
-        unset($http['static_setting']);
         $panelData = [
             'Operate System' => $sEnv->get('os'),
             'PHP Version' => PHP_VERSION,
