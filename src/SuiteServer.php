@@ -184,6 +184,7 @@ class SuiteServer extends AServerManager
 
             // is a Closure callback, add by self::on()
             if ( $cb = $this->getEventCallback($name) ) {
+                $this->addLog("use Closure callback register swoole event: $name.");
                 $this->server->on($name, $cb);
             }
 

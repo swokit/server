@@ -56,4 +56,13 @@ abstract class AbstractServerHandler implements IServerHandler
     {
         $this->mgr->addLog($msg, $data, $type);
     }
+
+    /**
+     * getCliOut
+     * @return \inhere\console\io\Output
+     */
+    public function getCliOut()
+    {
+        return $this->mgr->getCliOut();
+    }
 }

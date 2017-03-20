@@ -97,11 +97,11 @@ class HttpServerHandler extends AbstractServerHandler
         $this->mgr->onWorkerStart($server, $workerId);
 
         // create application
-        if ( !$server->taskworker &&  ($callback = $this->createApplication()) ) {
-            $this->mgr->app = $callback($this->mgr);
+        // if ( !$server->taskworker &&  ($callback = $this->createApplication()) ) {
+        //     $this->mgr->app = $callback($this->mgr);
 
-            $this->addLog("The app instance has been created, on the worker {$workerId}.");
-        }
+        //     $this->addLog("The app instance has been created, on the worker {$workerId}.");
+        // }
     }
 
     /**
@@ -178,7 +178,7 @@ class HttpServerHandler extends AbstractServerHandler
 
         // throw new \LogicException("Please setting the 'requestHandler' property.");
 
-        return '';
+        return 'No content to display';
     }
 
     /**
