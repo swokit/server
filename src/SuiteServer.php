@@ -441,6 +441,10 @@ class SuiteServer extends AServerManager
     public function getDefaultConfig()
     {
         $config = [
+            // application config
+            'app' => [
+                //
+            ],
             'main_server' => [
                 'host' => '0.0.0.0',
                 'port' => '8662',

@@ -87,6 +87,19 @@ class HttpServerHandler extends AbstractServerHandler
         'html'  => 'text/html',
     ];
 
+    protected $config = [
+        'session' => [
+            'enable' => true,
+            'name' => 'app_session',
+        ],
+        'request' => [
+            'filterFavicon' => true,
+        ],
+        'response' => [
+            'gzip' => true,
+        ],
+    ];
+
     /**
      * onWorkerStart
      * @param  SwServer $server
@@ -102,6 +115,32 @@ class HttpServerHandler extends AbstractServerHandler
 
         //     $this->addLog("The app instance has been created, on the worker {$workerId}.");
         // }
+    }
+
+    protected function beforeRequest(SwRequest $request, SwResponse $response)
+    {}
+
+    protected function afterRequest(SwRequest $request, SwResponse $response)
+    {}
+
+    protected function prepareRequest(SwRequest $request, SwResponse $response)
+    {
+        $this->loadGlobalData($request);
+
+        $setting = $this->config['session'];
+        $name = $setting['name'];
+
+        // start session
+        session_start();
+
+        // if not exists, set it.
+        if ( !$sid = $response->cookie[$name] ) {
+            session_name($name);
+            $sid = session_id();
+            $response->cookie($name, $sid);
+        }
+
+        $this->addLog("session name: {$name}, session id: {$sid}");
     }
 
     /**
@@ -124,6 +163,9 @@ class HttpServerHandler extends AbstractServerHandler
             return true;
         }
 
+        $this->beforeRequest($request, $response);
+        $this->prepareRequest($request, $response);
+
         $this->addLog("$method $uri", [
             'GET' => $request->get,
             'POST' => $request->post,
@@ -143,12 +185,37 @@ class HttpServerHandler extends AbstractServerHandler
             // open gzip
             $response->gzip(1);
 
+            $this->afterRequest($request, $response);
+
             $response->end($bodyContent);
         } catch (\Exception $e) {
             var_dump($e);
         }
 
         return true;
+    }
+
+    /**
+     * 将原始请求信息转换到PHP超全局变量中
+     */
+    protected function loadGlobalData($request)
+    {
+        $serverData = array_change_key_case($request->server, CASE_UPPER);
+
+        /**
+         * 将HTTP头信息赋值给$_SERVER超全局变量
+         */
+        foreach ($request->header as $key => $value) {
+            $_key = 'HTTP_' . strtoupper(str_replace('-', '_', $key));
+            $serverData[$_key] = $value;
+        }
+
+        $_GET = $request->get;
+        $_POST = $request->post;
+        $_FILES = $request->files;
+        $_COOKIE = $request->cookie;
+        $_SERVER = $serverData;
+        $_REQUEST = array_merge($request->get ?: [], $request->post ?: [], $request->cookie ?: []);
     }
 
     /**
@@ -194,7 +261,10 @@ class HttpServerHandler extends AbstractServerHandler
         $uri = $uri ?:$request->server['request_uri'];
 
         // 请求 /favicon.ico 过滤
-        if ($request->server['path_info'] === '/favicon.ico' || $uri === '/favicon.ico') {
+        if (
+            $this->config['request']['filterFavicon'] &&
+            ( $request->server['path_info'] === '/favicon.ico' || $uri === '/favicon.ico')
+        ) {
             return $response->end();
         }
 
