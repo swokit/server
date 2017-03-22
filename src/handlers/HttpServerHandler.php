@@ -87,10 +87,13 @@ class HttpServerHandler extends AbstractServerHandler
         'html'  => 'text/html',
     ];
 
-    protected $config = [
+    protected $options = [
         'session' => [
             'enable' => true,
             'name' => 'app_session',
+            // 设置 cookie 的有效时间为 30 minute
+            'cookie_lifetime' => 1800,
+            // 'read_and_close'  => true,
         ],
         'request' => [
             'filterFavicon' => true,
@@ -127,18 +130,18 @@ class HttpServerHandler extends AbstractServerHandler
     {
         $this->loadGlobalData($request);
 
-        $setting = $this->config['session'];
+        $setting = $this->options['session'];
         $name = $setting['name'];
+
+        // if not exists, set it.
+        if ( !$sid = $request->cookie[$name] ) {
+            $sid = session_id();
+            session_name($name);
+            $response->cookie($name, $sid);
+        }
 
         // start session
         session_start();
-
-        // if not exists, set it.
-        if ( !$sid = $response->cookie[$name] ) {
-            session_name($name);
-            $sid = session_id();
-            $response->cookie($name, $sid);
-        }
 
         $this->addLog("session name: {$name}, session id: {$sid}");
     }
@@ -262,7 +265,7 @@ class HttpServerHandler extends AbstractServerHandler
 
         // 请求 /favicon.ico 过滤
         if (
-            $this->config['request']['filterFavicon'] &&
+            $this->options['request']['filterFavicon'] &&
             ( $request->server['path_info'] === '/favicon.ico' || $uri === '/favicon.ico')
         ) {
             return $response->end();

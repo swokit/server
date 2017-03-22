@@ -75,7 +75,7 @@ class SuiteServer extends AServerManager
 
         // register main server event method
         if ( $methods = $this->config->get('main_server.event_list') ) {
-            $this->addSwooleEvents($methods);
+            $this->setSwooleEvents($methods);
         }
 
         // register attach server from config
@@ -149,7 +149,7 @@ class SuiteServer extends AServerManager
             $this->addLog("Create the main swoole server. on <default>{$host}:{$port}</default>(<info>$type</info>)");
 
             $this->serverHandler = trim($opts['event_handler']);
-            $this->addSwooleEvents($protocolEvents);
+            $this->setSwooleEvents($protocolEvents);
 
             // attach registered listen port server to main server
             $this->attachListenPortServers($server);
@@ -161,14 +161,18 @@ class SuiteServer extends AServerManager
     /**
      * @inheritdoc
      */
-    protected function registerMainServerEvents(array $events)
+    protected function registerMainServerEvents()
     {
+        $events = $this->swooleEvents;
+
         // default register to self.
         $handler = $this;
+        $className = static::class;
         $isCustomHandler = false;
 
         // use custom main server event handler
         if ( $serverHandler = $this->serverHandler ) {
+            $className = $serverHandler;
             $handler = new $serverHandler;
 
             if ( !($handler instanceof IServerHandler) ) {
@@ -177,25 +181,36 @@ class SuiteServer extends AServerManager
 
             $isCustomHandler = true;
             $handler->setMgr($this);
+            $handler->setOptions($this->config->get('main_server.event_handler_options'), true);
         }
+
+        $eventInfo = [];
 
         // register event to swoole
         foreach ($events as $name => $method) {
 
             // is a Closure callback, add by self::on()
             if ( $cb = $this->getEventCallback($name) ) {
-                $this->addLog("use Closure callback register swoole event: $name.");
+                $eventInfo[] = [ $name, $method];
                 $this->server->on($name, $cb);
             }
 
             if( method_exists($handler, $method) ) {
+                $eventInfo[] = [ $name, "$className->$method"];
                 $this->server->on($name, array($handler, $method));
 
                 // if use Custom Handler
             } else if ( $isCustomHandler && method_exists($this, $method) ) {
+                $eventInfo[] = [$name, static::class . "->$method"];
                 $this->server->on($name, array($this, $method));
             }
         }
+
+        $opts = [
+            'showBorder' => 0,
+            'tHead' => ['event name', 'event handler']
+        ];
+        $this->cliOut->table($eventInfo, 'Registered swoole events to the main server:', $opts);
     }
 
 //////////////////////////////////////////////////////////////////////
@@ -210,7 +225,9 @@ class SuiteServer extends AServerManager
      */
     public function on($event, \Closure $cb)
     {
-        $event = strtolower($event);
+        $event = trim($event);
+
+        $this->setSwooleEvent($event, 'A-CLOSURE');
 
         $this->eventCallbacks[$event] = $cb;
 
@@ -441,10 +458,6 @@ class SuiteServer extends AServerManager
     public function getDefaultConfig()
     {
         $config = [
-            // application config
-            'app' => [
-                //
-            ],
             'main_server' => [
                 'host' => '0.0.0.0',
                 'port' => '8662',
@@ -457,6 +470,7 @@ class SuiteServer extends AServerManager
                 // use outside's event handler
                 'event_handler' => '', // e.g '\inhere\server\handlers\HttpServerHandler'
                 'event_list'   => [], // e.g [ 'onRequest', ]
+                'event_handler_options' => []
             ],
             'attach_servers' => [
                // 'tcp1' => [

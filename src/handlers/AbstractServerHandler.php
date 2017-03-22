@@ -11,6 +11,7 @@ namespace inhere\server\handlers;
 use inhere\server\AServerManager;
 use inhere\server\interfaces\IServerHandler;
 use Swoole\Server as SwServer;
+use inhere\librarys\traits\TraitUseOption;
 
 /**
  * Class AbstractServerHandler
@@ -18,10 +19,18 @@ use Swoole\Server as SwServer;
  */
 abstract class AbstractServerHandler implements IServerHandler
 {
+    use TraitUseOption;
+
     /**
      * @var AServerManager
      */
     protected $mgr;
+
+    /**
+     * options
+     * @var array
+     */
+    protected $options = [];
 
     /**
      * @param AServerManager $mgr

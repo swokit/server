@@ -28,4 +28,8 @@ interface IServerHandler
      * @return \inhere\librarys\collections\Config|mixed
      */
     public function getConfig($key = null, $default = null);
+
+    public function getOptions();
+
+    public function setOptions($options, $merge = false);
 }

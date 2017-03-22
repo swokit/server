@@ -200,10 +200,8 @@ abstract class AServerManager implements IServerManager
             'root_path' => '',
             'pid_file'  => '/tmp/swoole_server.pid',
 
-            'auto_reload' => [
-                'enable' =>  true, // will create a process auto reload server
-                'dirs' => '',
-            ],
+            // will create a process auto reload server
+            'auto_reload' => '', // 'src,config'
 
             // 当前server的日志配置(不是swoole的日志)
             'log_service' => [
@@ -290,10 +288,7 @@ abstract class AServerManager implements IServerManager
         }
 
         // register swoole events handler
-        $events = $this->swooleEvents;
-        $this->addLog("Register swoole events to the main server:\n " . implode(',', array_values($events)), [], 'info');
-
-        $this->registerMainServerEvents($events);
+        $this->registerMainServerEvents();
 
         // setting swoole config
         $this->server->set($this->config['swoole']);
@@ -492,10 +487,12 @@ abstract class AServerManager implements IServerManager
 
     /**
      * register Swoole Events
-     * @param  array  $events
      */
-    protected function registerMainServerEvents(array $events)
+    protected function registerMainServerEvents()
     {
+        $events = $this->swooleEvents;
+        $this->cliOut->aList('Registered swoole events to the main server:( event -> handler )', $events);
+
         foreach ($events as $event => $callback ) {
 
             // e.g $server->on('Request', [$this, 'onRequest']);
@@ -652,10 +649,10 @@ abstract class AServerManager implements IServerManager
     /**
      * @param array $events
      */
-    public function addSwooleEvents(array $events)
+    public function setSwooleEvents(array $events)
     {
         foreach ($events as $key => $value) {
-            $this->addSwooleEvent( is_int($key) ? lcfirst(substr($value,2)) : $key,$value);
+            $this->setSwooleEvent( is_int($key) ? lcfirst(substr($value,2)) : $key,$value);
         }
     }
 
@@ -663,11 +660,14 @@ abstract class AServerManager implements IServerManager
      * @param string $event  The event name
      * @param string $cbName The callback name
      */
-    public function addSwooleEvent($event, $cbName)
+    public function setSwooleEvent($event, $cbName)
     {
-        if ( !isset($this->swooleEvents[$event]) ) {
-            $this->swooleEvents[$event] = $cbName;
+        if ( !$this->isSupportedEvents($event) ) {
+            $supported = implode(',', $this->supportedEvents);
+            $this->cliOut->error("You want add a not supported swoole event: $event. supported: $supported", -2);
         }
+
+        $this->swooleEvents[$event] = $cbName;
     }
 
     /**
@@ -755,6 +755,37 @@ abstract class AServerManager implements IServerManager
             self::PROTOCOL_WSS,
         ];
     }
+
+    /**
+     * @return array
+     */
+    public function getSupportedEvents()
+    {
+        return $this->supportedEvents;
+    }
+
+    /**
+     * @param string $event
+     * @return bool
+     */
+    public function isSupportedEvents($event)
+    {
+        return in_array($event, $this->supportedEvents);
+    }
+
+    /**
+     * @param null|string $protocol
+     * @return array
+     */
+    public function getSwooleProtocolEvents($protocol = null)
+    {
+        if (null === $protocol) {
+            return $this->swooleProtocolEvents;
+        }
+
+        return isset($this->swooleProtocolEvents[$protocol]) ? $this->swooleProtocolEvents[$protocol] : null;
+    }
+
 
 //////////////////////////////////////////////////////////////////////
 /// some help method(from swoole)
@@ -863,32 +894,36 @@ abstract class AServerManager implements IServerManager
         $mgr = $this;
         $reload = $this->config->get('auto_reload');
 
-        if ( !$reload['enable'] || !$reload['dirs'] ) {
+        if ( !$reload ) {
             return false;
         }
 
-        $reload['masterPid'] = $server->master_pid;
+        $options = [
+            'dirs' => $reload,
+            'masterPid' => $server->master_pid
+        ];
 
         // 创建用户自定义的工作进程worker
-        $this->reloadWorker = new SwProcess(function(SwProcess $process) use ($reload, $mgr)
+        $this->reloadWorker = new SwProcess(function(SwProcess $process) use ($options, $mgr)
         {
-            $mgr->addLog("The reloader worker process success started. (PID: {$process->pid})");
 
             ServerHelper::setProcessTitle("swoole: reloader ({$mgr->name})");
-            $kit = new AutoReloader($reload['masterPid']);
+            $kit = new AutoReloader($options['masterPid']);
 
-            $onlyReloadTask = isset($reload['only_reload_task']) ? (bool)$reload['only_reload_task'] : false;
-            $dirs = array_map('trim', explode(',', $reload['dirs']));
+            $onlyReloadTask = isset($options['only_reload_task']) ? (bool)$options['only_reload_task'] : false;
+            $dirs = array_map('trim', explode(',', $options['dirs']));
+
+            $mgr->addLog("The reloader worker process success started. (PID: {$process->pid}, Watched: <info>{$options['dirs']}</info>)");
 
             $kit
-                ->addWatches($dirs)
+                ->addWatches($dirs, $this->config->get('root_path'))
                 ->setReloadHandler(function($pid) use ($mgr, $onlyReloadTask) {
                     $mgr->addLog("Begin reload workers process. (Master PID: {$pid})");
                     $mgr->server->reload($onlyReloadTask);
                     // $mgr->doReloadWorkers($pid, $onlyReloadTask);
                 });
 
-            Interact::section('Watched Directory', $kit->getWatchedDirs());
+            //Interact::section('Watched Directory', $kit->getWatchedDirs());
 
             $kit->run();
 

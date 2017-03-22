@@ -51,12 +51,12 @@ class WSServer extends HttpServer
         }
 
         // append current protocol event
-        $this->addSwooleEvents($this->swooleProtocolEvents[self::PROTOCOL_WS]);
+        $this->setSwooleEvents($this->swooleProtocolEvents[self::PROTOCOL_WS]);
 
         // enable http request handle
         if ( $opts['enable'] ) {
             $handleHttp = 'ENABLED';
-            $this->addSwooleEvent('request', 'onRequest');
+            $this->setSwooleEvent('request', 'onRequest');
         }
 
         $this->addLog("Create a $type main server on <default>{$opts['host']}:{$opts['port']}</default> (http request handle: $handleHttp)",[], 'info');
