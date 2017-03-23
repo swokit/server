@@ -12,10 +12,10 @@ use inhere\server\AServerManager;
 use Swoole\Server as SwServer;
 
 /**
- * Class IServerHandler
+ * Class IExtendServer
  * @package inhere\server\interfaces
  */
-interface IServerHandler
+interface IExtendServer
 {
     /**
      * @param AServerManager $mgr

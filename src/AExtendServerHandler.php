@@ -6,18 +6,17 @@
  * Time: 15:20
  */
 
-namespace inhere\server\handlers;
+namespace inhere\server;
 
-use inhere\server\AServerManager;
-use inhere\server\interfaces\IServerHandler;
+use inhere\server\interfaces\IExtendServer;
 use Swoole\Server as SwServer;
 use inhere\librarys\traits\TraitUseOption;
 
 /**
- * Class AbstractServerHandler
+ * Class AExtendServerHandler
  * @package inhere\server\handlers
  */
-abstract class AbstractServerHandler implements IServerHandler
+abstract class AExtendServerHandler implements IExtendServer
 {
     use TraitUseOption;
 
@@ -31,6 +30,15 @@ abstract class AbstractServerHandler implements IServerHandler
      * @var array
      */
     protected $options = [];
+
+    /**
+     * AbstractServerHandler constructor.
+     * @param array $options
+     */
+    public function __construct($options = [])
+    {
+        $this->setOptions($options);
+    }
 
     /**
      * @param AServerManager $mgr
@@ -73,5 +81,14 @@ abstract class AbstractServerHandler implements IServerHandler
     public function getCliOut()
     {
         return $this->mgr->getCliOut();
+    }
+
+    /**
+     * getCliOut
+     * @return \inhere\console\io\Input
+     */
+    public function getCliIn()
+    {
+        return $this->mgr->getCliIn();
     }
 }

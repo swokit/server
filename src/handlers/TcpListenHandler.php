@@ -8,14 +8,15 @@
 
 namespace inhere\server\handlers;
 
+use inhere\server\AExtendServerHandler;
 use inhere\server\interfaces\ITcpListenHandler;
 use Swoole\Server as SwServer;
 
 /**
- * Class TcpListener
+ * Class TcpListenHandler
  * @package inhere\server\handlers
  */
-class TcpListenHandler extends AbstractServerHandler implements ITcpListenHandler
+class TcpListenHandler extends AExtendServerHandler implements ITcpListenHandler
 {
     public function onConnect(SwServer $server, $fd)
     {

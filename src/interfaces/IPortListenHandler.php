@@ -8,14 +8,13 @@
 
 namespace inhere\server\interfaces;
 
-use inhere\server\AServerManager;
 use Swoole\Server as SwServer;
 
 /**
- * Class IPortListener
+ * Class IPortListenHandler
  * @package inhere\server\interfaces
  */
-interface IPortListenHandler extends IServerHandler
+interface IPortListenHandler extends IExtendServer
 {
 
 }

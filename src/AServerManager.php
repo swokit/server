@@ -17,13 +17,38 @@ use inhere\server\interfaces\IServerManager;
 
 use inhere\console\io\Input;
 use inhere\console\io\Output;
-use inhere\console\utils\Interact;
 use inhere\librarys\collections\Config;
 use inhere\librarys\utils\SFLogger;
 
 /**
  * Class AServerManager
  * @package inhere\server
+ *
+ * Running processes:
+ *
+ * ```
+ * create manager object ( $mgr = new SuiteServer )
+ *       |
+ * some custom logic, if need. (eg: set a main server handler, set app service, register attach listen port service)
+ *       |
+ * SuiteServer::run()
+ *       |
+ *   bootstrap()
+ *       |
+ *   init()
+ *      |
+ *   handleCommand() ------> start, stop, restart, help
+ *      |
+ *      | if need start server, go on.
+ *      | no, exit.
+ *      |
+ *   startBaseService()
+ *      |
+ *   showInformation()
+ *      |
+ *    start() // do start swoole server.
+ *
+ * ```
  */
 abstract class AServerManager implements IServerManager
 {
@@ -169,6 +194,47 @@ abstract class AServerManager implements IServerManager
         if ($config) {
             $this->config->loadArray($config);
         }
+
+        $this->init($this->config);
+    }
+
+    /**
+     * @param Config $config
+     * @return $this
+     */
+    protected function init(Config $config)
+    {
+        if (!$this->pidFile = $config->get('pid_file')) {
+            throw new \RuntimeException('The config option \'pid_file\' is must setting');
+        }
+
+        // project root path
+        if (!$config->get('root_path')) {
+            if (defined('PROJECT_PATH')) {
+                $this->setConfig(['root_path' => PROJECT_PATH]);
+            } else {
+                throw new \RuntimeException('The project path \'root_path\' is must setting');
+            }
+        }
+
+        if ( !($this->name = $config->get('name')) ) {
+            $this->name = basename($config->get('root_path'));
+            $this->setConfig(['name' => $this->name]);
+        }
+
+        // $currentUser = ServerHelper::getCurrentUser();
+
+        // Get unix user of the worker process.
+        // if ( !$this->user = $this->config->get('swoole.user') ) {
+        //     $this->user = $currentUser;
+        // } else if (posix_getuid() !== 0 && $this->user != $currentUser) {
+        //     $this->cliOut->block('You must have the root privileges to change uid and gid.', 'WARNING', 'warning');
+        // }
+
+        // Get server is debug mode
+        $this->debug = (bool)$config->get('debug', false);
+
+        return $this;
     }
 
     /**
@@ -181,8 +247,6 @@ abstract class AServerManager implements IServerManager
     {
         if ( !self::$mgr ) {
             new static($config);
-        } else {
-            self::$mgr->setConfig($config);
         }
 
         return self::$mgr->bootstrap($start);
@@ -249,7 +313,7 @@ abstract class AServerManager implements IServerManager
     public function bootstrap($start = true)
     {
         $this->bootstrapped = false;
-        $this->init()
+        $this
             ->handleCommand()
             // prepare start server
             ->startBaseService()
@@ -302,41 +366,6 @@ abstract class AServerManager implements IServerManager
         $this->server->start();
 
         return (self::$started = true);
-    }
-
-    protected function init()
-    {
-        if (!$this->pidFile = $this->config->get('pid_file')) {
-            throw new \RuntimeException('The config option \'pid_file\' is must setting');
-        }
-
-        // project root path
-        if (!$this->config->get('root_path')) {
-            if (defined('PROJECT_PATH')) {
-                $this->setConfig(['root_path' => PROJECT_PATH]);
-            } else {
-                throw new \RuntimeException('The project path \'root_path\' is must setting');
-            }
-        }
-
-        if ( !($this->name = $this->config->get('name')) ) {
-            $this->name = basename($this->config->get('root_path'));
-            $this->setConfig(['name' => $this->name]);
-        }
-
-        // $currentUser = ServerHelper::getCurrentUser();
-
-        // Get unix user of the worker process.
-        // if ( !$this->user = $this->config->get('swoole.user') ) {
-        //     $this->user = $currentUser;
-        // } else if (posix_getuid() !== 0 && $this->user != $currentUser) {
-        //     $this->cliOut->block('You must have the root privileges to change uid and gid.', 'WARNING', 'warning');
-        // }
-
-        // Get server is debug mode
-        $this->debug = (bool)$this->config->get('debug', false);
-
-        return $this;
     }
 
     /**

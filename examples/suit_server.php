@@ -63,7 +63,7 @@ $mgr->attachListenServer('test1', [
     'host' => '0.0.0.0',
     'port' => '9762',
     'type' => 'udp', //
-    'event_handler' => \inhere\server\handlers\UdpListenHandler::class,
+    'event_handler' => \inhere\server\handlers\UdpListen::class,
 ]);
 
 // can also use Closure
@@ -73,7 +73,7 @@ $mgr->attachListenServer('test2', function(\Swoole\Server $srv, $mgr)
     $port->set([]);
 
     // custom add event
-    $handler = new \inhere\server\handlers\TcpListenHandler();
+    $handler = new \inhere\server\handlers\TcpListen();
     $handler->setMgr($mgr);
     $port->on('Receive', [$handler, 'onReceive']);
 

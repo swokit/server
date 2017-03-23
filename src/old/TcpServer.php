@@ -6,19 +6,19 @@
  * Time: 17:50
  */
 
-namespace inhere\server;
+namespace inhere\server\old;
 
 use inhere\console\utils\Interact;
 use inhere\librarys\env\Server as ServerEnv;
 
-use Swoole\Process as SwProcess;
+use inhere\server\AServerManager;
 use Swoole\Server as SwServer;
 use Swoole\Server\Port as SwServerPort;
 
 /**
  * Class TcpServer
  *
- * @package inhere\server
+ * @package inhere\server\old
  * @link https://wiki.swoole.com/wiki/page/p-instruction.html
  *
  * 'onConnect',

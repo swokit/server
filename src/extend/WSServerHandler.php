@@ -2,89 +2,33 @@
 /**
  * Created by PhpStorm.
  * User: inhere
- * Date: 2017/2/18
- * Time: 17:50
+ * Date: 2017-02-24
+ * Time: 16:04
  */
 
-namespace inhere\server;
+namespace inhere\server\extend;
 
 use Swoole\Server as SwServer;
-use Swoole\Websocket\Server as SwWSServer;
 use Swoole\Websocket\Frame;
+use Swoole\Websocket\Server as SwWSServer;
 use Swoole\Http\Response as SwResponse;
 use Swoole\Http\Request as SwRequest;
 
 /**
- * Class WebSocketServer
- * WebSocket base on HTTP
+ * Class WSServerHandler
+ * @package inhere\server\handlers
  *
- * OpCode与数据类型
- *  WEBSOCKET_OPCODE_TEXT = 0x1 ，文本数据
- *  WEBSOCKET_OPCODE_BINARY = 0x2 ，二进制数据
- * @package inhere\server
  */
-class WSServer extends HttpServer
+class WSServerHandler extends HttpServerHandler
 {
     /**
+     * 处理http请求(如果需要的话)
      * @inheritdoc
      */
-    protected function createMainServer()
+    public function onRequest(SwRequest $request, SwResponse $response)
     {
-        $swOpts = $this->config['web_socket_server'];
-
-        if ( !$swOpts['enable'] ) {
-            return parent::createMainServer();
-        }
-
-        $handleHttp = 'DISABLED';
-        $opts = $this->config['http_server'];
-        $mode = $opts['mode'] === self::MODE_BASE ? SWOOLE_BASE : SWOOLE_PROCESS;
-
-        // if want enable SSL(https)
-        if ( self::PROTOCOL_HTTPS === $opts['type'] ) {
-            $this->checkEnvWhenEnableSSL();
-            $type = self::PROTOCOL_WSS;
-            $socketType = SWOOLE_SOCK_TCP | SWOOLE_SSL;
-        } else {
-            $type = self::PROTOCOL_WS;
-            $socketType = SWOOLE_SOCK_TCP;
-        }
-
-        // append current protocol event
-        $this->setSwooleEvents($this->swooleProtocolEvents[self::PROTOCOL_WS]);
-
-        // enable http request handle
-        if ( $opts['enable'] ) {
-            $handleHttp = 'ENABLED';
-            $this->setSwooleEvent('request', 'onRequest');
-        }
-
-        $this->addLog("Create a $type main server on <default>{$opts['host']}:{$opts['port']}</default> (http request handle: $handleHttp)",[], 'info');
-
-        // create swoole WebSocket server
-        $server = new SwWSServer($opts['host'], $opts['port'], $mode, $socketType);
-
-        // enable tcp server
-        $this->attachTcpOrUdpServer($server);
-
-        return $server;
+        parent::onRequest($request, $response);
     }
-
-    /**
-     * @return array
-     */
-    public function getDefaultConfig()
-    {
-        $config = parent::getDefaultConfig();
-
-        $config['web_socket_server']['enable'] = true;
-
-        return $config;
-    }
-
-//////////////////////////////////////////////////////////////////////
-/// swoole event handler
-//////////////////////////////////////////////////////////////////////
 
     ////////////////////// WS Server event //////////////////////
 
@@ -108,8 +52,7 @@ class WSServer extends HttpServer
      */
     public function onMessage(SwWSServer $server, Frame $frame)
     {
-        $this->addLog("Client [fd: {$frame->fd}] send message: {$frame->data}");
-
+        $this->addLog("Client [fd: {$frame->fd}] Message: {$frame->data}");
 
         // send message to all
         // ServerHelper::broadcastMessage($server, $frame->data);
@@ -155,6 +98,7 @@ class WSServer extends HttpServer
         */
         $fdInfo = $server->connection_info($fd);
 
+        // is socket request
         if ( $fdInfo['websocket_status'] > 0 ) {
             $this->addLog("Client-{$fd} is closed", $fdInfo);
         }

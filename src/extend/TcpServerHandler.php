@@ -6,8 +6,9 @@
  * Time: 16:04
  */
 
-namespace inhere\server\handlers;
+namespace inhere\server\extend;
 
+use inhere\server\AExtendServerHandler;
 use Swoole\Server as SwServer;
 
 /*
@@ -32,7 +33,7 @@ Tcp config:
  * Class TcpServerHandler
  * @package inhere\server\handlers
  */
-class TcpServerHandler extends AbstractServerHandler
+class TcpServerHandler extends AExtendServerHandler
 {
 
     public function onConnect(SwServer $server, $fd)

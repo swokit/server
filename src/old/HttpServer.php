@@ -6,8 +6,9 @@
  * Time: 17:50
  */
 
-namespace inhere\server;
+namespace inhere\server\old;
 
+use inhere\librarys\collections\Config;
 use Swoole\Server as SwServer;
 use Swoole\Http\Server as SwHttpServer;
 use Swoole\Http\Response as SwResponse;
@@ -15,7 +16,7 @@ use Swoole\Http\Request as SwRequest;
 
 /**
  * Class HttpServer
- * @package inhere\server
+ * @package inhere\server\old
  */
 class HttpServer extends TcpServer
 {
@@ -76,7 +77,7 @@ class HttpServer extends TcpServer
         'html'  => 'text/html',
     ];
 
-    protected function init()
+    protected function init(Config $config)
     {
         $this->swooleProtocolEvents['tcp'] = [
             'connect' => 'onTcpConnect',
@@ -84,7 +85,7 @@ class HttpServer extends TcpServer
             'receive' => 'onTcpReceive',
         ];
 
-        return parent::init();
+        return parent::init($config);
     }
 
     /**

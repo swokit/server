@@ -8,9 +8,10 @@
 
 namespace inhere\server;
 
+use inhere\librarys\collections\Config;
 use inhere\server\interfaces\ITcpListenHandler;
 use inhere\server\interfaces\IUdpListenHandler;
-use inhere\server\interfaces\IServerHandler;
+use inhere\server\interfaces\IExtendServer;
 
 use inhere\exceptions\InvalidArgumentException;
 use inhere\librarys\env\Server as ServerEnv;
@@ -36,9 +37,9 @@ class SuiteServer extends AServerManager
 
     /**
      * The handler object instance for the main server
-     * @var IServerHandler
+     * @var IExtendServer
      */
-    protected $serverHandler;
+    protected $extendServer;
 
     /**
      * custom main server event handle callback
@@ -69,20 +70,29 @@ class SuiteServer extends AServerManager
      */
     public $attachedNames = [];
 
-    protected function init()
+    /**
+     * @param Config $config
+     * @return $this
+     */
+    protected function init(Config $config)
     {
-        parent::init();
+        parent::init($config);
 
         // register main server event method
-        if ( $methods = $this->config->get('main_server.event_list') ) {
+        if ( $methods = $config->get('main_server.extend_events') ) {
             $this->setSwooleEvents($methods);
         }
 
         // register attach server from config
-        if ( $attachServers = $this->config['attach_servers'] ) {
-            foreach ($attachServers as $name => $config) {
-                $this->attachListenServer($name, $config);
+        if ( $attachServers = $config['attach_servers'] ) {
+            foreach ($attachServers as $name => $conf) {
+                $this->attachListenServer($name, $conf);
             }
+        }
+
+        // set outside extend server handler
+        if ( $extendHandler = $config->get('main_server.extend_handler') ) {
+            $this->setExtendServer($extendHandler);
         }
 
         return $this;
@@ -148,7 +158,6 @@ class SuiteServer extends AServerManager
         if ( $server ) {
             $this->addLog("Create the main swoole server. on <default>{$host}:{$port}</default>(<info>$type</info>)");
 
-            $this->serverHandler = trim($opts['event_handler']);
             $this->setSwooleEvents($protocolEvents);
 
             // attach registered listen port server to main server
@@ -163,27 +172,18 @@ class SuiteServer extends AServerManager
      */
     protected function registerMainServerEvents()
     {
-        $events = $this->swooleEvents;
-
-        // default register to self.
-        $handler = $this;
-        $className = static::class;
-        $isCustomHandler = false;
-
-        // use custom main server event handler
-        if ( $serverHandler = $this->serverHandler ) {
-            $className = $serverHandler;
-            $handler = new $serverHandler;
-
-            if ( !($handler instanceof IServerHandler) ) {
-                throw new \RuntimeException('The main server handler class must instanceof ' . IServerHandler::class );
-            }
-
-            $isCustomHandler = true;
-            $handler->setMgr($this);
-            $handler->setOptions($this->config->get('main_server.event_handler_options'), true);
+        // use custom outside main server event handler
+        if ( $handler = $this->extendServer ) {
+            $className = get_class($handler);
+            $isOutsideHandler = true;
+        } else {
+            // default register to self.
+            $handler = $this;
+            $className = static::class;
+            $isOutsideHandler = false;
         }
 
+        $events = $this->swooleEvents;
         $eventInfo = [];
 
         // register event to swoole
@@ -199,8 +199,8 @@ class SuiteServer extends AServerManager
                 $eventInfo[] = [ $name, "$className->$method"];
                 $this->server->on($name, array($handler, $method));
 
-                // if use Custom Handler
-            } else if ( $isCustomHandler && method_exists($this, $method) ) {
+            // if use Custom Outside Handler
+            } else if ( $isOutsideHandler && method_exists($this, $method) ) {
                 $eventInfo[] = [$name, static::class . "->$method"];
                 $this->server->on($name, array($this, $method));
             }
@@ -255,11 +255,44 @@ class SuiteServer extends AServerManager
     }
 
     /**
-     * @return IServerHandler
+     * @param IExtendServer|string $extendServer
      */
-    public function getServerHandler()
+    public function setExtendServer($extendServer)
     {
-        return $this->serverHandler;
+        if ( is_string($extendServer) ) {
+            $handler = new $extendServer;
+        } elseif (is_object($extendServer)) {
+            $handler = $extendServer;
+        } else {
+            throw new \InvalidArgumentException('The parameter type only allow [string|object]');
+        }
+
+        if ( !($handler instanceof IExtendServer) ) {
+            throw new \RuntimeException('The main server handler class must instanceof ' . IExtendServer::class );
+        }
+
+        $handler->setMgr($this);
+
+        if ( $opts = $this->config->get('main_server.extend_handler_options') ) {
+            $handler->setOptions($opts, true);
+        }
+
+        $this->extendServer = $handler;
+    }
+
+    /**
+     * @return IExtendServer
+     *
+     * eg:
+     *
+     * ```
+     * \inhere\server\handlers\HttpServerHandler
+     * \inhere\server\handlers\TcpServerHandler
+     * ```
+     */
+    public function getExtendServer()
+    {
+        return $this->extendServer;
     }
 
 
@@ -467,10 +500,12 @@ class SuiteServer extends AServerManager
                 'mode' => 'process',
                 'type' => 'tcp', // http https tcp udp ws wss
 
-                // use outside's event handler
-                'event_handler' => '', // e.g '\inhere\server\handlers\HttpServerHandler'
-                'event_list'   => [], // e.g [ 'onRequest', ]
-                'event_handler_options' => []
+                // append register swoole events
+                'extend_events'   => [], // e.g [ 'onRequest', ]
+
+                // use outside's extend event handler
+                'extend_handler' => '', // e.g '\inhere\server\extend\HttpServerHandler'
+                'extend_handler_options' => []
             ],
             'attach_servers' => [
                // 'tcp1' => [

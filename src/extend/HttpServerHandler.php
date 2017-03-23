@@ -6,8 +6,9 @@
  * Time: 16:04
  */
 
-namespace inhere\server\handlers;
+namespace inhere\server\extend;
 
+use inhere\server\AExtendServerHandler;
 use Swoole\Server as SwServer;
 use Swoole\Http\Response as SwResponse;
 use Swoole\Http\Request as SwRequest;
@@ -29,6 +30,9 @@ http config:
     // SWOOLE_PROCESS 业务代码在Worker进程中执行 SWOOLE_BASE 业务代码在Reactor进程中直接执行
     'mode' => 'process', // 'process' 'base'
 
+    'event_handler' => \inhere\server\handlers\HttpServerHandler::class,
+    'event_list' => [ '' ]
+
     // static asset handle
     'enable_static' => true,
     'static_setting' => [
@@ -46,17 +50,14 @@ http config:
  * Class HttpServerHandler
  * @package inhere\server\handlers
  *
- *
- * ```
- *
  */
-class HttpServerHandler extends AbstractServerHandler
+class HttpServerHandler extends AExtendServerHandler
 {
     /**
-     * handle request (for http server)
+     * handle dynamic request (for http server)
      * @var \Closure
      */
-    public $requestHandler;
+    protected $dynamicRequestHandler;
 
     /**
      * @var SwResponse
@@ -108,16 +109,18 @@ class HttpServerHandler extends AbstractServerHandler
      * @param  SwServer $server
      * @param  int      $workerId
      */
-    public function onWorkerStart(SwServer $server, $workerId)
+//    public function onWorkerStart(SwServer $server, $workerId)
+//    {
+//        $this->mgr->onWorkerStart($server, $workerId);
+//    }
+
+    /**
+     * set a handler to handle the Dynamic Request 处理动态资源请求
+     * @param \Closure|callable $handler
+     */
+    public function handleDynamicRequest(callable $handler)
     {
-        $this->mgr->onWorkerStart($server, $workerId);
-
-        // create application
-        // if ( !$server->taskworker &&  ($callback = $this->createApplication()) ) {
-        //     $this->mgr->app = $callback($this->mgr);
-
-        //     $this->addLog("The app instance has been created, on the worker {$workerId}.");
-        // }
+        $this->dynamicRequestHandler = $handler;
     }
 
     protected function beforeRequest(SwRequest $request, SwResponse $response)
@@ -144,6 +147,8 @@ class HttpServerHandler extends AbstractServerHandler
         session_start();
 
         $this->addLog("session name: {$name}, session id: {$sid}");
+
+        return $this;
     }
 
     /**
@@ -161,13 +166,14 @@ class HttpServerHandler extends AbstractServerHandler
         $method = $request->server['request_method'];
         $enableStatic = $this->getConfig('main_server.enable_static', false);
 
-        if ( $enableStatic && $this->handleStaticAssets($request, $response, $uri) ) {
+        if ( $enableStatic && $this->handleStaticAccess($request, $response, $uri) ) {
             $this->addLog("Access asset: $uri");
             return true;
         }
 
-        $this->beforeRequest($request, $response);
-        $this->prepareRequest($request, $response);
+        $this
+            ->prepareRequest($request, $response)
+            ->beforeRequest($request, $response);
 
         $this->addLog("$method $uri", [
             'GET' => $request->get,
@@ -180,10 +186,14 @@ class HttpServerHandler extends AbstractServerHandler
         }
 
         $this->response = $response;
-        // $this->collectionRequestData($request);
 
         try {
-            $bodyContent = $this->handleDynamicRequest($request, $response);
+            if ( !$cb = $this->dynamicRequestHandler ) {
+                $this->addLog("Please set the property 'dynamicRequestHandler' to handle dynamic request(if you need.).", [], 'notice');
+                $bodyContent = 'No content to display';
+            } else {
+                $bodyContent = $cb($request, $response);
+            }
 
             // open gzip
             $response->gzip(1);
@@ -200,8 +210,9 @@ class HttpServerHandler extends AbstractServerHandler
 
     /**
      * 将原始请求信息转换到PHP超全局变量中
+     * @param SwRequest $request
      */
-    protected function loadGlobalData($request)
+    protected function loadGlobalData(SwRequest $request)
     {
         $serverData = array_change_key_case($request->server, CASE_UPPER);
 
@@ -221,45 +232,25 @@ class HttpServerHandler extends AbstractServerHandler
         $_REQUEST = array_merge($request->get ?: [], $request->post ?: [], $request->cookie ?: []);
     }
 
-    /**
-     * create and register our application
-     * @return callable|null
-     */
-    protected function createApplication()
+    protected function resetGlobal()
     {
-        /*
-        return function($mgr) {
+        $_REQUEST = $_SESSION = $_COOKIE = $_FILES = $_POST = $_SERVER = $_GET = [];
+    }
 
-        };
-        */
-
-        return null;
+    protected function isWebSocket()
+    {
+        return isset($_SERVER['Upgrade']) && strtolower($_SERVER['Upgrade']) === 'websocket';
     }
 
     /**
-     * handle the Dynamic Request
-     * @param SwRequest $request
-     * @param SwResponse $response
-     * @return string
-     */
-    protected function handleDynamicRequest(SwRequest $request, SwResponse $response)
-    {
-        $this->addLog("Please implements the method 'handleDynamicRequest' on the subclass.");
-
-        // throw new \LogicException("Please setting the 'requestHandler' property.");
-
-        return 'No content to display';
-    }
-
-    /**
-     * 输出静态文件
+     * handle Static Access 处理静态资源请求
      *
      * @param SwRequest $request
      * @param SwResponse $response
      * @param string $uri
      * @return bool
      */
-    protected function handleStaticAssets(SwRequest $request, SwResponse $response, $uri = '')
+    protected function handleStaticAccess(SwRequest $request, SwResponse $response, $uri = '')
     {
         $uri = $uri ?:$request->server['request_uri'];
 
