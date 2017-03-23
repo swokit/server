@@ -693,7 +693,7 @@ abstract class AServerManager implements IServerManager
     {
         if ( !$this->isSupportedEvents($event) ) {
             $supported = implode(',', $this->supportedEvents);
-            $this->cliOut->error("You want add a not supported swoole event: $event. supported: $supported", -2);
+            $this->cliOut->error("You want add a not supported swoole event: $event. supported: \n $supported", -2);
         }
 
         $this->swooleEvents[$event] = $cbName;

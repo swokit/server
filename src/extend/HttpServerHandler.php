@@ -60,6 +60,16 @@ class HttpServerHandler extends AExtendServerHandler
     protected $dynamicRequestHandler;
 
     /**
+     * @var array
+     */
+    public $requestHeaders = [];
+
+    /**
+     * @var string
+     */
+    public $requestId;
+
+    /**
      * @var SwResponse
      */
     public $response;
@@ -89,12 +99,15 @@ class HttpServerHandler extends AExtendServerHandler
     ];
 
     protected $options = [
+        // @link http://php.net/manual/zh/session.configuration.php
         'session' => [
-            'enable' => true,
-            'name' => 'app_session',
+            'save_path' => '', // app_session
+            'name' => '', // app_session
             // 设置 cookie 的有效时间为 30 minute
             'cookie_lifetime' => 1800,
             // 'read_and_close'  => true,
+
+            'cache_expire' => 1800,
         ],
         'request' => [
             'filterFavicon' => true,
@@ -129,24 +142,42 @@ class HttpServerHandler extends AExtendServerHandler
     protected function afterRequest(SwRequest $request, SwResponse $response)
     {}
 
+    /**
+     * @param SwRequest $request
+     * @param SwResponse $response
+     * @return $this
+     */
     protected function prepareRequest(SwRequest $request, SwResponse $response)
     {
+        $this->requestHeaders = $request->header ?: [];
+
+        // gen request id
+        $this->requestId = base_convert( str_replace('.', '', microtime(1)), 10, 16);
+
         $this->loadGlobalData($request);
 
+        // session
         $setting = $this->options['session'];
-        $name = $setting['name'];
+        $setting['save_path'] = $this->getConfig('root_path') . '/temp/sessions';
+        $name = $setting['name'] = $setting['name'] ?: session_name();
+
+        if ( ($path = $setting['save_path']) && !is_dir($path) ) {
+            mkdir($path, 0755, true);
+        }
+
+        $this->getCliOut()->aList('Options:',$this->options);
+
+        // start session
+        session_start($setting);
 
         // if not exists, set it.
         if ( !$sid = $request->cookie[$name] ) {
             $sid = session_id();
-            session_name($name);
-            $response->cookie($name, $sid);
+
+            $response->cookie($name, $sid, time() + $setting['cookie_lifetime']);
         }
 
-        // start session
-        session_start();
-
-        $this->addLog("session name: {$name}, session id: {$sid}");
+        $this->addLog("session name: {$name}, session id(cookie): {$sid}, session id: " . session_id());
 
         return $this;
     }
@@ -163,7 +194,6 @@ class HttpServerHandler extends AExtendServerHandler
         register_shutdown_function(array($this, 'handleFatal'));
 
         $uri = $request->server['request_uri'];
-        $method = $request->server['request_method'];
         $enableStatic = $this->getConfig('main_server.enable_static', false);
 
         if ( $enableStatic && $this->handleStaticAccess($request, $response, $uri) ) {
@@ -171,6 +201,7 @@ class HttpServerHandler extends AExtendServerHandler
             return true;
         }
 
+        $method = $request->server['request_method'];
         $this
             ->prepareRequest($request, $response)
             ->beforeRequest($request, $response);
@@ -200,12 +231,20 @@ class HttpServerHandler extends AExtendServerHandler
 
             $this->afterRequest($request, $response);
 
-            $response->end($bodyContent);
+            $this->respond($bodyContent);
         } catch (\Exception $e) {
             var_dump($e);
         }
 
         return true;
+    }
+
+    /**
+     * @param string $content
+     */
+    public function respond($content = '')
+    {
+        $this->response->end($content);
     }
 
     /**
@@ -219,17 +258,24 @@ class HttpServerHandler extends AExtendServerHandler
         /**
          * 将HTTP头信息赋值给$_SERVER超全局变量
          */
-        foreach ($request->header as $key => $value) {
+        foreach ($this->requestHeaders as $key => $value) {
             $_key = 'HTTP_' . strtoupper(str_replace('-', '_', $key));
             $serverData[$_key] = $value;
         }
 
-        $_GET = $request->get;
-        $_POST = $request->post;
-        $_FILES = $request->files;
-        $_COOKIE = $request->cookie;
+        $_GET = $request->get ?: [];
+        $_POST = $request->post ?: [];
+        $_FILES = $request->files ?: [];
+        $_COOKIE = $request->cookie ?: [];
         $_SERVER = $serverData;
         $_REQUEST = array_merge($request->get ?: [], $request->post ?: [], $request->cookie ?: []);
+
+        $this->getCliOut()->multiList([
+            'request GET' => $_GET,
+            'request POST' => $_POST,
+            'request COOKIE' => $_COOKIE,
+            'request Headers' => $this->requestHeaders,
+        ]);
     }
 
     protected function resetGlobal()
@@ -379,8 +425,27 @@ class HttpServerHandler extends AExtendServerHandler
         if ($this->response) {
             $this->response->status(500);
             $this->response->end($log);
-            $this->response = null;
         }
+    }
+
+    /**
+     * output debug message
+     * @see AServerManager::addLog()
+     * @param  string $msg
+     * @param  array $data
+     * @param string $type
+     */
+    public function addLog($msg, $data = [], $type = 'debug')
+    {
+        $this->mgr->addLog("[rid:{$this->requestId}] " . $msg, $data, $type);
+    }
+
+    /**
+     * @return string
+     */
+    public function getRequestId()
+    {
+        return $this->requestId;
     }
 
 }

@@ -37,7 +37,9 @@ abstract class AExtendServerHandler implements IExtendServer
      */
     public function __construct($options = [])
     {
-        $this->setOptions($options);
+        if ($options) {
+            $this->setOptions($options);
+        }
     }
 
     /**

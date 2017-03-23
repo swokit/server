@@ -210,7 +210,7 @@ class SuiteServer extends AServerManager
             'showBorder' => 0,
             'tHead' => ['event name', 'event handler']
         ];
-        $this->cliOut->table($eventInfo, 'Registered swoole events to the main server:', $opts);
+        $this->cliOut->table($eventInfo, 'Registered swoole events to the main server', $opts);
     }
 
 //////////////////////////////////////////////////////////////////////
