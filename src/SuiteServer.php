@@ -273,7 +273,7 @@ class SuiteServer extends AServerManager
 
         $handler->setMgr($this);
 
-        if ( $opts = $this->config->get('main_server.extend_handler_options') ) {
+        if ( $opts = $this->config->get('options') ) {
             $handler->setOptions($opts, true);
         }
 
@@ -458,7 +458,7 @@ class SuiteServer extends AServerManager
             'PHP Version' => PHP_VERSION,
             'Swoole Info' => [
                 'version' => SWOOLE_VERSION,
-                'coroutine' => class_exists('\Swoole\Coroutine', false) ? 'yes' : 'no',
+                'coroutine' => class_exists('\Swoole\Coroutine', false),
             ],
             'Swoole Config' => [
                 'dispatch_mode'   => $swOpts['dispatch_mode'],
@@ -491,6 +491,7 @@ class SuiteServer extends AServerManager
     public function getDefaultConfig()
     {
         $config = [
+            // for main server
             'main_server' => [
                 'host' => '0.0.0.0',
                 'port' => '8662',
@@ -505,8 +506,8 @@ class SuiteServer extends AServerManager
 
                 // use outside's extend event handler
                 'extend_handler' => '', // e.g '\inhere\server\extend\HttpServerHandler'
-                'extend_handler_options' => []
             ],
+            // for attach servers
             'attach_servers' => [
                // 'tcp1' => [
                //     'host' => '0.0.0.0',
@@ -522,6 +523,12 @@ class SuiteServer extends AServerManager
                //     'host' => '0.0.0.0',
                //     'port' => '9660',
                // ]
+            ],
+
+            // for current main server/ outside extend server.
+            // @see \inhere\server\extend\HttpServerHandler::options
+            'options' => [
+
             ],
         ];
 

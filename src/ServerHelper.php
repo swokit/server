@@ -19,6 +19,25 @@ use Swoole\Websocket\Server as SwWSServer;
 class ServerHelper
 {
     /**
+     * 获取资源消耗
+     * @param int $startTime
+     * @param int $startMem
+     * @return array
+     */
+    public static function runtime($startTime, $startMem)
+    {
+        // 显示运行时间
+        $return['time'] = number_format((microtime(true) - $startTime), 4) . 's';
+
+        $startMem =  array_sum(explode(' ',$startMem));
+        $endMem   =  array_sum(explode(' ',memory_get_usage()));
+
+        $return['memory'] = number_format(($endMem - $startMem)/1024) . 'kb';
+
+        return $return;
+    }
+
+    /**
      *
      */
     public static function checkRuntimeEnv()
@@ -68,6 +87,19 @@ class ServerHelper
 //////////////////////////////////////////////////////////////////////
 /// some help method(from workman)
 //////////////////////////////////////////////////////////////////////
+
+    /**
+     * 杀死所有进程
+     * @param $name
+     * @param int $sigNo
+     * @return string
+     */
+    public static function killProcessByName($name, $sigNo = 9)
+    {
+        $cmd = 'ps -eaf |grep "' . $name . '" | grep -v "grep"| awk "{print $2}"|xargs kill -' . $sigNo;
+
+        return exec($cmd);
+    }
 
     /**
      * Get unix user of current process.

@@ -22,6 +22,29 @@ use Swoole\Http\Request as SwRequest;
 class WSServerHandler extends HttpServerHandler
 {
     /**
+     * frame list
+     * @var array
+     */
+    public $frames = [];
+
+    /**
+     * @var array
+     */
+    public $connections = [];
+
+    public function __construct(array $options = [])
+    {
+        parent::__construct($options);
+
+        $this->options['response'] = array_merge([
+            'keep_alive' => 1,
+            'heart_time' => 1,
+            'max_connect' => 10000,
+            'max_frame_size' => 2097152,
+        ], $this->options['response']);
+    }
+
+    /**
      * 处理http请求(如果需要的话)
      * @inheritdoc
      */
@@ -101,6 +124,18 @@ class WSServerHandler extends HttpServerHandler
         // is socket request
         if ( $fdInfo['websocket_status'] > 0 ) {
             $this->addLog("Client-{$fd} is closed", $fdInfo);
+        }
+    }
+
+    /**
+     * send message to all client user
+     * @param SwWSServer $server
+     * @param array $data
+     */
+    public function broadcast(SwWSServer $server, $data)
+    {
+        foreach($server->connections as $fd) {
+            $server->push($fd, json_encode((array)$data));
         }
     }
 }

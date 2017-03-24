@@ -32,9 +32,9 @@ http config:
 
     'event_handler' => \inhere\server\handlers\HttpServerHandler::class,
     'event_list' => [ '' ]
-
+],
+'options' => [
     // static asset handle
-    'enable_static' => true,
     'static_setting' => [
         // 'url_match' => 'assets dir',
         '/assets'  => 'public/assets',
@@ -42,7 +42,6 @@ http config:
     ],
 ]
 ```
-
 */
 
 
@@ -54,25 +53,25 @@ http config:
 class HttpServerHandler extends AExtendServerHandler
 {
     /**
-     * handle dynamic request (for http server)
-     * @var \Closure
-     */
-    protected $dynamicRequestHandler;
-
-    /**
-     * @var array
-     */
-    public $requestHeaders = [];
-
-    /**
      * @var string
      */
     public $requestId;
 
     /**
+     * @var SwRequest
+     */
+    public $request;
+
+    /**
      * @var SwResponse
      */
     public $response;
+
+    /**
+     * handle dynamic request (for http server)
+     * @var \Closure
+     */
+    protected $dynamicRequestHandler;
 
     /**
      * 静态文件类型
@@ -98,7 +97,12 @@ class HttpServerHandler extends AExtendServerHandler
         'html'  => 'text/html',
     ];
 
+    /**
+     * @var array
+     */
     protected $options = [
+        'start_session' => true,
+
         // @link http://php.net/manual/zh/session.configuration.php
         'session' => [
             'save_path' => '', // app_session
@@ -108,6 +112,13 @@ class HttpServerHandler extends AExtendServerHandler
             // 'read_and_close'  => true,
 
             'cache_expire' => 1800,
+        ],
+
+        // static asset handle
+        'assets' => [
+            // 'url_match' => 'assets dir',
+            '/assets'  => 'public/assets',
+            '/uploads' => 'public/uploads'
         ],
         'request' => [
             'filterFavicon' => true,
@@ -136,26 +147,28 @@ class HttpServerHandler extends AExtendServerHandler
         $this->dynamicRequestHandler = $handler;
     }
 
-    protected function beforeRequest(SwRequest $request, SwResponse $response)
-    {}
-
-    protected function afterRequest(SwRequest $request, SwResponse $response)
-    {}
-
     /**
      * @param SwRequest $request
      * @param SwResponse $response
-     * @return $this
      */
-    protected function prepareRequest(SwRequest $request, SwResponse $response)
+    protected function beforeRequest(SwRequest $request, SwResponse $response)
     {
-        $this->requestHeaders = $request->header ?: [];
-
-        // gen request id
-        $this->requestId = base_convert( str_replace('.', '', microtime(1)), 10, 16);
+        $this->request = $request;
+        $this->response = $response;
+        $this->requestId = base_convert( str_replace('.', '', microtime(1)) . rand(100, 999), 10, 16);
 
         $this->loadGlobalData($request);
 
+        // start session
+        if ($this->getOption('start_session', false)) {
+            $this->startSession();
+        }
+    }
+
+    /**
+     */
+    protected function startSession()
+    {
         // session
         $setting = $this->options['session'];
         $setting['save_path'] = $this->getConfig('root_path') . '/temp/sessions';
@@ -171,15 +184,13 @@ class HttpServerHandler extends AExtendServerHandler
         session_start($setting);
 
         // if not exists, set it.
-        if ( !$sid = $request->cookie[$name] ) {
-            $sid = session_id();
+//        if ( !$sid = $this->request->cookie[$name] ) {
+//            $sid = session_id();
+//
+//            $this->response->cookie($name, $sid, time() + $setting['cookie_lifetime']);
+//        }
 
-            $response->cookie($name, $sid, time() + $setting['cookie_lifetime']);
-        }
-
-        $this->addLog("session name: {$name}, session id(cookie): {$sid}, session id: " . session_id());
-
-        return $this;
+        $this->addLog("session name: {$name}, session id(cookie): {$_COOKIE[$name]}, session id: " . session_id());
     }
 
     /**
@@ -194,46 +205,36 @@ class HttpServerHandler extends AExtendServerHandler
         register_shutdown_function(array($this, 'handleFatal'));
 
         $uri = $request->server['request_uri'];
-        $enableStatic = $this->getConfig('main_server.enable_static', false);
-
-        if ( $enableStatic && $this->handleStaticAccess($request, $response, $uri) ) {
-            $this->addLog("Access asset: $uri");
-            return true;
-        }
-
-        $method = $request->server['request_method'];
-        $this
-            ->prepareRequest($request, $response)
-            ->beforeRequest($request, $response);
-
-        $this->addLog("$method $uri", [
-            'GET' => $request->get,
-            'POST' => $request->post,
-        ]);
 
         // test: `curl 127.0.0.1:9501/ping`
         if ( $uri === '/ping' ) {
             return $response->end('+PONG' . PHP_EOL);
         }
 
-        $this->response = $response;
+        if ( $this->handleStaticAccess($request, $response, $uri) ) {
+            $this->addLog("Access asset: $uri");
+            return true;
+        }
+
+        $this->beforeRequest($request, $response);
+
+        $method = $request->server['request_method'];
+        $this->addLog("$method $uri", [
+            'GET' => $request->get,
+            'POST' => $request->post,
+        ]);
 
         try {
             if ( !$cb = $this->dynamicRequestHandler ) {
-                $this->addLog("Please set the property 'dynamicRequestHandler' to handle dynamic request(if you need.).", [], 'notice');
+                $this->addLog("Please set the property 'dynamicRequestHandler' to handle dynamic request(if you need).", [], 'notice');
                 $bodyContent = 'No content to display';
             } else {
                 $bodyContent = $cb($request, $response);
             }
 
-            // open gzip
-            $response->gzip(1);
-
-            $this->afterRequest($request, $response);
-
             $this->respond($bodyContent);
         } catch (\Exception $e) {
-            var_dump($e);
+            $this->handleException($e);
         }
 
         return true;
@@ -241,10 +242,36 @@ class HttpServerHandler extends AExtendServerHandler
 
     /**
      * @param string $content
+     * @return mixed
      */
     public function respond($content = '')
     {
-        $this->response->end($content);
+        $this->beforeResponse($content);
+
+        $this->resetGlobal();
+        $opts = $this->options['response'];
+
+        // open gzip
+        if ( $content && isset($opts['gzip']) && $opts['gzip'] ) {
+            $this->response->gzip(1);
+        }
+
+        return $this->response->end($content);
+    }
+
+    protected function beforeResponse($content)
+    {
+        // commit session data
+        if ( $this->getOption('start_session', false) ) {
+            session_commit();
+        }
+    }
+
+    public function redirect($url, $mode = 302)
+    {
+        $this->response->status($mode);
+        $this->response->header('Location', $url);
+        $this->response->end();
     }
 
     /**
@@ -258,7 +285,7 @@ class HttpServerHandler extends AExtendServerHandler
         /**
          * 将HTTP头信息赋值给$_SERVER超全局变量
          */
-        foreach ($this->requestHeaders as $key => $value) {
+        foreach ((array)$request->header as $key => $value) {
             $_key = 'HTTP_' . strtoupper(str_replace('-', '_', $key));
             $serverData[$_key] = $value;
         }
@@ -270,22 +297,34 @@ class HttpServerHandler extends AExtendServerHandler
         $_SERVER = $serverData;
         $_REQUEST = array_merge($request->get ?: [], $request->post ?: [], $request->cookie ?: []);
 
+        $this->getCliOut()->title("[RID:{$this->requestId}]");
         $this->getCliOut()->multiList([
             'request GET' => $_GET,
             'request POST' => $_POST,
             'request COOKIE' => $_COOKIE,
-            'request Headers' => $this->requestHeaders,
+            'request Headers' => $request->header ?: [],
         ]);
     }
 
+    /**
+     * reset Global
+     */
     protected function resetGlobal()
     {
         $_REQUEST = $_SESSION = $_COOKIE = $_FILES = $_POST = $_SERVER = $_GET = [];
     }
 
+    /**
+     * @return bool
+     */
     protected function isWebSocket()
     {
-        return isset($_SERVER['Upgrade']) && strtolower($_SERVER['Upgrade']) === 'websocket';
+        return isset($this->request->header['upgrade']) && strtolower($this->request->header['upgrade']) === 'websocket';
+    }
+
+    protected function handleException($e)
+    {
+        var_dump($e);
     }
 
     /**
@@ -296,7 +335,7 @@ class HttpServerHandler extends AExtendServerHandler
      * @param string $uri
      * @return bool
      */
-    protected function handleStaticAccess(SwRequest $request, SwResponse $response, $uri = '')
+    protected function handleStaticAccess(SwRequest $request, SwResponse $response, $uri)
     {
         $uri = $uri ?:$request->server['request_uri'];
 
@@ -308,9 +347,7 @@ class HttpServerHandler extends AExtendServerHandler
             return $response->end();
         }
 
-        $setting = $this->getConfig('main_server.static_setting');
-
-        // $this->addLog("begin check '.' point exists in the asset $uri");
+        $setting = $this->getOption('assets');
 
         # 没有任何后缀 || 没有资源处理配置 返回交给php继续处理
         if (false === strrpos($uri, '.') || !$setting ) {
@@ -326,8 +363,6 @@ class HttpServerHandler extends AExtendServerHandler
         if ( 1 !== preg_match("/.($extReg)/i", $uri, $matches) ) {
             return false;
         }
-
-        // $this->addLog("begin match rule for the asset $uri", $setting);
 
         // asset ext name. e.g $matches = [ '.css', 'css' ];
         $ext = $matches[1];
@@ -376,7 +411,6 @@ class HttpServerHandler extends AExtendServerHandler
 
         return true;
     }
-
 
     /**
      * Fatal Error的捕获
