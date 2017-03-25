@@ -101,21 +101,26 @@ class HttpServerHandler extends AExtendServerHandler
      * @var array
      */
     protected $options = [
-        'start_session' => true,
+        'start_session' => false,
 
         // @link http://php.net/manual/zh/session.configuration.php
         'session' => [
             'save_path' => '', // app_session
-            'name' => '', // app_session
+            'name' => 'php_session', // app_session
+
             // 设置 cookie 的有效时间为 30 minute
             'cookie_lifetime' => 1800,
-            // 'read_and_close'  => true,
+            'cookie_domain' => '',
+            'cookie_path' => '/',
+            'cookie_secure' => false,
+            'cookie_httponly' => false,
 
             'cache_expire' => 1800,
         ],
 
         // static asset handle
-        'assets' => [
+        'enable_static' => true,
+        'assets_dir' => [
             // 'url_match' => 'assets dir',
             '/assets'  => 'public/assets',
             '/uploads' => 'public/uploads'
@@ -157,6 +162,8 @@ class HttpServerHandler extends AExtendServerHandler
         $this->response = $response;
         $this->requestId = base_convert( str_replace('.', '', microtime(1)) . rand(100, 999), 10, 16);
 
+        // $this->getCliOut()->aList('Extend Options:',$this->options);
+
         $this->loadGlobalData($request);
 
         // start session
@@ -170,25 +177,29 @@ class HttpServerHandler extends AExtendServerHandler
     protected function startSession()
     {
         // session
-        $setting = $this->options['session'];
-        $setting['save_path'] = $this->getConfig('root_path') . '/temp/sessions';
-        $name = $setting['name'] = $setting['name'] ?: session_name();
+        $opts = $this->options['session'];
+        $name = $opts['name'] = $opts['name'] ?: session_name();
 
-        if ( ($path = $setting['save_path']) && !is_dir($path) ) {
+        if ( ($path = $opts['save_path']) && !is_dir($path) ) {
             mkdir($path, 0755, true);
         }
 
-        $this->getCliOut()->aList('Options:',$this->options);
-
         // start session
-        session_start($setting);
+        session_name($name);
+        //register_shutdown_function('session_write_close');
+        session_start($opts);
+
+        $this->getCliOut()->aList('session cookie params', session_get_cookie_params());
 
         // if not exists, set it.
-//        if ( !$sid = $this->request->cookie[$name] ) {
-//            $sid = session_id();
-//
-//            $this->response->cookie($name, $sid, time() + $setting['cookie_lifetime']);
-//        }
+        if ( !$sid = $this->request->cookie[$name] ) {
+            $sid = session_id();
+
+            $this->response->cookie(
+                $name, $sid, time() + $opts['cookie_lifetime'],
+                $opts['cookie_path'], $opts['cookie_domain'], $opts['cookie_secure'], $opts['cookie_httponly']
+            );
+        }
 
         $this->addLog("session name: {$name}, session id(cookie): {$_COOKIE[$name]}, session id: " . session_id());
     }
@@ -248,7 +259,6 @@ class HttpServerHandler extends AExtendServerHandler
     {
         $this->beforeResponse($content);
 
-        $this->resetGlobal();
         $opts = $this->options['response'];
 
         // open gzip
@@ -259,19 +269,32 @@ class HttpServerHandler extends AExtendServerHandler
         return $this->response->end($content);
     }
 
+    /**
+     * @param $content
+     */
     protected function beforeResponse($content)
     {
-        // commit session data
+        // commit session data.
+        // if started session by `session_start()`, call `session_write_close()` is required.
         if ( $this->getOption('start_session', false) ) {
-            session_commit();
+            session_write_close();
         }
+
+        // reset supper global var.
+        $this->resetGlobal();
     }
 
+    /**
+     * @param $url
+     * @param int $mode
+     * @return mixed
+     */
     public function redirect($url, $mode = 302)
     {
         $this->response->status($mode);
         $this->response->header('Location', $url);
-        $this->response->end();
+
+        return $this->respond();
     }
 
     /**
@@ -302,7 +325,8 @@ class HttpServerHandler extends AExtendServerHandler
             'request GET' => $_GET,
             'request POST' => $_POST,
             'request COOKIE' => $_COOKIE,
-            'request Headers' => $request->header ?: [],
+            // 'request Headers' => $request->header ?: [],
+            // 'server Data' => $request->server ?: [],
         ]);
     }
 

@@ -46,6 +46,7 @@ class WSServerHandler extends HttpServerHandler
 
     /**
      * 处理http请求(如果需要的话)
+     * @NOTICE 需要在注册此handler时，添加 'onRequest' 事件
      * @inheritdoc
      */
     public function onRequest(SwRequest $request, SwResponse $response)

@@ -273,7 +273,7 @@ class SuiteServer extends AServerManager
 
         $handler->setMgr($this);
 
-        if ( $opts = $this->config->get('options') ) {
+        if ( $opts = $this->config->get('extend_options') ) {
             $handler->setOptions($opts, true);
         }
 
@@ -525,9 +525,9 @@ class SuiteServer extends AServerManager
                // ]
             ],
 
-            // for current main server/ outside extend server.
-            // @see \inhere\server\extend\HttpServerHandler::options
-            'options' => [
+            // for current main server/ outside extend server options.
+            // eg: @see \inhere\server\extend\HttpServerHandler::options
+            'extend_options' => [
 
             ],
         ];
