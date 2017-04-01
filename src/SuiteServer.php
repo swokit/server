@@ -8,13 +8,13 @@
 
 namespace inhere\server;
 
-use inhere\librarys\collections\Config;
+use inhere\library\collections\Config;
 use inhere\server\interfaces\ITcpListenHandler;
 use inhere\server\interfaces\IUdpListenHandler;
 use inhere\server\interfaces\IExtendServer;
 
 use inhere\exceptions\InvalidArgumentException;
-use inhere\librarys\env\Server as ServerEnv;
+use inhere\library\env\Server as ServerEnv;
 use inhere\console\utils\Interact;
 
 use Swoole\Server as SwServer;

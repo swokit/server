@@ -25,7 +25,7 @@ interface IExtendServer
     /**
      * @param null $key
      * @param null $default
-     * @return \inhere\librarys\collections\Config|mixed
+     * @return \inhere\library\collections\Config|mixed
      */
     public function getConfig($key = null, $default = null);
 

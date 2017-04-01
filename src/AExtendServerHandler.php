@@ -10,7 +10,7 @@ namespace inhere\server;
 
 use inhere\server\interfaces\IExtendServer;
 use Swoole\Server as SwServer;
-use inhere\librarys\traits\TraitUseOption;
+use inhere\library\traits\TraitUseOption;
 
 /**
  * Class AExtendServerHandler
@@ -53,7 +53,7 @@ abstract class AExtendServerHandler implements IExtendServer
     /**
      * @param null $key
      * @param null $default
-     * @return \inhere\librarys\collections\Config|mixed
+     * @return \inhere\library\collections\Config|mixed
      */
     public function getConfig($key = null, $default = null)
     {

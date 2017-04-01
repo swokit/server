@@ -17,8 +17,8 @@ use inhere\server\interfaces\IServerManager;
 
 use inhere\console\io\Input;
 use inhere\console\io\Output;
-use inhere\librarys\collections\Config;
-use inhere\librarys\utils\SFLogger;
+use inhere\library\collections\Config;
+use inhere\library\utils\SFLogger;
 
 /**
  * Class AServerManager
@@ -29,13 +29,13 @@ use inhere\librarys\utils\SFLogger;
  * ```
  * create manager object ( $mgr = new SuiteServer )
  *       |
+ *   init()
+ *       |
  * some custom logic, if need. (eg: set a main server handler, set app service, register attach listen port service)
  *       |
  * SuiteServer::run()
  *       |
  *   bootstrap()
- *       |
- *   init()
  *      |
  *   handleCommand() ------> start, stop, restart, help
  *      |
@@ -69,12 +69,6 @@ abstract class AServerManager implements IServerManager
      * @var Config
      */
     public $config;
-
-    /**
-     * The application instance
-     * @var object
-     */
-    public $app;
 
     /**
      * server manager

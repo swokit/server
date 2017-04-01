@@ -8,7 +8,7 @@
 
 namespace inhere\server\old;
 
-use inhere\librarys\collections\Config;
+use inhere\library\collections\Config;
 use Swoole\Server as SwServer;
 use Swoole\Http\Server as SwHttpServer;
 use Swoole\Http\Response as SwResponse;

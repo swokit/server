@@ -9,7 +9,7 @@
 namespace inhere\server\old;
 
 use inhere\console\utils\Interact;
-use inhere\librarys\env\Server as ServerEnv;
+use inhere\library\env\Server as ServerEnv;
 
 use inhere\server\AServerManager;
 use Swoole\Server as SwServer;
