@@ -931,7 +931,7 @@ abstract class AServerManager implements IServerManager
         $mgr = $this;
         $reload = $this->config->get('auto_reload');
 
-        if ( !$reload ) {
+        if ( !$reload || !function_exists('inotify_init')) {
             return false;
         }
 

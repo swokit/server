@@ -31,5 +31,5 @@ interface IExtendServer
 
     public function getOptions();
 
-    public function setOptions($options, $merge = false);
+    public function setOptions(array $options, $merge = false);
 }
