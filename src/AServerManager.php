@@ -8,6 +8,7 @@
 
 namespace inhere\server;
 
+use inhere\library\helpers\ProcessHelper;
 use Swoole\Http\Server as SwHttpServer;
 use Swoole\Websocket\Server as SwWSServer;
 use Swoole\Process as SwProcess;
@@ -374,7 +375,7 @@ abstract class AServerManager implements IServerManager
 
         $this->checkInputCommand($command);
 
-        $masterPid = ServerHelper::getPidByPidFile($this->pidFile);
+        $masterPid = ProcessHelper::getPidByPidFile($this->pidFile);
         $masterIsStarted = ($masterPid > 0) && @posix_kill($masterPid, 0);
 
         // start: do Start Server
@@ -514,7 +515,7 @@ abstract class AServerManager implements IServerManager
     protected function registerMainServerEvents()
     {
         $events = $this->swooleEvents;
-        $this->cliOut->aList('Registered swoole events to the main server:( event -> handler )', $events);
+        $this->cliOut->aList($events, 'Registered swoole events to the main server:( event -> handler )');
 
         foreach ($events as $event => $callback ) {
 
@@ -543,7 +544,7 @@ abstract class AServerManager implements IServerManager
             file_put_contents($this->pidFile, $masterPid);
         }
 
-        ServerHelper::setProcessTitle("swoole: master ({$this->name} IN $projectPath)");
+        ProcessHelper::setProcessTitle("swoole: master ({$this->name} IN $projectPath)");
 
         $this->addLog("The master process success started. (PID:<notice>{$masterPid}</notice>, pid_file: $pidFile)");
     }
@@ -575,7 +576,7 @@ abstract class AServerManager implements IServerManager
     public function onManagerStart(SwServer $server)
     {
         // file_put_contents($pidFile, ',' . $server->manager_pid, FILE_APPEND);
-        ServerHelper::setProcessTitle("swoole: manager ({$this->name})");
+        ProcessHelper::setProcessTitle("swoole: manager ({$this->name})");
 
         $this->addLog("The manager process success started. (PID:{$server->manager_pid})");
     }
@@ -602,7 +603,7 @@ abstract class AServerManager implements IServerManager
 
         $this->addLog("The #<primary>{$workerId}</primary> {$taskMark} process success started. (PID:{$server->worker_pid})");
 
-        ServerHelper::setProcessTitle("swoole: {$taskMark} ({$this->name})");
+        ProcessHelper::setProcessTitle("swoole: {$taskMark} ({$this->name})");
 
         // ServerHelper::setUserAndGroup();
 
@@ -944,7 +945,7 @@ abstract class AServerManager implements IServerManager
         $this->reloadWorker = new SwProcess(function(SwProcess $process) use ($options, $mgr)
         {
 
-            ServerHelper::setProcessTitle("swoole: reloader ({$mgr->name})");
+            ProcessHelper::setProcessTitle("swoole: reloader ({$mgr->name})");
             $kit = new AutoReloader($options['masterPid']);
 
             $onlyReloadTask = isset($options['only_reload_task']) ? (bool)$options['only_reload_task'] : false;
@@ -1001,11 +1002,10 @@ abstract class AServerManager implements IServerManager
             $scriptName = 'php ' . $scriptName;
         }
 
-        $this->cliOut->helpPanel(
-            // Usage
-            "$scriptName {start|reload|restart|stop|status} [-d]",
-            // Commands
-            [
+        $this->cliOut->helpPanel([
+            'description' => 'Swoole server manager tool, Version <comment>' . self::VERSION . '</comment>. Update time ' . self::UPDATE_TIME,
+            'usage' => "$scriptName {start|reload|restart|stop|status} [-d]",
+            'commands' => [
                 'start'   => 'Start the server',
                 'reload'  => 'Reload all workers of the started server',
                 'restart' => 'Stop the server, After start the server.',
@@ -1014,21 +1014,16 @@ abstract class AServerManager implements IServerManager
                 'status'    => 'Show the started server status information',
                 'help'    => 'Display this help message',
             ],
-            // Options
-            [
+            'options' => [
                 '-d'         => 'Run the server on daemonize.',
                 '--task'     => 'Only reload task worker, when reload server',
                 '-h, --help' => 'Display this help message',
             ],
-            // Examples
-            [
+            'examples' => [
                 "<info>$scriptName start -d</info> Start server on daemonize mode.",
                 "<info>$scriptName reload --task</info> Start server on daemonize mode."
             ],
-            // Description
-            'Swoole server manager tool, Version <comment>' . self::VERSION . '</comment>. Update time ' . self::UPDATE_TIME,
-            $showHelpAfterQuit
-        );
+        ],$showHelpAfterQuit);
     }
 
     /**

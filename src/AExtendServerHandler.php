@@ -9,7 +9,6 @@
 namespace inhere\server;
 
 use inhere\server\interfaces\IExtendServer;
-use Swoole\Server as SwServer;
 use inhere\library\traits\TraitUseOption;
 
 /**

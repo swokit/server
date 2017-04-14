@@ -189,7 +189,7 @@ class HttpServerHandler extends AExtendServerHandler
         //register_shutdown_function('session_write_close');
         session_start($opts);
 
-        $this->getCliOut()->aList('session cookie params', session_get_cookie_params());
+        $this->getCliOut()->aList(session_get_cookie_params(), 'session cookie params');
 
         // if not exists, set it.
         if ( !$sid = $this->request->cookie[$name] ) {

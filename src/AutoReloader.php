@@ -29,6 +29,7 @@ $kit
     })
     ->run();
 */
+use inhere\exceptions\NotFoundException;
 
 /**
  * Class AutoReloader
@@ -97,7 +98,6 @@ class AutoReloader
 
     /**
      * @param $serverPid
-     * @throws NotFound
      */
     public function __construct($serverPid)
     {
@@ -154,7 +154,7 @@ class AutoReloader
     public function reload()
     {
         // 调用自定义的回调处理reload
-        if ( $cb = $this->doReload ) {
+        if ( $cb = $this->reloadHandler ) {
             $cb($this->pid);
 
         // 直接向主进程发送 SIGUSR1 信号
@@ -163,7 +163,7 @@ class AutoReloader
 
             // 检查进程
             if ( posix_kill($this->pid, 0) === false ) {
-                throw new NotFound("The process #$this->pid not found.");
+                throw new NotFoundException("The process #$this->pid not found.");
             }
 
             posix_kill($this->pid, SIGUSR1);
@@ -173,7 +173,7 @@ class AutoReloader
         $this->clearWatched();
 
         // 重新监听
-        $this->addWatchs($this->watchedDirs);
+        $this->addWatches($this->watchedDirs);
 
         // 继续进行reload
         $this->reloading = false;
