@@ -32,6 +32,9 @@ class WSServerHandler extends HttpServerHandler
      */
     public $connections = [];
 
+    /**
+     * {@inheritDoc}
+     */
     public function __construct(array $options = [])
     {
         parent::__construct($options);
@@ -51,6 +54,7 @@ class WSServerHandler extends HttpServerHandler
      */
     public function onRequest(SwRequest $request, SwResponse $response)
     {
+        // $response->end('Not found');
         parent::onRequest($request, $response);
     }
 
@@ -63,7 +67,9 @@ class WSServerHandler extends HttpServerHandler
      */
     public function onOpen(SwWSServer $server, SwRequest $request)
     {
-        $this->addLog("Client [fd: {$request->fd}] open connection.");
+        $this->rid = base_convert( str_replace('.', '', microtime(1)), 10, 16) . "0{$request->fd}";
+
+        $this->addLog("onOpen: Client [fd:{$request->fd}] open connection.");
 
         // var_dump($request->fd, $request->get, $request->server);
         $server->push($request->fd, "hello, welcome\n");
@@ -76,7 +82,7 @@ class WSServerHandler extends HttpServerHandler
      */
     public function onMessage(SwWSServer $server, Frame $frame)
     {
-        $this->addLog("Client [fd: {$frame->fd}] Message: {$frame->data}");
+        $this->addLog("onMessage: Client [fd:{$frame->fd}] send message: {$frame->data}");
 
         // send message to all
         // ServerHelper::broadcastMessage($server, $frame->data);
@@ -124,7 +130,7 @@ class WSServerHandler extends HttpServerHandler
 
         // is socket request
         if ( $fdInfo['websocket_status'] > 0 ) {
-            $this->addLog("Client-{$fd} is closed", $fdInfo);
+            $this->addLog("onClose: Client #{$fd} is closed", $fdInfo);
         }
     }
 

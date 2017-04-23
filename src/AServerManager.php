@@ -278,7 +278,7 @@ abstract class AServerManager implements IServerManager
                 'max_request'   => 1000,
                 // 在1.7.15以上版本中，当设置dispatch_mode = 1/3时会自动去掉onConnect/onClose事件回调。
                 // see @link https://wiki.swoole.com/wiki/page/49.html
-                'dispatch_mode' => 1,
+                'dispatch_mode' => 2,
                 // 'log_file' , // '/tmp/swoole.log', // 不设置log_file会打印到屏幕
 
                 // 使用SSL必须在编译swoole时加入--enable-openssl选项 并且配置下面两项
@@ -555,7 +555,7 @@ abstract class AServerManager implements IServerManager
      */
     public function onMasterStop(SwServer $server)
     {
-        $this->addLog("The swoole master process stopped.");
+        $this->addLog("The swoole master process(PID: {$server->master_pid}) stopped.");
 
         $this->doClear();
     }
@@ -587,7 +587,7 @@ abstract class AServerManager implements IServerManager
      */
     public function onManagerStop(SwServer $server)
     {
-        $this->addLog("The swoole manager process stopped.");
+        $this->addLog("The swoole manager process stopped. (PID {$server->manager_pid})");
     }
 
     /**
@@ -612,6 +612,10 @@ abstract class AServerManager implements IServerManager
         // $this->cliOut->write(get_included_files());
     }
 
+    /**
+     * @param SwServer $server
+     * @param $workerId
+     */
     public function onWorkerStop(SwServer $server, $workerId)
     {
         $this->addLog("The swoole #<info>$workerId</info> worker process stopped.");

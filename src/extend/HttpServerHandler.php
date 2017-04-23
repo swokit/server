@@ -53,9 +53,10 @@ http config:
 class HttpServerHandler extends AExtendServerHandler
 {
     /**
+     * the request id
      * @var string
      */
-    public $requestId;
+    public $rid;
 
     /**
      * @var SwRequest
@@ -160,7 +161,6 @@ class HttpServerHandler extends AExtendServerHandler
     {
         $this->request = $request;
         $this->response = $response;
-        $this->requestId = base_convert( str_replace('.', '', microtime(1)) . rand(100, 999), 10, 16);
 
         // $this->getCliOut()->aList('Extend Options:',$this->options);
 
@@ -192,8 +192,8 @@ class HttpServerHandler extends AExtendServerHandler
         $this->getCliOut()->aList(session_get_cookie_params(), 'session cookie params');
 
         // if not exists, set it.
-        if ( !$sid = $this->request->cookie[$name] ) {
-            $sid = session_id();
+        if (!$sid = $_COOKIE[$name] ?? '') {
+            $_COOKIE[$name] = $sid = session_id();
 
             $this->response->cookie(
                 $name, $sid, time() + $opts['cookie_lifetime'],
@@ -215,6 +215,7 @@ class HttpServerHandler extends AExtendServerHandler
         // 捕获异常
         register_shutdown_function(array($this, 'handleFatal'));
 
+        $this->rid = base_convert( str_replace('.', '', microtime(1)), 10, 16) . "0{$request->fd}";
         $uri = $request->server['request_uri'];
 
         // test: `curl 127.0.0.1:9501/ping`
@@ -227,13 +228,10 @@ class HttpServerHandler extends AExtendServerHandler
             return true;
         }
 
-        $this->beforeRequest($request, $response);
-
         $method = $request->server['request_method'];
-        $this->addLog("$method $uri", [
-            'GET' => $request->get,
-            'POST' => $request->post,
-        ]);
+        $this->addLog("$method $uri");
+
+        $this->beforeRequest($request, $response);
 
         try {
             if ( !$cb = $this->dynamicRequestHandler ) {
@@ -244,7 +242,7 @@ class HttpServerHandler extends AExtendServerHandler
             }
 
             $this->respond($bodyContent);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->handleException($e);
         }
 
@@ -258,11 +256,10 @@ class HttpServerHandler extends AExtendServerHandler
     public function respond($content = '')
     {
         $this->beforeResponse($content);
-
         $opts = $this->options['response'];
 
         // open gzip
-        if ( $content && isset($opts['gzip']) && $opts['gzip'] ) {
+        if ($content && isset($opts['gzip']) && $opts['gzip']) {
             $this->response->gzip(1);
         }
 
@@ -313,14 +310,14 @@ class HttpServerHandler extends AExtendServerHandler
             $serverData[$_key] = $value;
         }
 
-        $_GET = $request->get ?: [];
-        $_POST = $request->post ?: [];
-        $_FILES = $request->files ?: [];
-        $_COOKIE = $request->cookie ?: [];
+        $_GET = $request->get ?? [];
+        $_POST = $request->post ?? [];
+        $_FILES = $request->files ?? [];
+        $_COOKIE = $request->cookie ?? [];
         $_SERVER = $serverData;
-        $_REQUEST = array_merge($request->get ?: [], $request->post ?: [], $request->cookie ?: []);
+        $_REQUEST = array_merge($_GET, $_POST, $_COOKIE);
 
-        $this->getCliOut()->title("[RID:{$this->requestId}]");
+        $this->getCliOut()->title("[RID:{$this->rid}]");
         $this->getCliOut()->multiList([
             'request GET' => $_GET,
             'request POST' => $_POST,
@@ -346,7 +343,10 @@ class HttpServerHandler extends AExtendServerHandler
         return isset($this->request->header['upgrade']) && strtolower($this->request->header['upgrade']) === 'websocket';
     }
 
-    protected function handleException($e)
+    /**
+     * @param \Throwable $e (\Exception \Error)
+     */
+    protected function handleException(\Throwable $e)
     {
         var_dump($e);
     }
@@ -495,7 +495,7 @@ class HttpServerHandler extends AExtendServerHandler
      */
     public function addLog($msg, $data = [], $type = 'debug')
     {
-        $this->mgr->addLog("[rid:{$this->requestId}] " . $msg, $data, $type);
+        $this->mgr->addLog("[rid:{$this->rid}] " . $msg, $data, $type);
     }
 
     /**
@@ -503,7 +503,15 @@ class HttpServerHandler extends AExtendServerHandler
      */
     public function getRequestId()
     {
-        return $this->requestId;
+        return $this->rid;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRid()
+    {
+        return $this->rid;
     }
 
 }

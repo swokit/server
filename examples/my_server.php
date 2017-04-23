@@ -57,7 +57,6 @@ $config = [
         'task_worker_num' => 2,
         'daemonize'     => false,
         'max_request'   => 10000,
-        'dispatch_mode' => 1,
         // 'log_file' => PROJECT_PATH . '/temp/logs/slim_server_swoole.log',
     ]
 ];

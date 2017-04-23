@@ -435,14 +435,21 @@ class SuiteServer extends AServerManager
 /// other
 //////////////////////////////////////////////////////////////////////
 
+    /**
+     * {@inheritDoc}
+     */
     public function onConnect(SwServer $server, $fd)
     {
-        $this->addLog("Has a new client [FD:$fd] connection to the main server.");
+        $this->addLog("onConnect: Has a new client [fd:$fd] connection to the main server.");
     }
 
+    /**
+     * @param SwServer $server
+     * @param $fd
+     */
     public function onClose(SwServer $server, $fd)
     {
-        $this->addLog("The client [FD:$fd] connection closed on the main server.");
+        $this->addLog("onConnect: The client [fd:$fd] connection closed on the main server.");
     }
 
     /**
@@ -471,7 +478,8 @@ class SuiteServer extends AServerManager
                 'mode' => $main['mode'],
                 'host' => $main['host'],
                 'port' => $main['port'],
-                'class' => static::class
+                'class' => static::class,
+                'extClass' => $main['extend_handler'] ?? 'NO setting',
             ],
             'Project Config' => [
                 'name' => $this->name,
