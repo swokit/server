@@ -228,9 +228,6 @@ class HttpServerHandler extends AExtendServerHandler
             return true;
         }
 
-        $method = $request->server['request_method'];
-        $this->addLog("$method $uri");
-
         $this->beforeRequest($request, $response);
 
         try {
@@ -317,7 +314,10 @@ class HttpServerHandler extends AExtendServerHandler
         $_SERVER = $serverData;
         $_REQUEST = array_merge($_GET, $_POST, $_COOKIE);
 
-        $this->getCliOut()->title("[RID:{$this->rid}]");
+        $uri = $request->server['request_uri'];
+        $method = $request->server['request_method'];
+
+        $this->getCliOut()->title("[RID:{$this->rid}] $method $uri");
         $this->getCliOut()->multiList([
             'request GET' => $_GET,
             'request POST' => $_POST,
