@@ -1036,6 +1036,10 @@ abstract class AServerManager implements IServerManager
      * @param  array $data
      * @param string $type
      */
+    public function log($msg, $data = [], $type = 'debug')
+    {
+        $this->addLog($msg, $data, $type);
+    }
     public function addLog($msg, $data = [], $type = 'debug')
     {
         // if close debug, don't output debug log.

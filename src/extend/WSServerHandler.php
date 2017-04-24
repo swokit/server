@@ -37,14 +37,15 @@ class WSServerHandler extends HttpServerHandler
      */
     public function __construct(array $options = [])
     {
-        parent::__construct($options);
-
         $this->options['response'] = array_merge([
             'keep_alive' => 1,
             'heart_time' => 1,
             'max_connect' => 10000,
             'max_frame_size' => 2097152,
         ], $this->options['response']);
+
+        parent::__construct($options);
+
     }
 
     /**

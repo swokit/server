@@ -121,10 +121,13 @@ class HttpServerHandler extends AExtendServerHandler
 
         // static asset handle
         'enable_static' => true,
-        'assets_dir' => [
-            // 'url_match' => 'assets dir',
-            '/assets'  => 'public/assets',
-            '/uploads' => 'public/uploads'
+        'assets' => [
+            'ext' => [],
+            'map' => [
+                // 'url_match' => 'assets dir',
+                '/assets'  => 'public/assets',
+                '/uploads' => 'public/uploads'
+            ]
         ],
         'request' => [
             'filterFavicon' => true,
@@ -133,6 +136,11 @@ class HttpServerHandler extends AExtendServerHandler
             'gzip' => true,
         ],
     ];
+
+    public function initCompleted()
+    {
+        $this->getCliOut()->mList($this->options);
+    }
 
     /**
      * onWorkerStart
@@ -161,8 +169,6 @@ class HttpServerHandler extends AExtendServerHandler
     {
         $this->request = $request;
         $this->response = $response;
-
-        // $this->getCliOut()->aList('Extend Options:',$this->options);
 
         $this->loadGlobalData($request);
 
@@ -219,11 +225,11 @@ class HttpServerHandler extends AExtendServerHandler
         $uri = $request->server['request_uri'];
 
         // test: `curl 127.0.0.1:9501/ping`
-        if ( $uri === '/ping' ) {
+        if ($uri === '/ping') {
             return $response->end('+PONG' . PHP_EOL);
         }
 
-        if ( $this->handleStaticAccess($request, $response, $uri) ) {
+        if ($this->getOption('enable_static') && $this->handleStaticAccess($request, $response, $uri)) {
             $this->addLog("Access asset: $uri");
             return true;
         }
@@ -231,7 +237,7 @@ class HttpServerHandler extends AExtendServerHandler
         $this->beforeRequest($request, $response);
 
         try {
-            if ( !$cb = $this->dynamicRequestHandler ) {
+            if (!$cb = $this->dynamicRequestHandler) {
                 $this->addLog("Please set the property 'dynamicRequestHandler' to handle dynamic request(if you need).", [], 'notice');
                 $bodyContent = 'No content to display';
             } else {
@@ -242,6 +248,8 @@ class HttpServerHandler extends AExtendServerHandler
         } catch (\Throwable $e) {
             $this->handleException($e);
         }
+
+        // $this->afterResponse();
 
         return true;
     }
@@ -366,7 +374,7 @@ class HttpServerHandler extends AExtendServerHandler
         // 请求 /favicon.ico 过滤
         if (
             $this->options['request']['filterFavicon'] &&
-            ( $request->server['path_info'] === '/favicon.ico' || $uri === '/favicon.ico')
+            ($request->server['path_info'] === '/favicon.ico' || $uri === '/favicon.ico')
         ) {
             return $response->end();
         }
@@ -374,22 +382,23 @@ class HttpServerHandler extends AExtendServerHandler
         $setting = $this->getOption('assets');
 
         # 没有任何后缀 || 没有资源处理配置 返回交给php继续处理
-        if (false === strrpos($uri, '.') || !$setting ) {
+        if (false === strrpos($uri, '.') || !$setting) {
             return false;
         }
 
         $exts = array_keys(static::$staticAssets);
         $extReg = implode('|', $exts);
 
-        // $this->addLog("begin match ext for the asset $uri, result: " . preg_match("/\.($extReg)/i", $uri, $matches), $exts);
+//         $this->addLog("begin match ext for the asset $uri, result: " . preg_match("/\.($extReg)/i", $uri, $matches), $exts);
 
         // 资源后缀匹配失败 返回交给php继续处理
-        if ( 1 !== preg_match("/.($extReg)/i", $uri, $matches) ) {
+        if (1 !== preg_match("/.($extReg)/i", $uri, $matches)) {
             return false;
         }
 
         // asset ext name. e.g $matches = [ '.css', 'css' ];
         $ext = $matches[1];
+        $map = $setting['map'] ?? [];
 
         # 静态路径 'assets/css/site.css'
         $arr = explode('/', ltrim($uri, '/'), 2);
@@ -397,16 +406,16 @@ class HttpServerHandler extends AExtendServerHandler
         $matched = false;
         $assetDir = '';
 
-        foreach ($setting as $urlMatch => $assetDir) {
+        foreach ($map as $urlMatch => $assetDir) {
             // match success
-            if ( $urlBegin === $urlMatch ) {
+            if ($urlBegin === $urlMatch) {
                 $matched = true;
                 break;
             }
         }
 
         // url匹配失败 返回交给php继续处理
-        if ( !$matched ) {
+        if (!$matched) {
             return false;
         }
 
@@ -417,7 +426,7 @@ class HttpServerHandler extends AExtendServerHandler
         // 必须要有内容类型
         $response->header('Content-Type', static::$staticAssets[$ext]);
 
-        if ( is_file($file) ) {
+        if (is_file($file)) {
             // 设置缓存头信息
             $time = 86400;
             $response->header('Cache-Control', 'max-age='. $time);
@@ -496,6 +505,10 @@ class HttpServerHandler extends AExtendServerHandler
     public function addLog($msg, $data = [], $type = 'debug')
     {
         $this->mgr->addLog("[rid:{$this->rid}] " . $msg, $data, $type);
+    }
+    public function log($msg, $data = [], $type = 'debug')
+    {
+        $this->addLog($msg, $data, $type);
     }
 
     /**

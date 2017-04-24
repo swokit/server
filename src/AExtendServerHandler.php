@@ -34,11 +34,16 @@ abstract class AExtendServerHandler implements IExtendServer
      * AbstractServerHandler constructor.
      * @param array $options
      */
-    public function __construct($options = [])
+    public function __construct(array $options = [])
     {
         if ($options) {
             $this->setOptions($options);
         }
+    }
+
+    public function initCompleted()
+    {
+        // ... ...
     }
 
     /**

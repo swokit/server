@@ -273,9 +273,11 @@ class SuiteServer extends AServerManager
 
         $handler->setMgr($this);
 
-        if ( $opts = $this->config->get('extend_options') ) {
+        if ($opts = $this->config->get('extend_options')) {
             $handler->setOptions($opts, true);
         }
+
+        $handler->initCompleted();
 
         $this->extendServer = $handler;
     }
