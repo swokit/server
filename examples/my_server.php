@@ -35,7 +35,7 @@ $config = [
         'type' => 'ws', // http https tcp udp ws wss
         'port' => 9501,
 
-        'extend_handler' => \inhere\server\extend\WSServerHandler::class,
+        'extend_server' => \inhere\server\extend\WSServerHandler::class,
         'extend_events' => [ 'onRequest' ]
     ],
 

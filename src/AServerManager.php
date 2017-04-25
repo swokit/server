@@ -76,7 +76,6 @@ abstract class AServerManager implements IServerManager
      * @var static
      */
     public static $mgr;
-    private static $started = false;
     private static $_statistics = [];
 
     private $bootstrapped = false;
@@ -220,7 +219,7 @@ abstract class AServerManager implements IServerManager
         // $currentUser = ServerHelper::getCurrentUser();
 
         // Get unix user of the worker process.
-        // if ( !$this->user = $this->config->get('swoole.user') ) {
+        // if (!$this->user = $this->config->get('swoole.user')) {
         //     $this->user = $currentUser;
         // } else if (posix_getuid() !== 0 && $this->user != $currentUser) {
         //     $this->cliOut->block('You must have the root privileges to change uid and gid.', 'WARNING', 'warning');
@@ -240,7 +239,7 @@ abstract class AServerManager implements IServerManager
      */
     public static function run($config = [], $start = true)
     {
-        if ( !self::$mgr ) {
+        if (!self::$mgr) {
             new static($config);
         }
 
@@ -288,14 +287,6 @@ abstract class AServerManager implements IServerManager
         ];
     }
 
-    /**
-     * @return array
-     */
-    public function getSwooleEventHandlers()
-    {
-        return [];
-    }
-
 //////////////////////////////////////////////////////////////////////
 /// runtime logic
 //////////////////////////////////////////////////////////////////////
@@ -328,39 +319,28 @@ abstract class AServerManager implements IServerManager
      */
     public function start()
     {
-        if (self::$started) {
-            throw new \RuntimeException('Server have been started.');
-        }
-
         if (!$this->bootstrapped) {
-            throw new \RuntimeException('Call start before must run bootstrap().');
+            $this->cliOut->error('Call start before must run bootstrap().', -500);
         }
 
         self::$_statistics['start_time'] = microtime(1);
 
         // create swoole server instance
-        if (
-            !($this->server = $this->createMainServer()) ||
-            !($this->server instanceof SwServer)
-        ) {
+        $this->server = $this->createMainServer();
+
+        if (!$this->server || !($this->server instanceof SwServer)){
             throw new \RuntimeException('The server instance must instanceof ' . SwServer::class );
         }
 
-        // register swoole events handler
-        $this->registerMainServerEvents();
-
-        // setting swoole config
-        $this->server->set($this->config['swoole']);
+        // do something for main server
+        $this->afterCreateMainServer();
 
         $this->beforeServerStart();
-
-        // create Reload Worker
-        $this->createHotReloader($this->server);
 
         // 对于Server的配置即 $server->set() 中传入的参数设置，必须关闭/重启整个Server才可以重新加载
         $this->server->start();
 
-        return (self::$started = true);
+        return $this->bootstrapped;
     }
 
     /**
@@ -379,7 +359,7 @@ abstract class AServerManager implements IServerManager
         $masterIsStarted = ($masterPid > 0) && @posix_kill($masterPid, 0);
 
         // start: do Start Server
-        if ( $command === 'start' ) {
+        if ($command === 'start') {
 
             // check master process is running
             if ( $masterIsStarted ) {
@@ -387,11 +367,11 @@ abstract class AServerManager implements IServerManager
             }
 
             // run is daemonize
-            $this->daemonize = (bool)$this->cliIn->getBool('d', $this->config->get('swoole.daemonize'));
+            $this->daemonize = (bool)$this->cliIn->boolOpt('d', $this->config->get('swoole.daemonize'));
             $this->setConfig(['swoole' => [ 'daemonize' => $this->daemonize ]]);
 
             // if isn't daemonize mode, don't save swoole log to file
-            if ( !$this->daemonize ) {
+            if (!$this->daemonize) {
                 $this->setConfig(['swoole' => [ 'log_file' => null ]]);
             }
 
@@ -412,7 +392,7 @@ abstract class AServerManager implements IServerManager
                 break;
 
             case 'reload':
-                $this->doReloadWorkers($masterPid, $this->cliIn->getBool('task'));
+                $this->doReloadWorkers($masterPid, $this->cliIn->boolOpt('task'));
                 break;
 
             case 'info':
@@ -438,6 +418,7 @@ abstract class AServerManager implements IServerManager
      */
     protected function checkInputCommand($command)
     {
+        $notSp = false;
         $supportCommands = ['start', 'reload', 'restart', 'stop', 'info', 'status'];
 
         // show help info
@@ -447,11 +428,15 @@ abstract class AServerManager implements IServerManager
             // command equal to 'help'
             $command === 'help' ||
             // is an not supported command
-            !in_array($command, $supportCommands) ||
+            ($notSp = !in_array($command, $supportCommands, true)) ||
             // has option -h|--help
-            $this->cliIn->getBool('h', false) ||
-            $this->cliIn->getBool('help', false)
+            $this->cliIn->boolOpt('h', false) ||
+            $this->cliIn->boolOpt('help', false)
         ) {
+            if ($notSp) {
+                $this->cliOut->error("The command [$command] is not supported! Please see the help information below.");
+            }
+
             $this->showHelpPanel();
         }
     }
@@ -475,7 +460,7 @@ abstract class AServerManager implements IServerManager
         if ($this->daemonize) {
             $scriptName = $this->cliIn->getScriptName(); // 'bin/test_server.php'
 
-            if ( strpos($scriptName, '.') && 'php' === pathinfo($scriptName,PATHINFO_EXTENSION) ) {
+            if (strpos($scriptName, '.') && 'php' === pathinfo($scriptName,PATHINFO_EXTENSION)) {
                 $scriptName = 'php ' . $scriptName;
             }
 
@@ -497,6 +482,21 @@ abstract class AServerManager implements IServerManager
      * @return SwServer
      */
     abstract protected function createMainServer();
+
+    /**
+     * afterCreateMainServer
+     */
+    protected function afterCreateMainServer()
+    {
+        // register swoole events handler
+        $this->registerMainServerEvents();
+
+        // setting swoole config
+        $this->server->set($this->config['swoole']);
+
+        // create Reload Worker
+        $this->createHotReloader($this->server);
+    }
 
     /**
      * before Server Start
@@ -666,7 +666,6 @@ abstract class AServerManager implements IServerManager
             unlink($this->pidFile);
         }
 
-        self::$started = false;
         self::$_statistics['stop_time'] = microtime(1);
     }
 
@@ -704,7 +703,7 @@ abstract class AServerManager implements IServerManager
      */
     public function setSwooleEvent($event, $cbName)
     {
-        if ( !$this->isSupportedEvents($event) ) {
+        if (!$this->isSupportedEvents($event)) {
             $supported = implode(',', $this->supportedEvents);
             $this->cliOut->error("You want add a not supported swoole event: $event. supported: \n $supported", -2);
         }

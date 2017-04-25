@@ -78,21 +78,21 @@ class SuiteServer extends AServerManager
     {
         parent::init($config);
 
-        // register main server event method
-        if ( $methods = $config->get('main_server.extend_events') ) {
-            $this->setSwooleEvents($methods);
-        }
-
         // register attach server from config
-        if ( $attachServers = $config['attach_servers'] ) {
+        if ($attachServers = $config['attach_servers']) {
             foreach ($attachServers as $name => $conf) {
                 $this->attachListenServer($name, $conf);
             }
         }
 
         // set outside extend server handler
-        if ( $extendHandler = $config->get('main_server.extend_handler') ) {
+        if ($extendHandler = $config->get('main_server.extend_server')) {
             $this->setExtendServer($extendHandler);
+        }
+
+        // register main server event method
+        if ($methods = $config->get('main_server.extend_events')) {
+            $this->setSwooleEvents($methods);
         }
 
         return $this;
@@ -154,17 +154,24 @@ class SuiteServer extends AServerManager
                 break;
         }
 
-        // server instanced
-        if ( $server ) {
-            $this->addLog("Create the main swoole server. on <default>{$host}:{$port}</default>(<info>$type</info>)");
+        $this->addLog("Create the main swoole server. on <default>{$host}:{$port}</default>(<info>$type</info>)");
 
-            $this->setSwooleEvents($protocolEvents);
-
-            // attach registered listen port server to main server
-            $this->attachListenPortServers($server);
-        }
+        $this->setSwooleEvents($protocolEvents);
 
         return $server;
+    }
+
+    protected function afterCreateMainServer()
+    {
+        parent::afterCreateMainServer();
+
+        // call the outside extend server `initCompleted()`
+        if ($this->extendServer) {
+            $this->extendServer->initCompleted();
+        }
+
+        // attach registered listen port server to main server
+        $this->startListenPortServers($this->server);
     }
 
     /**
@@ -173,7 +180,7 @@ class SuiteServer extends AServerManager
     protected function registerMainServerEvents()
     {
         // use custom outside main server event handler
-        if ( $handler = $this->extendServer ) {
+        if ($handler = $this->extendServer) {
             $className = get_class($handler);
             $isOutsideHandler = true;
         } else {
@@ -190,7 +197,7 @@ class SuiteServer extends AServerManager
         foreach ($events as $name => $method) {
 
             // is a Closure callback, add by self::on()
-            if ( $cb = $this->getEventCallback($name) ) {
+            if ($cb = $this->getEventCallback($name)) {
                 $eventInfo[] = [ $name, $method];
                 $this->server->on($name, $cb);
             }
@@ -219,16 +226,14 @@ class SuiteServer extends AServerManager
 
     /**
      * register Event Handler Callback
-     * @param $event
+     * @param string $event
      * @param \Closure $cb
      * @return $this
      */
-    public function on($event, \Closure $cb)
+    public function on(string $event, \Closure $cb)
     {
         $event = trim($event);
-
         $this->setSwooleEvent($event, 'A-CLOSURE');
-
         $this->eventCallbacks[$event] = $cb;
 
         return $this;
@@ -242,12 +247,9 @@ class SuiteServer extends AServerManager
     public function getEventCallback($event)
     {
         $event = strtolower($event);
+        $cb = $this->eventCallbacks[$event] ?? null;
 
-        if (
-            isset($this->eventCallbacks[$event]) &&
-            ($cb = $this->eventCallbacks[$event]) &&
-            ($cb instanceof \Closure)
-        ) {
+        if ($cb && $cb instanceof \Closure) {
             return $cb;
         }
 
@@ -267,17 +269,15 @@ class SuiteServer extends AServerManager
             throw new \InvalidArgumentException('The parameter type only allow [string|object]');
         }
 
-        if ( !($handler instanceof IExtendServer) ) {
-            throw new \RuntimeException('The main server handler class must instanceof ' . IExtendServer::class );
+        if (!($handler instanceof IExtendServer)) {
+            throw new \RuntimeException('The extend server handler class must be instanceof the ' . IExtendServer::class );
         }
 
         $handler->setMgr($this);
 
-        if ($opts = $this->config->get('extend_options')) {
+        if ($opts = $this->config->get('extend_options', [])) {
             $handler->setOptions($opts, true);
         }
-
-        $handler->initCompleted();
 
         $this->extendServer = $handler;
     }
@@ -303,13 +303,13 @@ class SuiteServer extends AServerManager
 //////////////////////////////////////////////////////////////////////
 
     /**
+     * start Listen Port Servers
      * @param SwServer $server
      */
-    protected function attachListenPortServers(SwServer $server)
+    protected function startListenPortServers(SwServer $server)
     {
         foreach ($this->attachedListeners as $name => $cb) {
             $msg = "Attach the listen server <info>$name</info> to the main server.";
-
             $port = $cb($server, $this);
 
             if ($port) {
@@ -360,7 +360,7 @@ class SuiteServer extends AServerManager
     {
         $name = strtolower($name);
 
-        if ( isset($this->attachedNames[$name]) ) {
+        if (isset($this->attachedNames[$name])) {
             throw new \RuntimeException("The add listen port server [$name] exists!");
         }
 
@@ -481,7 +481,7 @@ class SuiteServer extends AServerManager
                 'host' => $main['host'],
                 'port' => $main['port'],
                 'class' => static::class,
-                'extClass' => $main['extend_handler'] ?? 'NO setting',
+                'extClass' => $main['extend_server'] ?? 'NO setting',
             ],
             'Project Config' => [
                 'name' => $this->name,
@@ -515,7 +515,7 @@ class SuiteServer extends AServerManager
                 'extend_events'   => [], // e.g [ 'onRequest', ]
 
                 // use outside's extend event handler
-                'extend_handler' => '', // e.g '\inhere\server\extend\HttpServerHandler'
+                'extend_server' => '', // e.g '\inhere\server\extend\HttpServerHandler'
             ],
             // for attach servers
             'attach_servers' => [
