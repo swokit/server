@@ -69,15 +69,15 @@ abstract class AExtendServerHandler implements IExtendServer
     }
 
     /**
-     * output debug message
-     * @see AServerManager::addLog()
+     * output log message
+     * @see AServerManager::log()
      * @param  string $msg
      * @param  array $data
      * @param string $type
      */
-    public function addLog($msg, $data = [], $type = 'debug')
+    public function log($msg, $data = [], $type = 'debug')
     {
-        $this->mgr->addLog($msg, $data, $type);
+        $this->mgr->log($msg, $data, $type);
     }
 
     /**

@@ -70,7 +70,7 @@ class WSServerHandler extends HttpServerHandler
     {
         $this->rid = base_convert( str_replace('.', '', microtime(1)), 10, 16) . "0{$request->fd}";
 
-        $this->addLog("onOpen: Client [fd:{$request->fd}] open connection.");
+        $this->log("onOpen: Client [fd:{$request->fd}] open connection.");
 
         // var_dump($request->fd, $request->get, $request->server);
         $server->push($request->fd, "hello, welcome\n");
@@ -83,7 +83,7 @@ class WSServerHandler extends HttpServerHandler
      */
     public function onMessage(SwWSServer $server, Frame $frame)
     {
-        $this->addLog("onMessage: Client [fd:{$frame->fd}] send message: {$frame->data}");
+        $this->log("onMessage: Client [fd:{$frame->fd}] send message: {$frame->data}");
 
         // send message to all
         // ServerHelper::broadcastMessage($server, $frame->data);
@@ -100,7 +100,7 @@ class WSServerHandler extends HttpServerHandler
      */
     // public function onHandShake(SwServer $server, $frame)
     // {
-    //     $this->addLog("[fd: {$frame->fd}] Message: {$frame->data}");
+    //     $this->log("[fd: {$frame->fd}] Message: {$frame->data}");
     // }
 
     /**
@@ -131,7 +131,7 @@ class WSServerHandler extends HttpServerHandler
 
         // is socket request
         if ( $fdInfo['websocket_status'] > 0 ) {
-            $this->addLog("onClose: Client #{$fd} is closed", $fdInfo);
+            $this->log("onClose: Client #{$fd} is closed", $fdInfo);
         }
     }
 

@@ -18,9 +18,12 @@ use Swoole\Server as SwServer;
  */
 class TcpListenHandler extends AExtendServerHandler implements ITcpListenHandler
 {
+    /**
+     * {@inheritDoc}
+     */
     public function onConnect(SwServer $server, $fd)
     {
-        $this->mgr->addLog("Has a new client [FD:$fd] connection.");
+        $this->mgr->log("Has a new client [FD:$fd] connection.");
     }
 
     /**
@@ -34,7 +37,7 @@ class TcpListenHandler extends AExtendServerHandler implements ITcpListenHandler
     public function onReceive(SwServer $server, $fd, $fromId, $data)
     {
         $data = trim($data);
-        $this->addLog("Receive data [$data] from client [FD:$fd].");
+        $this->log("Receive data [$data] from client [FD:$fd].");
         $server->send($fd, "I have been received your message.\n");
 
         // $this->onTaskReceive($server, $fd, $fromId, $data);
@@ -43,8 +46,11 @@ class TcpListenHandler extends AExtendServerHandler implements ITcpListenHandler
         // $this->reloadWorker->write($data);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function onClose(SwServer $server, $fd)
     {
-        $this->mgr->addLog("The client [FD:$fd] connection closed.");
+        $this->mgr->log("The client [FD:$fd] connection closed.");
     }
 }

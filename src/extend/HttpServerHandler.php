@@ -179,6 +179,7 @@ class HttpServerHandler extends AExtendServerHandler
     }
 
     /**
+     * startSession
      */
     protected function startSession()
     {
@@ -207,7 +208,7 @@ class HttpServerHandler extends AExtendServerHandler
             );
         }
 
-        $this->addLog("session name: {$name}, session id(cookie): {$_COOKIE[$name]}, session id: " . session_id());
+        $this->log("session name: {$name}, session id(cookie): {$_COOKIE[$name]}, session id: " . session_id());
     }
 
     /**
@@ -230,7 +231,7 @@ class HttpServerHandler extends AExtendServerHandler
         }
 
         if ($this->getOption('enable_static') && $this->handleStaticAccess($request, $response, $uri)) {
-            $this->addLog("Access asset: $uri");
+            $this->log("Access asset: $uri");
             return true;
         }
 
@@ -238,7 +239,7 @@ class HttpServerHandler extends AExtendServerHandler
 
         try {
             if (!$cb = $this->dynamicRequestHandler) {
-                $this->addLog("Please set the property 'dynamicRequestHandler' to handle dynamic request(if you need).", [], 'notice');
+                $this->log("Please set the property 'dynamicRequestHandler' to handle dynamic request(if you need).", [], 'notice');
                 $bodyContent = 'No content to display';
             } else {
                 $bodyContent = $cb($request, $response);
@@ -249,7 +250,7 @@ class HttpServerHandler extends AExtendServerHandler
             $this->handleException($e);
         }
 
-        // $this->afterResponse();
+        $this->afterResponse();
 
         return true;
     }
@@ -260,7 +261,7 @@ class HttpServerHandler extends AExtendServerHandler
      */
     public function respond($content = '')
     {
-        $this->beforeResponse($content);
+        // $this->beforeResponse($content);
         $opts = $this->options['response'];
 
         // open gzip
@@ -272,13 +273,14 @@ class HttpServerHandler extends AExtendServerHandler
     }
 
     /**
-     * @param $content
+     * afterResponse
+     * do some clear work
      */
-    protected function beforeResponse($content)
+    protected function afterResponse()
     {
         // commit session data.
         // if started session by `session_start()`, call `session_write_close()` is required.
-        if ( $this->getOption('start_session', false) ) {
+        if ($this->getOption('start_session', false)) {
             session_write_close();
         }
 
@@ -389,7 +391,7 @@ class HttpServerHandler extends AExtendServerHandler
         $exts = array_keys(static::$staticAssets);
         $extReg = implode('|', $exts);
 
-//         $this->addLog("begin match ext for the asset $uri, result: " . preg_match("/\.($extReg)/i", $uri, $matches), $exts);
+//         $this->log("begin match ext for the asset $uri, result: " . preg_match("/\.($extReg)/i", $uri, $matches), $exts);
 
         // 资源后缀匹配失败 返回交给php继续处理
         if (1 !== preg_match("/.($extReg)/i", $uri, $matches)) {
@@ -436,7 +438,7 @@ class HttpServerHandler extends AExtendServerHandler
             // 直接发送文件 不支持gzip
             $response->sendfile($file);
         } else {
-            $this->addLog("Assets $uri file not exists: $file",[], 'warning');
+            $this->log("Assets $uri file not exists: $file",[], 'warning');
 
             $response->status(404);
             $response->end("Assets not found: $uri\n");
@@ -497,18 +499,13 @@ class HttpServerHandler extends AExtendServerHandler
 
     /**
      * output debug message
-     * @see AServerManager::addLog()
      * @param  string $msg
      * @param  array $data
      * @param string $type
      */
-    public function addLog($msg, $data = [], $type = 'debug')
-    {
-        $this->mgr->addLog("[rid:{$this->rid}] " . $msg, $data, $type);
-    }
     public function log($msg, $data = [], $type = 'debug')
     {
-        $this->addLog($msg, $data, $type);
+        $this->mgr->log("[rid:{$this->rid}] " . $msg, $data, $type);
     }
 
     /**

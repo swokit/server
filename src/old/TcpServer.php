@@ -53,7 +53,7 @@ class TcpServer extends AServerManager
         // append current protocol event
         $this->setSwooleEvents($this->swooleProtocolEvents[$type]);
 
-        $this->addLog("Create a $type server on <default>{$opts['host']}:{$opts['port']}</default>", [], 'info');
+        $this->log("Create a $type server on <default>{$opts['host']}:{$opts['port']}</default>", [], 'info');
 
         $server = new SwServer($opts['host'], $opts['port'], $mode, $socketType);
 
@@ -95,7 +95,7 @@ class TcpServer extends AServerManager
 
     public function onConnect(SwServer $server, $fd)
     {
-        $this->addLog("Has a new client [FD:$fd] connection.");
+        $this->log("Has a new client [FD:$fd] connection.");
     }
 
     /**
@@ -108,7 +108,7 @@ class TcpServer extends AServerManager
      */
     public function onReceive(SwServer $server, $fd, $fromId, $data)
     {
-        $this->addLog("Receive data [$data] from client [FD:$fd].");
+        $this->log("Receive data [$data] from client [FD:$fd].");
 
         // $server->send($fd, 'I have been received your message.');
 
@@ -136,7 +136,7 @@ class TcpServer extends AServerManager
 
     public function onClose(SwServer $server, $fd)
     {
-        $this->addLog("The client [FD:$fd] connection closed.");
+        $this->log("The client [FD:$fd] connection closed.");
     }
 
     /**

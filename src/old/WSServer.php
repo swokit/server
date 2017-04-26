@@ -58,7 +58,7 @@ class WSServer extends HttpServer
             $this->setSwooleEvent('request', 'onRequest');
         }
 
-        $this->addLog("Create a $type main server on <default>{$opts['host']}:{$opts['port']}</default> (http request handle: $handleHttp)",[], 'info');
+        $this->log("Create a $type main server on <default>{$opts['host']}:{$opts['port']}</default> (http request handle: $handleHttp)",[], 'info');
 
         // create swoole WebSocket server
         $server = new SwWSServer($opts['host'], $opts['port'], $mode, $socketType);
@@ -94,7 +94,7 @@ class WSServer extends HttpServer
      */
     public function onOpen(SwWSServer $server, SwRequest $request)
     {
-        $this->addLog("Client [fd: {$request->fd}] open connection.");
+        $this->log("Client [fd: {$request->fd}] open connection.");
 
         // var_dump($request->fd, $request->get, $request->server);
         $server->push($request->fd, "hello, welcome\n");
@@ -107,7 +107,7 @@ class WSServer extends HttpServer
      */
     public function onMessage(SwWSServer $server, Frame $frame)
     {
-        $this->addLog("Client [fd: {$frame->fd}] send message: {$frame->data}");
+        $this->log("Client [fd: {$frame->fd}] send message: {$frame->data}");
 
 
         // send message to all
@@ -125,7 +125,7 @@ class WSServer extends HttpServer
      */
     // public function onHandShake(SwServer $server, $frame)
     // {
-    //     $this->addLog("[fd: {$frame->fd}] Message: {$frame->data}");
+    //     $this->log("[fd: {$frame->fd}] Message: {$frame->data}");
     // }
 
     /**
@@ -155,7 +155,7 @@ class WSServer extends HttpServer
         $fdInfo = $server->connection_info($fd);
 
         if ( $fdInfo['websocket_status'] > 0 ) {
-            $this->addLog("Client-{$fd} is closed", $fdInfo);
+            $this->log("Client-{$fd} is closed", $fdInfo);
         }
     }
 }

@@ -77,6 +77,9 @@ class HttpServer extends TcpServer
         'html'  => 'text/html',
     ];
 
+    /**
+     * {@inheritDoc}
+     */
     protected function init(Config $config)
     {
         $this->swooleProtocolEvents['tcp'] = [
@@ -114,7 +117,7 @@ class HttpServer extends TcpServer
         // append current protocol event
         $this->setSwooleEvents($this->swooleProtocolEvents[self::PROTOCOL_HTTP]);
 
-        $this->addLog("Create a $type main server on <default>{$opts['host']}:{$opts['port']}</default>");
+        $this->log("Create a $type main server on <default>{$opts['host']}:{$opts['port']}</default>");
 
         // create swoole server
         $server = new SwHttpServer($opts['host'], $opts['port'], $mode, $socketType);
@@ -141,10 +144,10 @@ class HttpServer extends TcpServer
             // listen() 此方法是 addListener() 的别名。返回的是 Swoole\Server\Port 实例
             $this->attachedListener = $server->listen($opts['host'], $opts['port'], $socketType);
 
-            $this->addLog("Attach a $type listening service on <default>{$opts['host']}:{$opts['port']}</default>", [], 'info');
+            $this->log("Attach a $type listening service on <default>{$opts['host']}:{$opts['port']}</default>", [], 'info');
 
             $events = $this->swooleProtocolEvents[$type];
-            $this->addLog("Register listen port events to the attached $type server:\n " . implode(',',$events), [], 'info');
+            $this->log("Register listen port events to the attached $type server:\n " . implode(',',$events), [], 'info');
 
             $this->registerListenerEvents($this->attachedListener, $events);
 
@@ -176,6 +179,9 @@ class HttpServer extends TcpServer
        return $this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getDefaultConfig()
     {
         $config = parent::getDefaultConfig();
@@ -227,7 +233,7 @@ class HttpServer extends TcpServer
         if ( !$server->taskworker &&  ($callback = $this->createApplicationCallback) ) {
             $this->app = $callback($this);
 
-            $this->addLog("The app instance has been created, on the worker {$workerId}.", [
+            $this->log("The app instance has been created, on the worker {$workerId}.", [
                 $this->app->config->get('name'),
             ]);
         }
@@ -243,11 +249,11 @@ class HttpServer extends TcpServer
         $enableStatic = $this->config->get('http_server.enable_static', false);
 
         if ( $enableStatic && $this->handleStaticAssets($request, $response, $uri) ) {
-            $this->addLog("Access asset: $uri");
+            $this->log("Access asset: $uri");
             return true;
         }
 
-        $this->addLog("$method $uri", [
+        $this->log("$method $uri", [
             'app name' => \Slim::$app->config->get('name'),
             'GET' => $request->get,
             'POST' => $request->post,
@@ -263,7 +269,7 @@ class HttpServer extends TcpServer
 
         try {
             if ( !($cb = $this->requestHandler) || !($cb instanceof \Closure) ) {
-                $this->addLog("Please setting the 'requestHandler' property to handle http request.", [], 'error');
+                $this->log("Please setting the 'requestHandler' property to handle http request.", [], 'error');
 
                 throw new \LogicException("Please setting the 'requestHandler' property.");
             }
@@ -288,14 +294,18 @@ class HttpServer extends TcpServer
 /// listen port handler
 //////////////////////////////////////////////////////////////////////
 
+    /**
+     * @param SwServer $server
+     * @param $fd
+     */
     public function onTcpConnect(SwServer $server, $fd)
     {
-        $this->addLog("Has a new client [FD:$fd] connection on the listen port.");
+        $this->log("Has a new client [FD:$fd] connection on the listen port.");
     }
 
     public function onTcpClose(SwServer $server, $fd)
     {
-        $this->addLog("The client [FD:$fd] connection closed on the listen port.");
+        $this->log("The client [FD:$fd] connection closed on the listen port.");
     }
 
     /**
@@ -308,7 +318,7 @@ class HttpServer extends TcpServer
      */
     public function onTcpReceive(SwServer $server, $fd, $fromId, $data)
     {
-        $this->addLog("Receive data [$data] from client [FD:$fd] on the listen port.");
+        $this->log("Receive data [$data] from client [FD:$fd] on the listen port.");
 
         $server->send($fd, "Server: ".$data);
     }
@@ -336,7 +346,7 @@ class HttpServer extends TcpServer
 
         $setting = $this->config->get('http_server.static_setting');
 
-        // $this->addLog("begin check '.' point exists in the asset $uri");
+        // $this->log("begin check '.' point exists in the asset $uri");
 
         # 没有任何后缀 || 没有资源处理配置 返回交给php继续处理
         if (false === strrpos($uri, '.') || !$setting ) {
@@ -346,14 +356,14 @@ class HttpServer extends TcpServer
         $exts = array_keys(static::$staticAssets);
         $extReg = implode('|', $exts);
 
-        // $this->addLog("begin match ext for the asset $uri, result: " . preg_match("/\.($extReg)/i", $uri, $matches), $exts);
+        // $this->log("begin match ext for the asset $uri, result: " . preg_match("/\.($extReg)/i", $uri, $matches), $exts);
 
         // 资源后缀匹配失败 返回交给php继续处理
         if ( 1 !== preg_match("/\.($extReg)/i", $uri, $matches) ) {
             return false;
         }
 
-        // $this->addLog("begin match rule for the asset $uri", $setting);
+        // $this->log("begin match rule for the asset $uri", $setting);
 
         // asset ext name. e.g $matches = [ '.css', 'css' ];
         $ext = $matches[1];
@@ -394,7 +404,7 @@ class HttpServer extends TcpServer
             // 直接发送文件 不支持gzip
             $response->sendfile($file);
         } else {
-            $this->addLog("Assets $uri file not exists: $file",[], 'warning');
+            $this->log("Assets $uri file not exists: $file",[], 'warning');
 
             $response->status(404);
             $response->end("Assets not found: $uri\n");

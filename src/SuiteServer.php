@@ -154,13 +154,16 @@ class SuiteServer extends AServerManager
                 break;
         }
 
-        $this->addLog("Create the main swoole server. on <default>{$host}:{$port}</default>(<info>$type</info>)");
+        $this->log("Create the main swoole server. on <default>{$host}:{$port}</default>(<info>$type</info>)");
 
         $this->setSwooleEvents($protocolEvents);
 
         return $server;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function afterCreateMainServer()
     {
         parent::afterCreateMainServer();
@@ -317,7 +320,7 @@ class SuiteServer extends AServerManager
                 $msg .= " on <default>{$port->host}:{$port->port}</default>($type)";
             }
 
-            $this->addLog($msg);
+            $this->log($msg);
         }
     }
 
@@ -442,7 +445,7 @@ class SuiteServer extends AServerManager
      */
     public function onConnect(SwServer $server, $fd)
     {
-        $this->addLog("onConnect: Has a new client [fd:$fd] connection to the main server.");
+        $this->log("onConnect: Has a new client [fd:$fd] connection to the main server.");
     }
 
     /**
@@ -451,7 +454,7 @@ class SuiteServer extends AServerManager
      */
     public function onClose(SwServer $server, $fd)
     {
-        $this->addLog("onConnect: The client [fd:$fd] connection closed on the main server.");
+        $this->log("onConnect: The client [fd:$fd] connection closed on the main server.");
     }
 
     /**

@@ -266,6 +266,7 @@ abstract class AServerManager implements IServerManager
                 // 'name' => 'swoole_server_log'
                 // 'basePath' => PROJECT_PATH . '/temp/logs/test_server',
                 // 'logThreshold' => 0,
+                // 'levels' => '',
             ],
 
             // the swoole runtime setting
@@ -362,7 +363,7 @@ abstract class AServerManager implements IServerManager
         if ($command === 'start') {
 
             // check master process is running
-            if ( $masterIsStarted ) {
+            if ($masterIsStarted) {
                 $this->cliOut->error("The swoole server({$this->name}) have been started. (PID:{$masterPid})", true);
             }
 
@@ -546,7 +547,7 @@ abstract class AServerManager implements IServerManager
 
         ProcessHelper::setProcessTitle("swoole: master ({$this->name} IN $projectPath)");
 
-        $this->addLog("The master process success started. (PID:<notice>{$masterPid}</notice>, pid_file: $pidFile)");
+        $this->log("The master process success started. (PID:<notice>{$masterPid}</notice>, pid_file: $pidFile)");
     }
 
     /**
@@ -555,9 +556,21 @@ abstract class AServerManager implements IServerManager
      */
     public function onMasterStop(SwServer $server)
     {
-        $this->addLog("The swoole master process(PID: {$server->master_pid}) stopped.");
+        $this->log("The swoole master process(PID: {$server->master_pid}) stopped.");
 
         $this->doClear();
+    }
+
+    /**
+     * doClear
+     */
+    protected function doClear()
+    {
+        if ($this->pidFile && file_exists($this->pidFile)) {
+            unlink($this->pidFile);
+        }
+
+        self::$_statistics['stop_time'] = microtime(1);
     }
 
     /**
@@ -578,7 +591,7 @@ abstract class AServerManager implements IServerManager
         // file_put_contents($pidFile, ',' . $server->manager_pid, FILE_APPEND);
         ProcessHelper::setProcessTitle("swoole: manager ({$this->name})");
 
-        $this->addLog("The manager process success started. (PID:{$server->manager_pid})");
+        $this->log("The manager process success started. (PID:{$server->manager_pid})");
     }
 
     /**
@@ -587,7 +600,7 @@ abstract class AServerManager implements IServerManager
      */
     public function onManagerStop(SwServer $server)
     {
-        $this->addLog("The swoole manager process stopped. (PID {$server->manager_pid})");
+        $this->log("The swoole manager process stopped. (PID {$server->manager_pid})");
     }
 
     /**
@@ -601,7 +614,7 @@ abstract class AServerManager implements IServerManager
     {
         $taskMark = $server->taskworker ? 'task-worker' : 'event-worker';
 
-        $this->addLog("The #<primary>{$workerId}</primary> {$taskMark} process success started. (PID:{$server->worker_pid})");
+        $this->log("The #<primary>{$workerId}</primary> {$taskMark} process success started. (PID:{$server->worker_pid})");
 
         ProcessHelper::setProcessTitle("swoole: {$taskMark} ({$this->name})");
 
@@ -618,7 +631,7 @@ abstract class AServerManager implements IServerManager
      */
     public function onWorkerStop(SwServer $server, $workerId)
     {
-        $this->addLog("The swoole #<info>$workerId</info> worker process stopped.");
+        $this->log("The swoole #<info>$workerId</info> worker process stopped.");
     }
 
     /**
@@ -630,7 +643,7 @@ abstract class AServerManager implements IServerManager
      */
     public function onPipeMessage(SwServer $server, $srcWorkerId, $data)
     {
-        $this->addLog("#{$server->worker_id} message from #$srcWorkerId: $data");
+        $this->log("#{$server->worker_id} message from #$srcWorkerId: $data");
     }
 
     ////////////////////// Task Event //////////////////////
@@ -644,7 +657,7 @@ abstract class AServerManager implements IServerManager
      */
     public function onTask(SwServer $server, $taskId, $fromId, $data)
     {
-        // $this->addLog("Handle New AsyncTask[id:$taskId]");
+        // $this->log("Handle New AsyncTask[id:$taskId]");
         // 返回任务执行的结果(finish操作是可选的，也可以不返回任何结果)
         // $server->finish("$data -> OK");
     }
@@ -657,17 +670,9 @@ abstract class AServerManager implements IServerManager
      */
     public function onFinish(SwServer $server, $taskId, $data)
     {
-        $this->addLog("AsyncTask[$taskId] Finish. Data: $data");
+        $this->log("AsyncTask[$taskId] Finish. Data: $data");
     }
 
-    protected function doClear()
-    {
-        if ( $this->pidFile && file_exists($this->pidFile) ) {
-            unlink($this->pidFile);
-        }
-
-        self::$_statistics['stop_time'] = microtime(1);
-    }
 
 //////////////////////////////////////////////////////////////////////
 /// swoole server method
@@ -775,7 +780,7 @@ abstract class AServerManager implements IServerManager
     {
         $name = $this->config->get('log_service.name');
 
-        if ( $this->hasLogger($name) ) {
+        if ($this->hasLogger($name)) {
             return SFLogger::get($name);
         }
 
@@ -833,15 +838,16 @@ abstract class AServerManager implements IServerManager
 //////////////////////////////////////////////////////////////////////
 
     /**
+     * checkEnvWhenEnableSSL
      */
     protected function checkEnvWhenEnableSSL()
     {
-        if ( !defined('SWOOLE_SSL')) {
+        if (!defined('SWOOLE_SSL')) {
             $this->cliOut->error('If you want use SSL(https), must add option --enable-openssl on the compile swoole.', 1);
         }
 
         // check ssl config
-        if ( !$this->config->get('swoole.ssl_cert_file') || !$this->config->get('swoole.ssl_key_file')) {
+        if (!$this->config->get('swoole.ssl_cert_file') || !$this->config->get('swoole.ssl_key_file')) {
             $this->cliOut->error("If you want use SSL(https), must config the 'swoole.ssl_cert_file' and 'swoole.ssl_key_file'", 1);
         }
     }
@@ -853,7 +859,7 @@ abstract class AServerManager implements IServerManager
      */
     public function stopWorker($workerId = null)
     {
-        if ( $this->server ) {
+        if ($this->server) {
             return $this->server->stop($workerId);
         }
 
@@ -871,7 +877,7 @@ abstract class AServerManager implements IServerManager
         $sig = SIGUSR1;
 
         // SIGUSR2: only reload task worker
-        if ( $onlyTaskWorker ) {
+        if ($onlyTaskWorker) {
             $sig = SIGUSR2;
             $this->cliOut->notice("Will only reload task worker");
         }
@@ -954,12 +960,12 @@ abstract class AServerManager implements IServerManager
             $onlyReloadTask = isset($options['only_reload_task']) ? (bool)$options['only_reload_task'] : false;
             $dirs = array_map('trim', explode(',', $options['dirs']));
 
-            $mgr->addLog("The reloader worker process success started. (PID: {$process->pid}, Watched: <info>{$options['dirs']}</info>)");
+            $mgr->log("The reloader worker process success started. (PID: {$process->pid}, Watched: <info>{$options['dirs']}</info>)");
 
             $kit
                 ->addWatches($dirs, $this->config->get('root_path'))
                 ->setReloadHandler(function($pid) use ($mgr, $onlyReloadTask) {
-                    $mgr->addLog("Begin reload workers process. (Master PID: {$pid})");
+                    $mgr->log("Begin reload workers process. (Master PID: {$pid})");
                     $mgr->server->reload($onlyReloadTask);
                     // $mgr->doReloadWorkers($pid, $onlyReloadTask);
                 });
@@ -1030,32 +1036,42 @@ abstract class AServerManager implements IServerManager
     }
 
     /**
-     * output debug message
+     * output log message
      * @param  string $msg
      * @param  array $data
      * @param string $type
+     * @return void
      */
-    public function log($msg, $data = [], $type = 'debug')
+    public function log($msg, $data = [], $type = 'info')
     {
-        $this->addLog($msg, $data, $type);
-    }
-    public function addLog($msg, $data = [], $type = 'debug')
-    {
-        // if close debug, don't output debug log.
-        if ( $this->debug || $type !== 'debug') {
-            if ( !$this->daemonize ) {
-                list($time, $micro) = explode('.', microtime(1));
-                $time = date('Y-m-d H:i:s', $time);
-
-                $data = $data ? json_encode($data) : '';
-                $type = strtoupper($type);
-                $this->cliOut->write("[{$time}.{$micro}] [$type] $msg {$data}");
-
-            } else if ( $this->hasLogger() ) {
-                $this->getLogger()->$type(strip_tags($msg), $data);
-            }
+        if (!$this->debug && $type !== 'debug') {
+            return;
         }
+
+        // if close debug, don't output debug log.
+        if (!$this->daemonize) {
+            [$time, $micro] = explode('.', microtime(1));
+            $time = date('Y-m-d H:i:s', $time);
+
+            $data = $data ? json_encode($data) : '';
+            $type = strtoupper($type);
+            $this->cliOut->write("[{$time}.{$micro}] [$type] $msg {$data}");
+        }
+
+        if ($this->hasLogger()) {
+            $this->getLogger()->$type(strip_tags($msg), $data);
+        }
+
+        return;
     }
 
-
+    /**
+     * output a debug log message
+     * @param $msg
+     * @param array $data
+     */
+    public function debug($msg, $data = [])
+    {
+        $this->log($msg, $data);
+    }
 }

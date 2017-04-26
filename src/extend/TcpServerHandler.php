@@ -38,7 +38,7 @@ class TcpServerHandler extends AExtendServerHandler
 
     public function onConnect(SwServer $server, $fd)
     {
-        $this->addLog("Has a new client [FD:$fd] connection.");
+        $this->log("Has a new client [FD:$fd] connection.");
     }
 
     /**
@@ -52,7 +52,7 @@ class TcpServerHandler extends AExtendServerHandler
     public function onReceive(SwServer $server, $fd, $fromId, $data)
     {
         $data = trim($data);
-        $this->addLog("Receive data [$data] from client [FD:$fd].");
+        $this->log("Receive data [$data] from client [FD:$fd].");
         $server->send($fd, "I have been received your message.\n");
 
         // 群发收到的消息
@@ -79,6 +79,6 @@ class TcpServerHandler extends AExtendServerHandler
 
     public function onClose(SwServer $server, $fd)
     {
-        $this->addLog("The client [FD:$fd] connection closed.");
+        $this->log("The client [FD:$fd] connection closed.");
     }
 }
