@@ -19,7 +19,7 @@ use inhere\server\interfaces\IServerManager;
 use inhere\console\io\Input;
 use inhere\console\io\Output;
 use inhere\library\collections\Config;
-use inhere\library\utils\SFLogger;
+use inhere\library\utils\LiteLogger;
 
 /**
  * Class AServerManager
@@ -446,7 +446,7 @@ abstract class AServerManager implements IServerManager
     {
         // create log service instance
         if ( $logService = $this->config->get('log_service') ) {
-            SFLogger::make($logService);
+            LiteLogger::make($logService);
         }
 
         return $this;
@@ -769,19 +769,19 @@ abstract class AServerManager implements IServerManager
     {
         $name = $name ? : $this->config->get('log_service.name');
 
-        return $name && SFLogger::has($name);
+        return $name && LiteLogger::has($name);
     }
 
     /**
      * get Logger service
-     * @return SFLogger
+     * @return LiteLogger
      */
     public function getLogger()
     {
         $name = $this->config->get('log_service.name');
 
         if ($this->hasLogger($name)) {
-            return SFLogger::get($name);
+            return LiteLogger::get($name);
         }
 
         throw new \RuntimeException('You don\'t config log service!');
