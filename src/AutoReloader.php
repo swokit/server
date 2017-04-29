@@ -115,20 +115,19 @@ class AutoReloader
 
     protected function addWatchEvent()
     {
-        swoole_event_add($this->inotify, function ($ifd)
-        {
+        swoole_event_add($this->inotify, function ($ifd) {
             if (!$events = inotify_read($this->inotify)) {
-                return ;
+                return;
             }
 
             //var_dump($events);
 
-            foreach($events as $ev) {
+            foreach ($events as $ev) {
                 if ($ev['mask'] == IN_IGNORED) {
                     continue;
                 }
 
-                if ( in_array( $ev['mask'], [IN_CREATE, IN_DELETE, IN_MODIFY, IN_MOVED_TO, IN_MOVED_FROM]) ) {
+                if (in_array($ev['mask'], [IN_CREATE, IN_DELETE, IN_MODIFY, IN_MOVED_TO, IN_MOVED_FROM])) {
                     $fileType = strrchr($ev['name'], '.');
 
                     //非重启类型
@@ -154,15 +153,15 @@ class AutoReloader
     public function reload()
     {
         // 调用自定义的回调处理reload
-        if ( $cb = $this->reloadHandler ) {
+        if ($cb = $this->reloadHandler) {
             $cb($this->pid);
 
-        // 直接向主进程发送 SIGUSR1 信号
+            // 直接向主进程发送 SIGUSR1 信号
         } else {
             $this->putLog('begin reloading ... ...');
 
             // 检查进程
-            if ( posix_kill($this->pid, 0) === false ) {
+            if (posix_kill($this->pid, 0) === false) {
                 throw new NotFoundException("The process #$this->pid not found.");
             }
 
@@ -188,7 +187,7 @@ class AutoReloader
     {
         $type = '.' . trim($type, '. ');
 
-        if ( !isset($this->watchedTypes[$type]) ) {
+        if (!isset($this->watchedTypes[$type])) {
             $this->watchedTypes[$type] = true;
         }
 
@@ -206,7 +205,7 @@ class AutoReloader
 
     /**
      * add Watches
-     * @param array  $dirs
+     * @param array $dirs
      * @param string $basePath
      * @return $this
      */
@@ -229,12 +228,12 @@ class AutoReloader
     public function addWatch($target, $root = true)
     {
         //
-        if ( !$target ) {
+        if (!$target) {
             return false;
         }
 
         //目录/文件不存在
-        if ( !file_exists($target) ) {
+        if (!file_exists($target)) {
             throw new \RuntimeException("[$target] is not a directory or file.");
         }
 
@@ -246,12 +245,12 @@ class AutoReloader
         $wd = inotify_add_watch($this->inotify, $target, $this->eventMask);
         $this->watchedFiles[$target] = $wd;
 
-        if ( !is_dir($target) ) {
+        if (!is_dir($target)) {
             return true;
         }
 
         // 根目录
-        if ( $root ) {
+        if ($root) {
             $this->watchedDirs[] = $target;
         }
 
@@ -271,7 +270,7 @@ class AutoReloader
             //检测文件类型
             $fileType = strrchr($f, '.');
 
-            if ( isset($this->watchedTypes[$fileType]) ) {
+            if (isset($this->watchedTypes[$fileType])) {
                 $wd = inotify_add_watch($this->inotify, $path, $this->eventMask);
                 $this->watchedFiles[$path] = $wd;
             }
@@ -286,7 +285,7 @@ class AutoReloader
      */
     public function clearWatched()
     {
-        foreach($this->watchedFiles as $wd) {
+        foreach ($this->watchedFiles as $wd) {
             inotify_rm_watch($this->inotify, $wd);
         }
 
@@ -324,6 +323,6 @@ class AutoReloader
 
     public function putLog($log)
     {
-        echo "[".date('Y-m-d H:i:s')."]\t".$log."\n";
+        echo "[" . date('Y-m-d H:i:s') . "]\t" . $log . "\n";
     }
 }

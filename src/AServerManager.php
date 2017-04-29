@@ -135,20 +135,20 @@ abstract class AServerManager implements IServerManager
      */
     protected $swooleEvents = [
         // 'event'  => 'callback',
-        'start'     => 'onMasterStart',
-        'shutdown'  => 'onMasterStop',
+        'start' => 'onMasterStart',
+        'shutdown' => 'onMasterStop',
 
         'managerStart' => 'onManagerStart',
-        'managerStop'  => 'onManagerStop' ,
+        'managerStop' => 'onManagerStop',
 
         'workerStart' => 'onWorkerStart',
-        'workerStop'  => 'onWorkerStop',
+        'workerStop' => 'onWorkerStop',
         'workerError' => 'onWorkerError',
 
         'pipeMessage' => 'onPipeMessage',
 
         // Task 任务相关 (若配置了 task_worker_num 则必须注册这两个事件)
-        'task'   => 'onTask',
+        'task' => 'onTask',
         'finish' => 'onFinish',
     ];
 
@@ -157,16 +157,16 @@ abstract class AServerManager implements IServerManager
      */
     protected $swooleProtocolEvents = [
         // TCP server callback
-        'tcp' => [ 'onConnect', 'onReceive', 'onClose' ],
+        'tcp' => ['onConnect', 'onReceive', 'onClose'],
 
         // UDP server callback
-        'udp' => [ 'onPacket', 'onClose' ],
+        'udp' => ['onPacket', 'onClose'],
 
         // HTTP server callback
-        'http' => [ 'onRequest'],
+        'http' => ['onRequest'],
 
         // Web Socket server callback
-        'ws' => [ 'onMessage', 'onOpen', 'onHandShake', 'onClose' ],
+        'ws' => ['onMessage', 'onOpen', 'onHandShake', 'onClose'],
     ];
 
     /**
@@ -211,7 +211,7 @@ abstract class AServerManager implements IServerManager
             }
         }
 
-        if ( !($this->name = $config->get('name')) ) {
+        if (!($this->name = $config->get('name'))) {
             $this->name = basename($config->get('root_path'));
             $this->setConfig(['name' => $this->name]);
         }
@@ -256,7 +256,7 @@ abstract class AServerManager implements IServerManager
             'name' => '',
             'debug' => false,
             'root_path' => '',
-            'pid_file'  => '/tmp/swoole_server.pid',
+            'pid_file' => '/tmp/swoole_server.pid',
 
             // will create a process auto reload server
             'auto_reload' => '', // 'src,config'
@@ -272,10 +272,10 @@ abstract class AServerManager implements IServerManager
             // the swoole runtime setting
             'swoole' => [
                 // 'user'    => '',
-                'worker_num'    => 4,
+                'worker_num' => 4,
                 'task_worker_num' => 2, // 启用 task worker,必须为Server设置onTask和onFinish回调
-                'daemonize'     => 0,
-                'max_request'   => 1000,
+                'daemonize' => 0,
+                'max_request' => 1000,
                 // 在1.7.15以上版本中，当设置dispatch_mode = 1/3时会自动去掉onConnect/onClose事件回调。
                 // see @link https://wiki.swoole.com/wiki/page/49.html
                 'dispatch_mode' => 2,
@@ -329,8 +329,8 @@ abstract class AServerManager implements IServerManager
         // create swoole server instance
         $this->server = $this->createMainServer();
 
-        if (!$this->server || !($this->server instanceof SwServer)){
-            throw new \RuntimeException('The server instance must instanceof ' . SwServer::class );
+        if (!$this->server || !($this->server instanceof SwServer)) {
+            throw new \RuntimeException('The server instance must instanceof ' . SwServer::class);
         }
 
         // do something for main server
@@ -369,18 +369,18 @@ abstract class AServerManager implements IServerManager
 
             // run is daemonize
             $this->daemonize = (bool)$this->cliIn->boolOpt('d', $this->config->get('swoole.daemonize'));
-            $this->setConfig(['swoole' => [ 'daemonize' => $this->daemonize ]]);
+            $this->setConfig(['swoole' => ['daemonize' => $this->daemonize]]);
 
             // if isn't daemonize mode, don't save swoole log to file
             if (!$this->daemonize) {
-                $this->setConfig(['swoole' => [ 'log_file' => null ]]);
+                $this->setConfig(['swoole' => ['log_file' => null]]);
             }
 
             return $this;
         }
 
         // check master process
-        if ( !$masterIsStarted ) {
+        if (!$masterIsStarted) {
             $this->cliOut->error("The swoole server({$this->name}) is not running.", true);
         }
 
@@ -445,7 +445,7 @@ abstract class AServerManager implements IServerManager
     protected function startBaseService()
     {
         // create log service instance
-        if ( $logService = $this->config->get('log_service') ) {
+        if ($logService = $this->config->get('log_service')) {
             LiteLogger::make($logService);
         }
 
@@ -461,7 +461,7 @@ abstract class AServerManager implements IServerManager
         if ($this->daemonize) {
             $scriptName = $this->cliIn->getScriptName(); // 'bin/test_server.php'
 
-            if (strpos($scriptName, '.') && 'php' === pathinfo($scriptName,PATHINFO_EXTENSION)) {
+            if (strpos($scriptName, '.') && 'php' === pathinfo($scriptName, PATHINFO_EXTENSION)) {
                 $scriptName = 'php ' . $scriptName;
             }
 
@@ -505,7 +505,7 @@ abstract class AServerManager implements IServerManager
      */
     public function beforeServerStart(\Closure $callback = null)
     {
-        if ( $callback ) {
+        if ($callback) {
             $callback($this);
         }
     }
@@ -518,10 +518,10 @@ abstract class AServerManager implements IServerManager
         $events = $this->swooleEvents;
         $this->cliOut->aList($events, 'Registered swoole events to the main server:( event -> handler )');
 
-        foreach ($events as $event => $callback ) {
+        foreach ($events as $event => $callback) {
 
             // e.g $server->on('Request', [$this, 'onRequest']);
-            if ( method_exists($this, $callback) ) {
+            if (method_exists($this, $callback)) {
                 $this->server->on($event, [$this, $callback]);
             }
         }
@@ -541,7 +541,7 @@ abstract class AServerManager implements IServerManager
         $projectPath = $this->config->get('root_path');
 
         // save master process id to file.
-        if ( $pidFile = $this->pidFile ) {
+        if ($pidFile = $this->pidFile) {
             file_put_contents($this->pidFile, $masterPid);
         }
 
@@ -576,7 +576,7 @@ abstract class AServerManager implements IServerManager
     /**
      * onConnect
      * @param  SwServer $server
-     * @param  int      $fd     客户端的唯一标识符. 一个自增数字，范围是 1 ～ 1600万
+     * @param  int $fd 客户端的唯一标识符. 一个自增数字，范围是 1 ～ 1600万
      */
     abstract public function onConnect(SwServer $server, $fd);
 
@@ -608,7 +608,7 @@ abstract class AServerManager implements IServerManager
      *   应当在onWorkerStart中创建连接对象
      * @link https://wiki.swoole.com/wiki/page/325.html
      * @param  SwServer $server
-     * @param  int           $workerId The worker index id in the all workers.
+     * @param  int $workerId The worker index id in the all workers.
      */
     public function onWorkerStart(SwServer $server, $workerId)
     {
@@ -638,8 +638,8 @@ abstract class AServerManager implements IServerManager
      * onPipeMessage
      *  能接收到 `$server->sendMessage` 发送的消息
      * @param  SwServer $server
-     * @param  int           $srcWorkerId
-     * @param  mixed        $data
+     * @param  int $srcWorkerId
+     * @param  mixed $data
      */
     public function onPipeMessage(SwServer $server, $srcWorkerId, $data)
     {
@@ -651,9 +651,9 @@ abstract class AServerManager implements IServerManager
     /**
      * 处理异步任务( onTask )
      * @param  SwServer $server
-     * @param  int           $taskId
-     * @param  int           $fromId
-     * @param  mixed         $data
+     * @param  int $taskId
+     * @param  int $fromId
+     * @param  mixed $data
      */
     public function onTask(SwServer $server, $taskId, $fromId, $data)
     {
@@ -665,8 +665,8 @@ abstract class AServerManager implements IServerManager
     /**
      * 处理异步任务的结果
      * @param  SwServer $server
-     * @param  int           $taskId
-     * @param  mixed         $data
+     * @param  int $taskId
+     * @param  mixed $data
      */
     public function onFinish(SwServer $server, $taskId, $data)
     {
@@ -698,12 +698,12 @@ abstract class AServerManager implements IServerManager
     public function setSwooleEvents(array $events)
     {
         foreach ($events as $key => $value) {
-            $this->setSwooleEvent( is_int($key) ? lcfirst(substr($value,2)) : $key,$value);
+            $this->setSwooleEvent(is_int($key) ? lcfirst(substr($value, 2)) : $key, $value);
         }
     }
 
     /**
-     * @param string $event  The event name
+     * @param string $event The event name
      * @param string $cbName The callback name
      */
     public function setSwooleEvent($event, $cbName)
@@ -762,12 +762,12 @@ abstract class AServerManager implements IServerManager
 
     /**
      * has Logger service
-     * @param  null|string  $name
+     * @param  null|string $name
      * @return boolean
      */
     public function hasLogger($name = null)
     {
-        $name = $name ? : $this->config->get('log_service.name');
+        $name = $name ?: $this->config->get('log_service.name');
 
         return $name && LiteLogger::has($name);
     }
@@ -868,8 +868,8 @@ abstract class AServerManager implements IServerManager
 
     /**
      * do Reload Workers
-     * @param  int      $masterPid
-     * @param  boolean  $onlyTaskWorker
+     * @param  int $masterPid
+     * @param  boolean $onlyTaskWorker
      */
     public function doReloadWorkers($masterPid, $onlyTaskWorker = false)
     {
@@ -891,8 +891,8 @@ abstract class AServerManager implements IServerManager
 
     /**
      * Do stop swoole server
-     * @param  int     $masterPid Master Pid
-     * @param  boolean $quit      Quit, When stop success?
+     * @param  int $masterPid Master Pid
+     * @param  boolean $quit Quit, When stop success?
      */
     protected function doStopServer($masterPid, $quit = true)
     {
@@ -906,15 +906,15 @@ abstract class AServerManager implements IServerManager
         $startTime = time();
 
         // retry stop if not stopped.
-        while ( true ) {
+        while (true) {
             $masterIsStarted = ($masterPid > 0) && @posix_kill($masterPid, 0);
 
-            if ( !$masterIsStarted ) {
+            if (!$masterIsStarted) {
                 break;
             }
 
             // have been timeout
-            if ( (time() - $startTime) >= $timeout ) {
+            if ((time() - $startTime) >= $timeout) {
                 $this->cliOut->error("The swoole server({$this->name}) process stop fail!", -1);
             }
 
@@ -922,7 +922,7 @@ abstract class AServerManager implements IServerManager
             continue;
         }
 
-        if ( $this->pidFile && file_exists($this->pidFile) ) {
+        if ($this->pidFile && file_exists($this->pidFile)) {
             unlink($this->pidFile);
         }
 
@@ -941,7 +941,7 @@ abstract class AServerManager implements IServerManager
         $mgr = $this;
         $reload = $this->config->get('auto_reload');
 
-        if ( !$reload || !function_exists('inotify_init')) {
+        if (!$reload || !function_exists('inotify_init')) {
             return false;
         }
 
@@ -951,8 +951,7 @@ abstract class AServerManager implements IServerManager
         ];
 
         // 创建用户自定义的工作进程worker
-        $this->reloadWorker = new SwProcess(function(SwProcess $process) use ($options, $mgr)
-        {
+        $this->reloadWorker = new SwProcess(function (SwProcess $process) use ($options, $mgr) {
 
             ProcessHelper::setProcessTitle("swoole: reloader ({$mgr->name})");
             $kit = new AutoReloader($options['masterPid']);
@@ -964,7 +963,7 @@ abstract class AServerManager implements IServerManager
 
             $kit
                 ->addWatches($dirs, $this->config->get('root_path'))
-                ->setReloadHandler(function($pid) use ($mgr, $onlyReloadTask) {
+                ->setReloadHandler(function ($pid) use ($mgr, $onlyReloadTask) {
                     $mgr->log("Begin reload workers process. (Master PID: {$pid})");
                     $mgr->server->reload($onlyReloadTask);
                     // $mgr->doReloadWorkers($pid, $onlyReloadTask);
@@ -1007,7 +1006,7 @@ abstract class AServerManager implements IServerManager
     {
         $scriptName = $this->cliIn->getScriptName(); // 'bin/test_server.php'
 
-        if ( strpos($scriptName, '.') && 'php' === pathinfo($scriptName,PATHINFO_EXTENSION) ) {
+        if (strpos($scriptName, '.') && 'php' === pathinfo($scriptName, PATHINFO_EXTENSION)) {
             $scriptName = 'php ' . $scriptName;
         }
 
@@ -1015,24 +1014,24 @@ abstract class AServerManager implements IServerManager
             'description' => 'Swoole server manager tool, Version <comment>' . self::VERSION . '</comment>. Update time ' . self::UPDATE_TIME,
             'usage' => "$scriptName {start|reload|restart|stop|status} [-d]",
             'commands' => [
-                'start'   => 'Start the server',
-                'reload'  => 'Reload all workers of the started server',
+                'start' => 'Start the server',
+                'reload' => 'Reload all workers of the started server',
                 'restart' => 'Stop the server, After start the server.',
-                'stop'    => 'Stop the server',
-                'info'    => 'Show the server information for current project',
-                'status'    => 'Show the started server status information',
-                'help'    => 'Display this help message',
+                'stop' => 'Stop the server',
+                'info' => 'Show the server information for current project',
+                'status' => 'Show the started server status information',
+                'help' => 'Display this help message',
             ],
             'options' => [
-                '-d'         => 'Run the server on daemonize.',
-                '--task'     => 'Only reload task worker, when reload server',
+                '-d' => 'Run the server on daemonize.',
+                '--task' => 'Only reload task worker, when reload server',
                 '-h, --help' => 'Display this help message',
             ],
             'examples' => [
                 "<info>$scriptName start -d</info> Start server on daemonize mode.",
                 "<info>$scriptName reload --task</info> Start server on daemonize mode."
             ],
-        ],$showHelpAfterQuit);
+        ], $showHelpAfterQuit);
     }
 
     /**

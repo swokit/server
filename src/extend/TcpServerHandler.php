@@ -45,9 +45,9 @@ class TcpServerHandler extends AExtendServerHandler
      * 接收到数据
      *     使用 `fd` 保存客户端IP，`from_id` 保存 `from_fd` 和 `port`
      * @param  SwServer $server
-     * @param  int           $fd
-     * @param  int           $fromId
-     * @param  mixed         $data
+     * @param  int $fd
+     * @param  int $fromId
+     * @param  mixed $data
      */
     public function onReceive(SwServer $server, $fd, $fromId, $data)
     {

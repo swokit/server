@@ -61,7 +61,7 @@ abstract class AExtendServerHandler implements IExtendServer
      */
     public function getConfig($key = null, $default = null)
     {
-        if ( null === $key ) {
+        if (null === $key) {
             return $this->mgr->getConfig();
         }
 

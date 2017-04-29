@@ -43,7 +43,7 @@ class TcpServer extends AServerManager
         $type = $opts['type'];
         $mode = $opts['mode'] === self::MODE_BASE ? SWOOLE_BASE : SWOOLE_PROCESS;
 
-        if ( $type === self::PROTOCOL_UDP ) {
+        if ($type === self::PROTOCOL_UDP) {
             $socketType = SWOOLE_SOCK_UDP;
         } else {
             $type = self::PROTOCOL_TCP;
@@ -63,18 +63,18 @@ class TcpServer extends AServerManager
     /**
      * register Swoole Port Events
      * @param  SwServerPort $port Port instance or port server name.
-     * @param  array  $events
+     * @param  array $events
      */
     public function registerListenerEvents($port, array $events)
     {
-        foreach ($events as $event => $method ) {
+        foreach ($events as $event => $method) {
             // ['onConnect'] --> 'Connect' , 'onConnect
-            if ( is_int($event) ) {
-                $event = substr($method,2);
+            if (is_int($event)) {
+                $event = substr($method, 2);
             }
 
             // e.g $server->on('Request', [$this, 'onRequest']);
-            if ( method_exists($this, $method) ) {
+            if (method_exists($this, $method)) {
                 $port->on($event, [$this, $method]);
             }
         }
@@ -102,9 +102,9 @@ class TcpServer extends AServerManager
      * 接收到数据
      *     使用 `fd` 保存客户端IP，`from_id` 保存 `from_fd` 和 `port`
      * @param  SwServer $server
-     * @param  int           $fd
-     * @param  int           $fromId
-     * @param  mixed         $data
+     * @param  int $fd
+     * @param  int $fromId
+     * @param  mixed $data
      */
     public function onReceive(SwServer $server, $fd, $fromId, $data)
     {
@@ -165,10 +165,10 @@ class TcpServer extends AServerManager
                 'coroutine' => class_exists('\Swoole\Coroutine', false) ? 'yes' : 'no',
             ],
             'Swoole Config' => [
-                'dispatch_mode'   => $swOpts['dispatch_mode'],
-                'worker_num'      => $swOpts['worker_num'],
+                'dispatch_mode' => $swOpts['dispatch_mode'],
+                'worker_num' => $swOpts['worker_num'],
                 'task_worker_num' => $swOpts['task_worker_num'],
-                'max_request'     => $swOpts['max_request'],
+                'max_request' => $swOpts['max_request'],
             ],
             'TCP Server' => $this->config->get('tcp_server'),
             'HTTP Server' => $http,
@@ -193,9 +193,9 @@ class TcpServer extends AServerManager
             'name' => '',
             'debug' => false,
             'root_path' => '',
-            'pid_file'  => '/tmp/swoole_server.pid',
+            'pid_file' => '/tmp/swoole_server.pid',
             'auto_reload' => [
-                'enable' =>  true, // will create a process auto reload server
+                'enable' => true, // will create a process auto reload server
                 'dirs' => '',
             ],
             // 当前server的日志配置(不是swoole的日志)
@@ -227,10 +227,10 @@ class TcpServer extends AServerManager
             // the swoole runtime setting
             'swoole' => [
                 // 'user'    => '',
-                'worker_num'    => 4,
+                'worker_num' => 4,
                 'task_worker_num' => 2, // 启用 task worker,必须为Server设置onTask和onFinish回调
-                'daemonize'     => 0,
-                'max_request'   => 1000,
+                'daemonize' => 0,
+                'max_request' => 1000,
                 'dispatch_mode' => 1,
                 // 'log_file' , // '/tmp/swoole.log', // 不设置log_file会打印到屏幕
             ],

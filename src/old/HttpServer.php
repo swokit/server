@@ -59,22 +59,22 @@ class HttpServer extends TcpServer
      * @var array
      */
     public static $staticAssets = [
-        'js'    => 'application/x-javascript',
-        'css'   => 'text/css',
-        'bmp'   => 'image/bmp',
-        'png'   => 'image/png',
-        'jpg'   => 'image/jpeg',
-        'jpeg'  => 'image/jpeg',
-        'gif'   => 'image/gif',
-        'ico'   => 'image/x-icon',
-        'json'  => 'application/json',
-        'svg'   => 'image/svg+xml',
-        'woff'  => 'application/font-woff',
+        'js' => 'application/x-javascript',
+        'css' => 'text/css',
+        'bmp' => 'image/bmp',
+        'png' => 'image/png',
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'gif' => 'image/gif',
+        'ico' => 'image/x-icon',
+        'json' => 'application/json',
+        'svg' => 'image/svg+xml',
+        'woff' => 'application/font-woff',
         'woff2' => 'application/font-woff2',
-        'ttf'   => 'application/x-font-ttf',
-        'eot'   => 'application/vnd.ms-fontobject',
-        'htm'   => 'text/html',
-        'html'  => 'text/html',
+        'ttf' => 'application/x-font-ttf',
+        'eot' => 'application/vnd.ms-fontobject',
+        'htm' => 'text/html',
+        'html' => 'text/html',
     ];
 
     /**
@@ -84,7 +84,7 @@ class HttpServer extends TcpServer
     {
         $this->swooleProtocolEvents['tcp'] = [
             'connect' => 'onTcpConnect',
-            'close'   => 'onTcpClose',
+            'close' => 'onTcpClose',
             'receive' => 'onTcpReceive',
         ];
 
@@ -98,14 +98,14 @@ class HttpServer extends TcpServer
     {
         $opts = $this->config['http_server'];
 
-        if ( !$opts['enable'] ) {
+        if (!$opts['enable']) {
             return parent::createMainServer();
         }
 
         $mode = $opts['mode'] === self::MODE_BASE ? SWOOLE_BASE : SWOOLE_PROCESS;
 
         // if want enable SSL(https)
-        if ( self::PROTOCOL_HTTPS === $opts['type'] ) {
+        if (self::PROTOCOL_HTTPS === $opts['type']) {
             $this->checkEnvWhenEnableSSL();
             $type = self::PROTOCOL_HTTPS;
             $socketType = SWOOLE_SOCK_TCP | SWOOLE_SSL;
@@ -147,7 +147,7 @@ class HttpServer extends TcpServer
             $this->log("Attach a $type listening service on <default>{$opts['host']}:{$opts['port']}</default>", [], 'info');
 
             $events = $this->swooleProtocolEvents[$type];
-            $this->log("Register listen port events to the attached $type server:\n " . implode(',',$events), [], 'info');
+            $this->log("Register listen port events to the attached $type server:\n " . implode(',', $events), [], 'info');
 
             $this->registerListenerEvents($this->attachedListener, $events);
 
@@ -174,9 +174,9 @@ class HttpServer extends TcpServer
         HttpServer::run();
         */
 
-       $this->createApplicationCallback = $callback;
+        $this->createApplicationCallback = $callback;
 
-       return $this;
+        return $this;
     }
 
     /**
@@ -203,7 +203,7 @@ class HttpServer extends TcpServer
             'enable_static' => true,
             'static_setting' => [
                 // 'url_match' => 'assets dir',
-                '/assets'  => 'public/assets',
+                '/assets' => 'public/assets',
                 '/uploads' => 'public/uploads'
             ],
         ];
@@ -223,14 +223,14 @@ class HttpServer extends TcpServer
     /**
      * onWorkerStart
      * @param  SwServer $server
-     * @param  int      $workerId
+     * @param  int $workerId
      */
     public function onWorkerStart(SwServer $server, $workerId)
     {
         parent::onWorkerStart($server, $workerId);
 
         // create application
-        if ( !$server->taskworker &&  ($callback = $this->createApplicationCallback) ) {
+        if (!$server->taskworker && ($callback = $this->createApplicationCallback)) {
             $this->app = $callback($this);
 
             $this->log("The app instance has been created, on the worker {$workerId}.", [
@@ -248,7 +248,7 @@ class HttpServer extends TcpServer
         $method = $request->server['request_method'];
         $enableStatic = $this->config->get('http_server.enable_static', false);
 
-        if ( $enableStatic && $this->handleStaticAssets($request, $response, $uri) ) {
+        if ($enableStatic && $this->handleStaticAssets($request, $response, $uri)) {
             $this->log("Access asset: $uri");
             return true;
         }
@@ -260,7 +260,7 @@ class HttpServer extends TcpServer
         ]);
 
         // test: `curl 127.0.0.1:9501/ping`
-        if ( $uri === '/ping' ) {
+        if ($uri === '/ping') {
             return $response->end('+PONG' . PHP_EOL);
         }
 
@@ -268,7 +268,7 @@ class HttpServer extends TcpServer
         // $this->collectionRequestData($request);
 
         try {
-            if ( !($cb = $this->requestHandler) || !($cb instanceof \Closure) ) {
+            if (!($cb = $this->requestHandler) || !($cb instanceof \Closure)) {
                 $this->log("Please setting the 'requestHandler' property to handle http request.", [], 'error');
 
                 throw new \LogicException("Please setting the 'requestHandler' property.");
@@ -312,15 +312,15 @@ class HttpServer extends TcpServer
      * TCP Port 接收到数据
      *     使用 `fd` 保存客户端IP，`from_id` 保存 `from_fd` 和 `port`
      * @param  SwServer $server
-     * @param  int           $fd
-     * @param  int           $fromId
-     * @param  mixed         $data
+     * @param  int $fd
+     * @param  int $fromId
+     * @param  mixed $data
      */
     public function onTcpReceive(SwServer $server, $fd, $fromId, $data)
     {
         $this->log("Receive data [$data] from client [FD:$fd] on the listen port.");
 
-        $server->send($fd, "Server: ".$data);
+        $server->send($fd, "Server: " . $data);
     }
 
 //////////////////////////////////////////////////////////////////////
@@ -335,9 +335,9 @@ class HttpServer extends TcpServer
      * @param string $uri
      * @return bool
      */
-   protected function handleStaticAssets(SwRequest $request, SwResponse $response, $uri = '')
-   {
-        $uri = $uri ?:$request->server['request_uri'];
+    protected function handleStaticAssets(SwRequest $request, SwResponse $response, $uri = '')
+    {
+        $uri = $uri ?: $request->server['request_uri'];
 
         // 请求 /favicon.ico 过滤
         if ($request->server['path_info'] === '/favicon.ico' || $uri === '/favicon.ico') {
@@ -349,8 +349,8 @@ class HttpServer extends TcpServer
         // $this->log("begin check '.' point exists in the asset $uri");
 
         # 没有任何后缀 || 没有资源处理配置 返回交给php继续处理
-        if (false === strrpos($uri, '.') || !$setting ) {
-           return false;
+        if (false === strrpos($uri, '.') || !$setting) {
+            return false;
         }
 
         $exts = array_keys(static::$staticAssets);
@@ -359,7 +359,7 @@ class HttpServer extends TcpServer
         // $this->log("begin match ext for the asset $uri, result: " . preg_match("/\.($extReg)/i", $uri, $matches), $exts);
 
         // 资源后缀匹配失败 返回交给php继续处理
-        if ( 1 !== preg_match("/\.($extReg)/i", $uri, $matches) ) {
+        if (1 !== preg_match("/\.($extReg)/i", $uri, $matches)) {
             return false;
         }
 
@@ -376,14 +376,14 @@ class HttpServer extends TcpServer
 
         foreach ($setting as $urlMatch => $assetDir) {
             // match success
-            if ( $urlBegin === $urlMatch ) {
+            if ($urlBegin === $urlMatch) {
                 $matched = true;
                 break;
             }
         }
 
         // url匹配失败 返回交给php继续处理
-        if ( !$matched ) {
+        if (!$matched) {
             return false;
         }
 
@@ -394,24 +394,24 @@ class HttpServer extends TcpServer
         // 必须要有内容类型
         $response->header('Content-Type', static::$staticAssets[$ext]);
 
-        if ( is_file($file) ) {
+        if (is_file($file)) {
             // 设置缓存头信息
             $time = 86400;
-            $response->header('Cache-Control', 'max-age='. $time);
-            $response->header('Pragma'       , 'cache');
+            $response->header('Cache-Control', 'max-age=' . $time);
+            $response->header('Pragma', 'cache');
             $response->header('Last-Modified', date('D, d M Y H:i:s \G\M\T', filemtime($file)));
-            $response->header('Expires'      , date('D, d M Y H:i:s \G\M\T', time() + $time));
+            $response->header('Expires', date('D, d M Y H:i:s \G\M\T', time() + $time));
             // 直接发送文件 不支持gzip
             $response->sendfile($file);
         } else {
-            $this->log("Assets $uri file not exists: $file",[], 'warning');
+            $this->log("Assets $uri file not exists: $file", [], 'warning');
 
             $response->status(404);
             $response->end("Assets not found: $uri\n");
         }
 
         return true;
-   }
+    }
 
     /**
      * Collection Request Data
@@ -466,10 +466,10 @@ class HttpServer extends TcpServer
                 return;
         }
         $message = $error['message'];
-        $file    = $error['file'];
-        $line    = $error['line'];
-        $log     = "\n异常提示：$message ($file:$line)\nStack trace:\n";
-        $trace   = debug_backtrace(1);
+        $file = $error['file'];
+        $line = $error['line'];
+        $log = "\n异常提示：$message ($file:$line)\nStack trace:\n";
+        $trace = debug_backtrace(1);
         foreach ($trace as $i => $t) {
             if (!isset($t['file'])) {
                 $t['file'] = 'unknown';

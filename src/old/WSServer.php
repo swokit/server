@@ -31,7 +31,7 @@ class WSServer extends HttpServer
     {
         $swOpts = $this->config['web_socket_server'];
 
-        if ( !$swOpts['enable'] ) {
+        if (!$swOpts['enable']) {
             return parent::createMainServer();
         }
 
@@ -40,7 +40,7 @@ class WSServer extends HttpServer
         $mode = $opts['mode'] === self::MODE_BASE ? SWOOLE_BASE : SWOOLE_PROCESS;
 
         // if want enable SSL(https)
-        if ( self::PROTOCOL_HTTPS === $opts['type'] ) {
+        if (self::PROTOCOL_HTTPS === $opts['type']) {
             $this->checkEnvWhenEnableSSL();
             $type = self::PROTOCOL_WSS;
             $socketType = SWOOLE_SOCK_TCP | SWOOLE_SSL;
@@ -53,12 +53,12 @@ class WSServer extends HttpServer
         $this->setSwooleEvents($this->swooleProtocolEvents[self::PROTOCOL_WS]);
 
         // enable http request handle
-        if ( $opts['enable'] ) {
+        if ($opts['enable']) {
             $handleHttp = 'ENABLED';
             $this->setSwooleEvent('request', 'onRequest');
         }
 
-        $this->log("Create a $type main server on <default>{$opts['host']}:{$opts['port']}</default> (http request handle: $handleHttp)",[], 'info');
+        $this->log("Create a $type main server on <default>{$opts['host']}:{$opts['port']}</default> (http request handle: $handleHttp)", [], 'info');
 
         // create swoole WebSocket server
         $server = new SwWSServer($opts['host'], $opts['port'], $mode, $socketType);
@@ -89,7 +89,7 @@ class WSServer extends HttpServer
 
     /**
      * webSocket 连接上时
-     * @param  SwWSServer  $server
+     * @param  SwWSServer $server
      * @param  SwRequest $request
      */
     public function onOpen(SwWSServer $server, SwRequest $request)
@@ -103,7 +103,7 @@ class WSServer extends HttpServer
     /**
      * webSocket 收到消息时
      * @param  SwWSServer $server
-     * @param  Frame  $frame
+     * @param  Frame $frame
      */
     public function onMessage(SwWSServer $server, Frame $frame)
     {
@@ -131,7 +131,7 @@ class WSServer extends HttpServer
     /**
      * webSocket断开连接
      * @param  SwServer $server
-     * @param  int      $fd
+     * @param  int $fd
      */
     public function onClose(SwServer $server, $fd)
     {
@@ -154,7 +154,7 @@ class WSServer extends HttpServer
         */
         $fdInfo = $server->connection_info($fd);
 
-        if ( $fdInfo['websocket_status'] > 0 ) {
+        if ($fdInfo['websocket_status'] > 0) {
             $this->log("Client-{$fd} is closed", $fdInfo);
         }
     }

@@ -63,12 +63,12 @@ class WSServerHandler extends HttpServerHandler
 
     /**
      * webSocket 连接上时
-     * @param  SwWSServer  $server
+     * @param  SwWSServer $server
      * @param  SwRequest $request
      */
     public function onOpen(SwWSServer $server, SwRequest $request)
     {
-        $this->rid = base_convert( str_replace('.', '', microtime(1)), 10, 16) . "0{$request->fd}";
+        $this->rid = base_convert(str_replace('.', '', microtime(1)), 10, 16) . "0{$request->fd}";
 
         $this->log("onOpen: Client [fd:{$request->fd}] open connection.");
 
@@ -79,7 +79,7 @@ class WSServerHandler extends HttpServerHandler
     /**
      * webSocket 收到消息时
      * @param  SwWSServer $server
-     * @param  Frame  $frame
+     * @param  Frame $frame
      */
     public function onMessage(SwWSServer $server, Frame $frame)
     {
@@ -106,7 +106,7 @@ class WSServerHandler extends HttpServerHandler
     /**
      * webSocket断开连接
      * @param  SwServer $server
-     * @param  int      $fd
+     * @param  int $fd
      */
     public function onClose(SwServer $server, $fd)
     {
@@ -130,7 +130,7 @@ class WSServerHandler extends HttpServerHandler
         $fdInfo = $server->connection_info($fd);
 
         // is socket request
-        if ( $fdInfo['websocket_status'] > 0 ) {
+        if ($fdInfo['websocket_status'] > 0) {
             $this->log("onClose: Client #{$fd} is closed", $fdInfo);
         }
     }
@@ -142,7 +142,7 @@ class WSServerHandler extends HttpServerHandler
      */
     public function broadcast(SwWSServer $server, $data)
     {
-        foreach($server->connections as $fd) {
+        foreach ($server->connections as $fd) {
             $server->push($fd, json_encode((array)$data));
         }
     }

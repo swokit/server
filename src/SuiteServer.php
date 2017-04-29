@@ -201,16 +201,16 @@ class SuiteServer extends AServerManager
 
             // is a Closure callback, add by self::on()
             if ($cb = $this->getEventCallback($name)) {
-                $eventInfo[] = [ $name, $method];
+                $eventInfo[] = [$name, $method];
                 $this->server->on($name, $cb);
             }
 
-            if( method_exists($handler, $method) ) {
-                $eventInfo[] = [ $name, "$className->$method"];
+            if (method_exists($handler, $method)) {
+                $eventInfo[] = [$name, "$className->$method"];
                 $this->server->on($name, array($handler, $method));
 
-            // if use Custom Outside Handler
-            } else if ( $isOutsideHandler && method_exists($this, $method) ) {
+                // if use Custom Outside Handler
+            } else if ($isOutsideHandler && method_exists($this, $method)) {
                 $eventInfo[] = [$name, static::class . "->$method"];
                 $this->server->on($name, array($this, $method));
             }
@@ -264,7 +264,7 @@ class SuiteServer extends AServerManager
      */
     public function setExtendServer($extendServer)
     {
-        if ( is_string($extendServer) ) {
+        if (is_string($extendServer)) {
             $handler = new $extendServer;
         } elseif (is_object($extendServer)) {
             $handler = $extendServer;
@@ -273,7 +273,7 @@ class SuiteServer extends AServerManager
         }
 
         if (!($handler instanceof IExtendServer)) {
-            throw new \RuntimeException('The extend server handler class must be instanceof the ' . IExtendServer::class );
+            throw new \RuntimeException('The extend server handler class must be instanceof the ' . IExtendServer::class);
         }
 
         $handler->setMgr($this);
@@ -332,14 +332,14 @@ class SuiteServer extends AServerManager
      */
     public function registerAttachServerEvents($port, $handler, array $events)
     {
-        foreach ($events as $event => $method ) {
+        foreach ($events as $event => $method) {
             // ['onConnect'] --> 'Connect', 'onConnect
-            if ( is_int($event) ) {
-                $event = substr($method,2);
+            if (is_int($event)) {
+                $event = substr($method, 2);
             }
 
             // e.g $server->on('Request', [$this, 'onRequest']);
-            if ( method_exists($handler, $method) ) {
+            if (method_exists($handler, $method)) {
                 $port->on($event, [$handler, $method]);
             }
         }
@@ -355,10 +355,12 @@ class SuiteServer extends AServerManager
     {
         return $this->attachListenServer($name, $config);
     }
+
     public function attachServer($name, $config)
     {
         return $this->attachListenServer($name, $config);
     }
+
     public function attachListenServer($name, $config)
     {
         $name = strtolower($name);
@@ -367,21 +369,21 @@ class SuiteServer extends AServerManager
             throw new \RuntimeException("The add listen port server [$name] exists!");
         }
 
-        if ( is_array($config) ) {
-            $cb = function(SwServer $server, SuiteServer $mgr) use ($config) {
+        if (is_array($config)) {
+            $cb = function (SwServer $server, SuiteServer $mgr) use ($config) {
                 $type = $config['type'];
                 $allowed = [self::PROTOCOL_TCP, self::PROTOCOL_UDP];
 
-                if ( !in_array($type, $allowed) ) {
+                if (!in_array($type, $allowed)) {
                     $str = implode(',', $allowed);
-                    $this->cliOut->error("Tha attach listen server type only allow: $str. don't support [$type]",1);
+                    $this->cliOut->error("Tha attach listen server type only allow: $str. don't support [$type]", 1);
                 }
 
                 $socketType = $type === self::PROTOCOL_UDP ? SWOOLE_SOCK_UDP : SWOOLE_SOCK_TCP;
                 $evtHandler = $config['event_handler'];
-                $handler =  new $evtHandler;
+                $handler = new $evtHandler;
 
-                if ( !($handler instanceof ITcpListenHandler) && !($handler instanceof IUdpListenHandler) ) {
+                if (!($handler instanceof ITcpListenHandler) && !($handler instanceof IUdpListenHandler)) {
                     throw new InvalidArgumentException(
                         'The event handler must implement of ' . ITcpListenHandler::class . ' Or ' . IUdpListenHandler::class
                     );
@@ -397,7 +399,7 @@ class SuiteServer extends AServerManager
                 return $port;
             };
 
-        } elseif ( $config instanceof \Closure ) {
+        } elseif ($config instanceof \Closure) {
             $cb = $config;
 
         } else {
@@ -418,9 +420,10 @@ class SuiteServer extends AServerManager
     {
         return $this->getAttachedServer($name);
     }
+
     public function getAttachedServer($name)
     {
-        if ( !isset($this->attachedNames[$name]) ) {
+        if (!isset($this->attachedNames[$name])) {
             throw new \RuntimeException("The add listen port server [$name] don't exists!");
         }
 
@@ -473,10 +476,10 @@ class SuiteServer extends AServerManager
                 'coroutine' => class_exists('\Swoole\Coroutine', false),
             ],
             'Swoole Config' => [
-                'dispatch_mode'   => $swOpts['dispatch_mode'],
-                'worker_num'      => $swOpts['worker_num'],
+                'dispatch_mode' => $swOpts['dispatch_mode'],
+                'worker_num' => $swOpts['worker_num'],
                 'task_worker_num' => $swOpts['task_worker_num'],
-                'max_request'     => $swOpts['max_request'],
+                'max_request' => $swOpts['max_request'],
             ],
             'Main Server' => [
                 'type' => $main['type'],
@@ -515,27 +518,27 @@ class SuiteServer extends AServerManager
                 'type' => 'tcp', // http https tcp udp ws wss
 
                 // append register swoole events
-                'extend_events'   => [], // e.g [ 'onRequest', ]
+                'extend_events' => [], // e.g [ 'onRequest', ]
 
                 // use outside's extend event handler
                 'extend_server' => '', // e.g '\inhere\server\extend\HttpServerHandler'
             ],
             // for attach servers
             'attach_servers' => [
-               // 'tcp1' => [
-               //     'host' => '0.0.0.0',
-               //     'port' => '9661',
-               //     'type' => 'tcp',
+                // 'tcp1' => [
+                //     'host' => '0.0.0.0',
+                //     'port' => '9661',
+                //     'type' => 'tcp',
 
-                    // setting event handler
-               //     'event_handler' => '', // e.g '\inhere\server\listeners\TcpListenHandler'
-               //     'event_list'   => [], // e.g [ 'onReceive', ]
-               // ],
+                // setting event handler
+                //     'event_handler' => '', // e.g '\inhere\server\listeners\TcpListenHandler'
+                //     'event_list'   => [], // e.g [ 'onReceive', ]
+                // ],
 
-               // 'udp1' => [
-               //     'host' => '0.0.0.0',
-               //     'port' => '9660',
-               // ]
+                // 'udp1' => [
+                //     'host' => '0.0.0.0',
+                //     'port' => '9660',
+                // ]
             ],
 
             // for current main server/ outside extend server options.

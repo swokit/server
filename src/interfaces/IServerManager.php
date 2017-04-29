@@ -28,12 +28,12 @@ interface IServerManager
      * the main server allow socket protocol type:
      * tcp udp http https(http + ssl) ws wss(webSocket + ssl)
      */
-    const PROTOCOL_TCP  = 'tcp';
-    const PROTOCOL_UDP  = 'udp';
+    const PROTOCOL_TCP = 'tcp';
+    const PROTOCOL_UDP = 'udp';
     const PROTOCOL_HTTP = 'http';
     const PROTOCOL_HTTPS = 'https';
-    const PROTOCOL_WS    = 'ws';  // webSocket
-    const PROTOCOL_WSS   = 'wss'; // webSocket ssl
+    const PROTOCOL_WS = 'ws';  // webSocket
+    const PROTOCOL_WSS = 'wss'; // webSocket ssl
 
     public static function run($config = [], $start = true);
 
@@ -41,7 +41,7 @@ interface IServerManager
 
     public function start();
 
-     /**
+    /**
      * @return array
      */
     public function getSupportedProtocols();

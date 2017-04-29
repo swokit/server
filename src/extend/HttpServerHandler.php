@@ -80,22 +80,22 @@ class HttpServerHandler extends AExtendServerHandler
      * @var array
      */
     public static $staticAssets = [
-        'js'    => 'application/x-javascript',
-        'css'   => 'text/css',
-        'bmp'   => 'image/bmp',
-        'png'   => 'image/png',
-        'jpg'   => 'image/jpeg',
-        'jpeg'  => 'image/jpeg',
-        'gif'   => 'image/gif',
-        'ico'   => 'image/x-icon',
-        'json'  => 'application/json',
-        'svg'   => 'image/svg+xml',
-        'woff'  => 'application/font-woff',
+        'js' => 'application/x-javascript',
+        'css' => 'text/css',
+        'bmp' => 'image/bmp',
+        'png' => 'image/png',
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'gif' => 'image/gif',
+        'ico' => 'image/x-icon',
+        'json' => 'application/json',
+        'svg' => 'image/svg+xml',
+        'woff' => 'application/font-woff',
         'woff2' => 'application/font-woff2',
-        'ttf'   => 'application/x-font-ttf',
-        'eot'   => 'application/vnd.ms-fontobject',
-        'htm'   => 'text/html',
-        'html'  => 'text/html',
+        'ttf' => 'application/x-font-ttf',
+        'eot' => 'application/vnd.ms-fontobject',
+        'htm' => 'text/html',
+        'html' => 'text/html',
     ];
 
     /**
@@ -125,7 +125,7 @@ class HttpServerHandler extends AExtendServerHandler
             'ext' => [],
             'map' => [
                 // 'url_match' => 'assets dir',
-                '/assets'  => 'public/assets',
+                '/assets' => 'public/assets',
                 '/uploads' => 'public/uploads'
             ]
         ],
@@ -145,7 +145,7 @@ class HttpServerHandler extends AExtendServerHandler
     /**
      * onWorkerStart
      * @param  SwServer $server
-     * @param  int      $workerId
+     * @param  int $workerId
      */
 //    public function onWorkerStart(SwServer $server, $workerId)
 //    {
@@ -187,7 +187,7 @@ class HttpServerHandler extends AExtendServerHandler
         $opts = $this->options['session'];
         $name = $opts['name'] = $opts['name'] ?: session_name();
 
-        if ( ($path = $opts['save_path']) && !is_dir($path) ) {
+        if (($path = $opts['save_path']) && !is_dir($path)) {
             mkdir($path, 0755, true);
         }
 
@@ -222,7 +222,7 @@ class HttpServerHandler extends AExtendServerHandler
         // 捕获异常
         register_shutdown_function(array($this, 'handleFatal'));
 
-        $this->rid = base_convert( str_replace('.', '', microtime(1)), 10, 16) . "0{$request->fd}";
+        $this->rid = base_convert(str_replace('.', '', microtime(1)), 10, 16) . "0{$request->fd}";
         $uri = $request->server['request_uri'];
 
         // test: `curl 127.0.0.1:9501/ping`
@@ -371,7 +371,7 @@ class HttpServerHandler extends AExtendServerHandler
      */
     protected function handleStaticAccess(SwRequest $request, SwResponse $response, $uri)
     {
-        $uri = $uri ?:$request->server['request_uri'];
+        $uri = $uri ?: $request->server['request_uri'];
 
         // 请求 /favicon.ico 过滤
         if (
@@ -431,14 +431,14 @@ class HttpServerHandler extends AExtendServerHandler
         if (is_file($file)) {
             // 设置缓存头信息
             $time = 86400;
-            $response->header('Cache-Control', 'max-age='. $time);
-            $response->header('Pragma'       , 'cache');
+            $response->header('Cache-Control', 'max-age=' . $time);
+            $response->header('Pragma', 'cache');
             $response->header('Last-Modified', date('D, d M Y H:i:s \G\M\T', filemtime($file)));
-            $response->header('Expires'      , date('D, d M Y H:i:s \G\M\T', time() + $time));
+            $response->header('Expires', date('D, d M Y H:i:s \G\M\T', time() + $time));
             // 直接发送文件 不支持gzip
             $response->sendfile($file);
         } else {
-            $this->log("Assets $uri file not exists: $file",[], 'warning');
+            $this->log("Assets $uri file not exists: $file", [], 'warning');
 
             $response->status(404);
             $response->end("Assets not found: $uri\n");
@@ -468,10 +468,10 @@ class HttpServerHandler extends AExtendServerHandler
                 return;
         }
         $message = $error['message'];
-        $file    = $error['file'];
-        $line    = $error['line'];
-        $log     = "\n异常提示：$message ($file:$line)\nStack trace:\n";
-        $trace   = debug_backtrace(1);
+        $file = $error['file'];
+        $line = $error['line'];
+        $log = "\n异常提示：$message ($file:$line)\nStack trace:\n";
+        $trace = debug_backtrace(1);
         foreach ($trace as $i => $t) {
             if (!isset($t['file'])) {
                 $t['file'] = 'unknown';
