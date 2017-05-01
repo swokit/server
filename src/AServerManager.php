@@ -693,6 +693,22 @@ abstract class AServerManager implements IServerManager
 //////////////////////////////////////////////////////////////////////
 
     /**
+     * @return bool
+     */
+    public function isDebug(): bool
+    {
+        return $this->debug;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDaemonize(): bool
+    {
+        return $this->daemonize;
+    }
+
+    /**
      * @param array $events
      */
     public function setSwooleEvents(array $events)
@@ -1049,12 +1065,13 @@ abstract class AServerManager implements IServerManager
 
         // if close debug, don't output debug log.
         if (!$this->daemonize) {
-            [$time, $micro] = explode('.', microtime(1));
-            $time = date('Y-m-d H:i:s', $time);
+            [$ts, $ms] = explode('.', sprintf('%f', microtime(true)));
+            $ms = str_pad($ms, 6, 0);
+            $time = date('Y-m-d H:i:s', $ts);
 
-            $data = $data ? json_encode($data) : '';
+            $json = $data ? json_encode($data) : '';
             $type = strtoupper($type);
-            $this->cliOut->write("[{$time}.{$micro}] [$type] $msg {$data}");
+            $this->cliOut->write("[{$time}.{$ms}] [$type] $msg {$json}");
         }
 
         if ($this->hasLogger()) {

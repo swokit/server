@@ -493,7 +493,9 @@ class SuiteServer extends AServerManager
                 'name' => $this->name,
                 'path' => $this->config->get('root_path'),
                 'auto_reload' => $this->config->get('auto_reload'),
+                'pid_file' => $this->config->get('pid_file'),
             ],
+            'Server Log' => $this->config->get('log_service'),
         ];
 
         Interact::panel($panelData, 'Server Information');

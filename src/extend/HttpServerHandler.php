@@ -8,6 +8,7 @@
 
 namespace inhere\server\extend;
 
+use inhere\library\helpers\PhpHelper;
 use inhere\server\AExtendServerHandler;
 use Swoole\Server as SwServer;
 use Swoole\Http\Response as SwResponse;
@@ -235,17 +236,19 @@ class HttpServerHandler extends AExtendServerHandler
             return true;
         }
 
+        $status = 200;
+        $headers = [];
         $this->beforeRequest($request, $response);
 
         try {
             if (!$cb = $this->dynamicRequestHandler) {
                 $this->log("Please set the property 'dynamicRequestHandler' to handle dynamic request(if you need).", [], 'notice');
-                $bodyContent = 'No content to display';
+                $content = 'No content to display';
             } else {
-                $bodyContent = $cb($request, $response);
+                [$status, $headers, $content] = $cb($request, $response);
             }
 
-            $this->respond($bodyContent);
+            $this->respond($content, $status, $headers);
         } catch (\Throwable $e) {
             $this->handleException($e);
         }
@@ -257,17 +260,33 @@ class HttpServerHandler extends AExtendServerHandler
 
     /**
      * @param string $content
+     * @param int $status
+     * @param array $headers
      * @return mixed
      */
-    public function respond($content = '')
+    public function respond(string $content = '', int $status = 200, array $headers = [])
     {
         // $this->beforeResponse($content);
         $opts = $this->options['response'];
+
+        // http status
+        $this->response->status($status);
+
+        // headers
+        foreach ($headers as $name => $value) {
+            $this->response->header($name, $value);
+        }
 
         // open gzip
         if ($content && isset($opts['gzip']) && $opts['gzip']) {
             $this->response->gzip(1);
         }
+
+        $this->getCliOut()->write([
+            "Response Status: <info>$status</info>"
+        ]);
+        $this->getCliOut()->aList($headers, 'Response Headers');
+        $this->getCliOut()->aList($_SESSION ?: [],'server sessions');
 
         return $this->response->end($content);
     }
@@ -348,9 +367,21 @@ class HttpServerHandler extends AExtendServerHandler
     /**
      * @return bool
      */
-    protected function isWebSocket()
+    public function isWebSocket()
     {
         return isset($this->request->header['upgrade']) && strtolower($this->request->header['upgrade']) === 'websocket';
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAjax()
+    {
+        if (isset($this->request->header['x-requested-with'])) {
+            return $this->request->header['x-requested-with'] === 'XMLHttpRequest';
+        }
+
+        return false;
     }
 
     /**
@@ -358,7 +389,19 @@ class HttpServerHandler extends AExtendServerHandler
      */
     protected function handleException(\Throwable $e)
     {
-        var_dump($e);
+        if ($this->isAjax()) {
+            $headers = ['Content-Type', 'application/json; charset=utf-8'];
+            $content = json_encode([
+                'code' => $e->getCode() ?: 500,
+                'msg'  => $e->getMessage(),
+                'data' => $e->getTrace()
+            ]);
+        } else {
+            $headers = ['Content-Type', 'text/html; charset=utf-8'];
+            $content = PhpHelper::convertExceptionToString($e, '<br>', $this->mgr->isDebug());
+        }
+
+        $this->respond($content, 200, $headers);
     }
 
     /**
