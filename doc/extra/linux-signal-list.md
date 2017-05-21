@@ -16,7 +16,8 @@ SIGQUIT 和SIGINT类似, 但由QUIT字符(通常是Ctrl-\)来控制. 进程在�
 - `SIGUSR1` 留给用户使用
 - `SIGSEGV`
 - `SIGUSR2` 留给用户使用  
-- `SIGPIPE`
+- `SIGPIPE` 如果尝试send到一个已关闭的 socket上两次，就会出现此信号，也就是用协议TCP的socket编程，服务器是不能知道客户机什么时候已经关闭了socket，导致还在向该已关 闭的socket上send，导致SIGPIPE。
+            而系统默认产生SIGPIPE信号的措施是关闭进程，所以出现了服务器也退出。
 - `SIGALRM` 时钟定时信号, 计算的是实际的时间或时钟时间. alarm函数使用该信号. 
 - `SIGTERM` 程序结束(terminate)信号, 与SIGKILL不同的是该信号可以被阻塞和处理。通常用来要求程序自己正常退出，shell命令kill缺省产生这个信号。如果进程终止不了，我们才会尝试SIGKILL。 
 - `SIGCHLD` 子进程结束时, 父进程会收到这个信号。  

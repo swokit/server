@@ -356,7 +356,7 @@ abstract class AServerManager implements IServerManager
 
         $this->checkInputCommand($command);
 
-        $masterPid = ProcessHelper::getPidByPidFile($this->pidFile);
+        $masterPid = ProcessHelper::getPidFromFile($this->pidFile);
         $masterIsStarted = ($masterPid > 0) && @posix_kill($masterPid, 0);
 
         // start: do Start Server
@@ -545,7 +545,7 @@ abstract class AServerManager implements IServerManager
             file_put_contents($this->pidFile, $masterPid);
         }
 
-        ProcessHelper::setProcessTitle("swoole: master ({$this->name} IN $projectPath)");
+        ProcessHelper::setTitle("swoole: master ({$this->name} IN $projectPath)");
 
         $this->log("The master process success started. (PID:<notice>{$masterPid}</notice>, pid_file: $pidFile)");
     }
@@ -589,7 +589,7 @@ abstract class AServerManager implements IServerManager
     public function onManagerStart(SwServer $server)
     {
         // file_put_contents($pidFile, ',' . $server->manager_pid, FILE_APPEND);
-        ProcessHelper::setProcessTitle("swoole: manager ({$this->name})");
+        ProcessHelper::setTitle("swoole: manager ({$this->name})");
 
         $this->log("The manager process success started. (PID:{$server->manager_pid})");
     }
@@ -616,7 +616,7 @@ abstract class AServerManager implements IServerManager
 
         $this->log("The #<primary>{$workerId}</primary> {$taskMark} process success started. (PID:{$server->worker_pid})");
 
-        ProcessHelper::setProcessTitle("swoole: {$taskMark} ({$this->name})");
+        ProcessHelper::setTitle("swoole: {$taskMark} ({$this->name})");
 
         // ServerHelper::setUserAndGroup();
 
@@ -969,7 +969,7 @@ abstract class AServerManager implements IServerManager
         // 创建用户自定义的工作进程worker
         $this->reloadWorker = new SwProcess(function (SwProcess $process) use ($options, $mgr) {
 
-            ProcessHelper::setProcessTitle("swoole: reloader ({$mgr->name})");
+            ProcessHelper::setTitle("swoole: reloader ({$mgr->name})");
             $kit = new AutoReloader($options['masterPid']);
 
             $onlyReloadTask = isset($options['only_reload_task']) ? (bool)$options['only_reload_task'] : false;
