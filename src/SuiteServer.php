@@ -14,7 +14,7 @@ use inhere\server\interfaces\IUdpListenHandler;
 use inhere\server\interfaces\IExtendServer;
 
 use inhere\exceptions\InvalidArgumentException;
-use inhere\library\env\Server as ServerEnv;
+use inhere\libraryPlus\env\Server as ServerEnv;
 use inhere\console\utils\Interact;
 
 use Swoole\Server as SwServer;
@@ -80,7 +80,7 @@ class SuiteServer extends AServerManager
 
         // register attach server from config
         if ($attachServers = $config['attach_servers']) {
-            foreach ($attachServers as $name => $conf) {
+            foreach ((array)$attachServers as $name => $conf) {
                 $this->attachListenServer($name, $conf);
             }
         }
@@ -374,7 +374,7 @@ class SuiteServer extends AServerManager
                 $type = $config['type'];
                 $allowed = [self::PROTOCOL_TCP, self::PROTOCOL_UDP];
 
-                if (!in_array($type, $allowed)) {
+                if (!in_array($type, $allowed, true)) {
                     $str = implode(',', $allowed);
                     $this->cliOut->error("Tha attach listen server type only allow: $str. don't support [$type]", 1);
                 }
