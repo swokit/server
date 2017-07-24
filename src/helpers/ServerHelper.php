@@ -6,10 +6,9 @@
  * Time: 15:11
  */
 
-namespace inhere\server;
+namespace inhere\server\helpers;
 
 use inhere\library\helpers\PhpHelper;
-
 use Swoole\Websocket\Server as SwWSServer;
 
 /**
@@ -21,13 +20,13 @@ class ServerHelper
     /**
      * 获取资源消耗
      * @param int $startTime
-     * @param int $startMem
+     * @param int|float $startMem
      * @return array
      */
     public static function runtime($startTime, $startMem)
     {
         // 显示运行时间
-        $return['time'] = number_format((microtime(true) - $startTime), 4) . 's';
+        $return['time'] = number_format(microtime(true) - $startTime, 4) . 's';
 
         $startMem = array_sum(explode(' ', $startMem));
         $endMem = array_sum(explode(' ', memory_get_usage()));
@@ -38,7 +37,7 @@ class ServerHelper
     }
 
     /**
-     *
+     * @throws \RuntimeException
      */
     public static function checkRuntimeEnv()
     {
@@ -46,7 +45,7 @@ class ServerHelper
             throw new \RuntimeException('Server must run in the CLI mode.');
         }
 
-        if (!PhpHelper::extIsLoaded('swoole', false)) {
+        if (!extension_loaded('swoole')) {
             throw new \RuntimeException('Run the server, extension \'swoole\' is required!');
         }
     }
@@ -56,11 +55,12 @@ class ServerHelper
      * @param SwWSServer $server
      * @param array $data
      */
-    public static function broadcastMessage(SwWSServer $server, $data)
+    public static function broadcast(SwWSServer $server, $data)
     {
         foreach ($server->connections as $fd) {
             $server->push($fd, json_encode((array)$data));
         }
     }
+
 
 }

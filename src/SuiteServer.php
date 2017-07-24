@@ -8,13 +8,12 @@
 
 namespace inhere\server;
 
-use inhere\library\collections\Config;
+use inhere\console\utils\Show;
 use inhere\server\interfaces\ITcpListenHandler;
 use inhere\server\interfaces\IUdpListenHandler;
-use inhere\server\interfaces\IExtendServer;
+use inhere\server\interfaces\IPortListenHandler;
 
 use inhere\exceptions\InvalidArgumentException;
-use inhere\libraryPlus\env\Server as ServerEnv;
 use inhere\console\utils\Interact;
 
 use Swoole\Server as SwServer;
@@ -27,17 +26,11 @@ use Swoole\Server\Port as SwServerPort;
  *  相对于其他的几个 server(TcpServer/HttpServer/WSServer) 自定义性更强，需要对swoole的运行逻辑有较好的理解
  * @package inhere\server
  */
-class SuiteServer extends AServerManager
+class SuiteServer extends AbstractServer
 {
     /**
-     * main server
-     * @var SwServer
-     */
-    public $server;
-
-    /**
      * The handler object instance for the main server
-     * @var IExtendServer
+     * @var IPortListenHandler
      */
     protected $extendServer;
 
@@ -71,27 +64,21 @@ class SuiteServer extends AServerManager
     public $attachedNames = [];
 
     /**
-     * @param Config $config
      * @return $this
      */
-    protected function init(Config $config)
+    protected function init()
     {
-        parent::init($config);
+        parent::init();
 
         // register attach server from config
-        if ($attachServers = $config['attach_servers']) {
+        if ($attachServers = $this->config['attach_servers']) {
             foreach ((array)$attachServers as $name => $conf) {
                 $this->attachListenServer($name, $conf);
             }
         }
 
-        // set outside extend server handler
-        if ($extendHandler = $config->get('main_server.extend_server')) {
-            $this->setExtendServer($extendHandler);
-        }
-
         // register main server event method
-        if ($methods = $config->get('main_server.extend_events')) {
+        if ($methods = $this->getValue('main_server.extend_events')) {
             $this->setSwooleEvents($methods);
         }
 
@@ -150,7 +137,7 @@ class SuiteServer extends AServerManager
 
             default:
                 $supportedProtocol = implode(',', $this->getSupportedProtocols());
-                $this->cliOut->error("The socket protocol <bold>$type</bold> is not supported. Allow: $supportedProtocol", 1);
+                Show::error("The socket protocol <bold>$type</bold> is not supported. Allow: $supportedProtocol", 1);
                 break;
         }
 
@@ -168,11 +155,6 @@ class SuiteServer extends AServerManager
     {
         parent::afterCreateMainServer();
 
-        // call the outside extend server `initCompleted()`
-        if ($this->extendServer) {
-            $this->extendServer->initCompleted();
-        }
-
         // attach registered listen port server to main server
         $this->startListenPortServers($this->server);
     }
@@ -182,17 +164,6 @@ class SuiteServer extends AServerManager
      */
     protected function registerMainServerEvents()
     {
-        // use custom outside main server event handler
-        if ($handler = $this->extendServer) {
-            $className = get_class($handler);
-            $isOutsideHandler = true;
-        } else {
-            // default register to self.
-            $handler = $this;
-            $className = static::class;
-            $isOutsideHandler = false;
-        }
-
         $events = $this->swooleEvents;
         $eventInfo = [];
 
@@ -205,12 +176,8 @@ class SuiteServer extends AServerManager
                 $this->server->on($name, $cb);
             }
 
-            if (method_exists($handler, $method)) {
-                $eventInfo[] = [$name, "$className->$method"];
-                $this->server->on($name, array($handler, $method));
-
-                // if use Custom Outside Handler
-            } else if ($isOutsideHandler && method_exists($this, $method)) {
+            // if use Custom Outside Handler
+            if (method_exists($this, $method)) {
                 $eventInfo[] = [$name, static::class . "->$method"];
                 $this->server->on($name, array($this, $method));
             }
@@ -220,7 +187,7 @@ class SuiteServer extends AServerManager
             'showBorder' => 0,
             'tHead' => ['event name', 'event handler']
         ];
-        $this->cliOut->table($eventInfo, 'Registered swoole events to the main server', $opts);
+        Show::table($eventInfo, 'Registered swoole events to the main server', $opts);
     }
 
 //////////////////////////////////////////////////////////////////////
@@ -228,16 +195,17 @@ class SuiteServer extends AServerManager
 //////////////////////////////////////////////////////////////////////
 
     /**
-     * register Event Handler Callback
+     * register a swoole Event Handler Callback
      * @param string $event
-     * @param \Closure $cb
+     * @param callable $handler
      * @return $this
      */
-    public function on(string $event, \Closure $cb)
+    public function onSwoole($event, callable $handler)
     {
+        // $this->server->on($event, $handler);
         $event = trim($event);
-        $this->setSwooleEvent($event, 'A-CLOSURE');
-        $this->eventCallbacks[$event] = $cb;
+        $this->setSwooleEvent($event, 'A custom handler');
+        $this->eventCallbacks[$event] = $handler;
 
         return $this;
     }
@@ -250,56 +218,8 @@ class SuiteServer extends AServerManager
     public function getEventCallback($event)
     {
         $event = strtolower($event);
-        $cb = $this->eventCallbacks[$event] ?? null;
-
-        if ($cb && $cb instanceof \Closure) {
-            return $cb;
-        }
-
-        return null;
+        return $this->eventCallbacks[$event] ?? null;
     }
-
-    /**
-     * @param IExtendServer|string $extendServer
-     */
-    public function setExtendServer($extendServer)
-    {
-        if (is_string($extendServer)) {
-            $handler = new $extendServer;
-        } elseif (is_object($extendServer)) {
-            $handler = $extendServer;
-        } else {
-            throw new \InvalidArgumentException('The parameter type only allow [string|object]');
-        }
-
-        if (!($handler instanceof IExtendServer)) {
-            throw new \RuntimeException('The extend server handler class must be instanceof the ' . IExtendServer::class);
-        }
-
-        $handler->setMgr($this);
-
-        if ($opts = $this->config->get('extend_options', [])) {
-            $handler->setOptions($opts, true);
-        }
-
-        $this->extendServer = $handler;
-    }
-
-    /**
-     * @return IExtendServer
-     *
-     * eg:
-     *
-     * ```
-     * \inhere\server\handlers\HttpServerHandler
-     * \inhere\server\handlers\TcpServerHandler
-     * ```
-     */
-    public function getExtendServer()
-    {
-        return $this->extendServer;
-    }
-
 
 //////////////////////////////////////////////////////////////////////
 /// attach listen port server
@@ -317,7 +237,7 @@ class SuiteServer extends AServerManager
 
             if ($port) {
                 $type = $port->type === SWOOLE_SOCK_TCP ? 'tcp' : 'udp';
-                $msg .= " on <default>{$port->host}:{$port->port}</default>($type)";
+                $msg .= " on <blue>{$port->host}:{$port->port}</blue>($type)";
             }
 
             $this->log($msg);
@@ -376,7 +296,7 @@ class SuiteServer extends AServerManager
 
                 if (!in_array($type, $allowed, true)) {
                     $str = implode(',', $allowed);
-                    $this->cliOut->error("Tha attach listen server type only allow: $str. don't support [$type]", 1);
+                    Show::error("Tha attach listen server type only allow: $str. don't support [$type]", 1);
                 }
 
                 $socketType = $type === self::PROTOCOL_UDP ? SWOOLE_SOCK_UDP : SWOOLE_SOCK_TCP;
@@ -403,7 +323,7 @@ class SuiteServer extends AServerManager
             $cb = $config;
 
         } else {
-            throw new InvalidArgumentException("The 2th argument type only allow [array|\\Closure].");
+            throw new InvalidArgumentException('The 2th argument type only allow [array|\Closure].');
         }
 
         $this->attachedNames[$name] = true;
@@ -465,12 +385,11 @@ class SuiteServer extends AServerManager
      */
     protected function showInformation()
     {
-        $sEnv = new ServerEnv;
-        $swOpts = $this->config->get('swoole');
-        $main = $this->config->get('main_server');
+        $swOpts = $this->config['swoole'];
+        $main = $this->config['main_server'];
         $panelData = [
-            'Operate System' => $sEnv->get('os'),
             'PHP Version' => PHP_VERSION,
+            'Operate System' => PHP_OS,
             'Swoole Info' => [
                 'version' => SWOOLE_VERSION,
                 'coroutine' => class_exists('\Swoole\Coroutine', false),
@@ -491,66 +410,16 @@ class SuiteServer extends AServerManager
             ],
             'Project Config' => [
                 'name' => $this->name,
-                'path' => $this->config->get('root_path'),
-                'auto_reload' => $this->config->get('auto_reload'),
-                'pid_file' => $this->config->get('pid_file'),
+                'path' => $this->config['root_path'],
+                'auto_reload' => $this->config['auto_reload'],
+                'pid_file' => $this->config['pid_file'],
             ],
-            'Server Log' => $this->config->get('log_service'),
+            'Server Log' => $this->config['log_service'],
         ];
 
         Interact::panel($panelData, 'Server Information');
 
         parent::showInformation();
-    }
-
-    /**
-     * @return array
-     */
-    public function getDefaultConfig()
-    {
-        $config = [
-            // for main server
-            'main_server' => [
-                'host' => '0.0.0.0',
-                'port' => '8662',
-
-                // 运行模式
-                // SWOOLE_PROCESS 业务代码在Worker进程中执行 SWOOLE_BASE 业务代码在Reactor进程中直接执行
-                'mode' => 'process',
-                'type' => 'tcp', // http https tcp udp ws wss
-
-                // append register swoole events
-                'extend_events' => [], // e.g [ 'onRequest', ]
-
-                // use outside's extend event handler
-                'extend_server' => '', // e.g '\inhere\server\extend\HttpServerHandler'
-            ],
-            // for attach servers
-            'attach_servers' => [
-                // 'tcp1' => [
-                //     'host' => '0.0.0.0',
-                //     'port' => '9661',
-                //     'type' => 'tcp',
-
-                // setting event handler
-                //     'event_handler' => '', // e.g '\inhere\server\listeners\TcpListenHandler'
-                //     'event_list'   => [], // e.g [ 'onReceive', ]
-                // ],
-
-                // 'udp1' => [
-                //     'host' => '0.0.0.0',
-                //     'port' => '9660',
-                // ]
-            ],
-
-            // for current main server/ outside extend server options.
-            // eg: @see \inhere\server\extend\HttpServerHandler::options
-            'extend_options' => [
-
-            ],
-        ];
-
-        return array_merge(parent::getDefaultConfig(), $config);
     }
 
 }

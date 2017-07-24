@@ -8,7 +8,6 @@
 
 namespace inhere\server\handlers;
 
-use inhere\server\AExtendServerHandler;
 use inhere\server\interfaces\IUdpListenHandler;
 use Swoole\Server as SwServer;
 
@@ -16,7 +15,7 @@ use Swoole\Server as SwServer;
  * Class UdpListenHandler
  * @package inhere\server\handlers
  */
-class UdpListenHandler extends AExtendServerHandler implements IUdpListenHandler
+class UdpListenHandler extends BaseListenHandler implements IUdpListenHandler
 {
     /**
      * 接收到UDP数据包时回调此函数，发生在worker进程中

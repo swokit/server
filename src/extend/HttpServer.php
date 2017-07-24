@@ -8,8 +8,11 @@
 
 namespace inhere\server\extend;
 
+use inhere\console\utils\Show;
+use inhere\library\files\Directory;
 use inhere\library\helpers\PhpHelper;
-use inhere\server\AExtendServerHandler;
+use inhere\library\traits\OptionsTrait;
+use inhere\server\SuiteServer;
 use Swoole\Server as SwServer;
 use Swoole\Http\Response as SwResponse;
 use Swoole\Http\Request as SwRequest;
@@ -51,8 +54,10 @@ http config:
  * @package inhere\server\handlers
  *
  */
-class HttpServerHandler extends AExtendServerHandler
+class HttpServer extends SuiteServer
 {
+    use OptionsTrait;
+
     /**
      * the request id
      * @var string
@@ -138,9 +143,9 @@ class HttpServerHandler extends AExtendServerHandler
         ],
     ];
 
-    public function initCompleted()
+    public function beforeStart()
     {
-        $this->getCliOut()->mList($this->options);
+        Show::mList($this->options);
     }
 
     /**
@@ -189,7 +194,7 @@ class HttpServerHandler extends AExtendServerHandler
         $name = $opts['name'] = $opts['name'] ?: session_name();
 
         if (($path = $opts['save_path']) && !is_dir($path)) {
-            mkdir($path, 0755, true);
+            Directory::mkdir($path, 0775);
         }
 
         // start session
@@ -197,7 +202,7 @@ class HttpServerHandler extends AExtendServerHandler
         //register_shutdown_function('session_write_close');
         session_start($opts);
 
-        $this->getCliOut()->aList(session_get_cookie_params(), 'session cookie params');
+        Show::aList(session_get_cookie_params(), 'session cookie params');
 
         // if not exists, set it.
         if (!$sid = $_COOKIE[$name] ?? '') {
@@ -245,7 +250,7 @@ class HttpServerHandler extends AExtendServerHandler
                 $this->log("Please set the property 'dynamicRequestHandler' to handle dynamic request(if you need).", [], 'notice');
                 $content = 'No content to display';
             } else {
-                [$status, $headers, $content] = $cb($request, $response);
+                list($status, $headers, $content) = $cb($request, $response);
             }
 
             $this->respond($content, $status, $headers);
@@ -282,11 +287,11 @@ class HttpServerHandler extends AExtendServerHandler
             $this->response->gzip(1);
         }
 
-        $this->getCliOut()->write([
+        Show::write([
             "Response Status: <info>$status</info>"
         ]);
-        $this->getCliOut()->aList($headers, 'Response Headers');
-        $this->getCliOut()->aList($_SESSION ?: [],'server sessions');
+        Show::aList($headers, 'Response Headers');
+        Show::aList($_SESSION ?: [],'server sessions');
 
         return $this->response->end($content);
     }
@@ -346,8 +351,8 @@ class HttpServerHandler extends AExtendServerHandler
         $uri = $request->server['request_uri'];
         $method = $request->server['request_method'];
 
-        $this->getCliOut()->title("[RID:{$this->rid}] $method $uri");
-        $this->getCliOut()->multiList([
+        Show::title("[RID:{$this->rid}] $method $uri");
+        Show::multiList([
             'request GET' => $_GET,
             'request POST' => $_POST,
             'request COOKIE' => $_COOKIE,
@@ -398,7 +403,7 @@ class HttpServerHandler extends AExtendServerHandler
             ]);
         } else {
             $headers = ['Content-Type', 'text/html; charset=utf-8'];
-            $content = PhpHelper::convertExceptionToString($e, '<br>', $this->mgr->isDebug());
+            $content = PhpHelper::exceptionToString($e, '<br>', $this->isDebug());
         }
 
         $this->respond($content, 200, $headers);
@@ -418,21 +423,21 @@ class HttpServerHandler extends AExtendServerHandler
 
         // 请求 /favicon.ico 过滤
         if (
-            $this->options['request']['filterFavicon'] &&
-            ($request->server['path_info'] === '/favicon.ico' || $uri === '/favicon.ico')
+            ($request->server['path_info'] === '/favicon.ico' || $uri === '/favicon.ico')  &&
+            $this->options['request']['filterFavicon']
         ) {
             return $response->end();
         }
 
         $setting = $this->getOption('assets');
 
-        # 没有任何后缀 || 没有资源处理配置 返回交给php继续处理
-        if (false === strrpos($uri, '.') || !$setting) {
+        // 没有资源处理配置 || 没有任何后缀 返回交给php继续处理
+        if (!$setting || false === strrpos($uri, '.')) {
             return false;
         }
 
-        $exts = array_keys(static::$staticAssets);
-        $extReg = implode('|', $exts);
+        $extAry = array_keys(static::$staticAssets);
+        $extReg = implode('|', $extAry);
 
 //         $this->log("begin match ext for the asset $uri, result: " . preg_match("/\.($extReg)/i", $uri, $matches), $exts);
 
@@ -466,7 +471,7 @@ class HttpServerHandler extends AExtendServerHandler
 
         // if like 'css/site.css?135773232'
         $path = strpos($arr[0], '?') ? explode('?', $arr[0], 2)[0] : $arr[0];
-        $file = $this->getConfig('root_path') . "/$assetDir/$path";
+        $file = $this->getValue('root_path') . "/$assetDir/$path";
 
         // 必须要有内容类型
         $response->header('Content-Type', static::$staticAssets[$ext]);
@@ -546,9 +551,9 @@ class HttpServerHandler extends AExtendServerHandler
      * @param  array $data
      * @param string $type
      */
-    public function log($msg, $data = [], $type = 'debug')
+    public function log($msg, array $data = [], $type = 'debug')
     {
-        $this->mgr->log("[rid:{$this->rid}] " . $msg, $data, $type);
+        parent::log("[rid:{$this->rid}] " . $msg, $data, $type);
     }
 
     /**

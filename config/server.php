@@ -20,7 +20,7 @@ return [
     'main_server' => [
         'type' => 'ws', // http https tcp udp ws wss
 
-        'event_handler' => \inhere\server\extend\WSServerHandler::class,
+        'event_handler' => \inhere\server\extend\WwbSocketServer::class,
         'event_list' => [ 'onRequest' ]
     ],
 

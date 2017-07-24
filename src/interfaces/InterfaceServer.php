@@ -12,7 +12,7 @@ namespace inhere\server\interfaces;
  * Interface IServerManager
  * @package inhere\server\interfaces
  */
-interface IServerManager
+interface InterfaceServer
 {
     const VERSION = '0.1.1';
 
@@ -35,9 +35,9 @@ interface IServerManager
     const PROTOCOL_WS = 'ws';  // webSocket
     const PROTOCOL_WSS = 'wss'; // webSocket ssl
 
-    public static function run($config = [], $start = true);
+//    public static function run(array $config = [], $start = true);
 
-    public function bootstrap($start = true);
+//    public function bootstrap($start = true);
 
     public function start();
 

@@ -19,7 +19,7 @@ use Swoole\Http\Request as SwRequest;
  * @package inhere\server\handlers
  *
  */
-class WSServerHandler extends HttpServerHandler
+class WwbSocketServer extends HttpServer
 {
     /**
      * frame list
@@ -35,17 +35,16 @@ class WSServerHandler extends HttpServerHandler
     /**
      * {@inheritDoc}
      */
-    public function __construct(array $options = [])
+    public function init()
     {
+        parent::init();
+
         $this->options['response'] = array_merge([
             'keep_alive' => 1,
             'heart_time' => 1,
             'max_connect' => 10000,
             'max_frame_size' => 2097152,
         ], $this->options['response']);
-
-        parent::__construct($options);
-
     }
 
     /**

@@ -8,7 +8,6 @@
 
 namespace inhere\server\handlers;
 
-use inhere\server\AExtendServerHandler;
 use inhere\server\interfaces\ITcpListenHandler;
 use Swoole\Server as SwServer;
 
@@ -16,7 +15,7 @@ use Swoole\Server as SwServer;
  * Class TcpListenHandler
  * @package inhere\server\handlers
  */
-class TcpListenHandler extends AExtendServerHandler implements ITcpListenHandler
+class TcpListenHandler extends BaseListenHandler implements ITcpListenHandler
 {
     /**
      * {@inheritDoc}

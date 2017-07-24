@@ -6,7 +6,7 @@
  * Time: 17:50
  */
 
-namespace inhere\server;
+namespace inhere\server\helpers;
 
 /*
 
@@ -123,11 +123,11 @@ class AutoReloader
             //var_dump($events);
 
             foreach ($events as $ev) {
-                if ($ev['mask'] == IN_IGNORED) {
+                if ($ev['mask'] === IN_IGNORED) {
                     continue;
                 }
 
-                if (in_array($ev['mask'], [IN_CREATE, IN_DELETE, IN_MODIFY, IN_MOVED_TO, IN_MOVED_FROM])) {
+                if (in_array($ev['mask'], [IN_CREATE, IN_DELETE, IN_MODIFY, IN_MOVED_TO, IN_MOVED_FROM], true)) {
                     $fileType = strrchr($ev['name'], '.');
 
                     //非重启类型
@@ -208,6 +208,7 @@ class AutoReloader
      * @param array $dirs
      * @param string $basePath
      * @return $this
+     * @throws \RuntimeException
      */
     public function addWatches(array $dirs, $basePath = '')
     {
@@ -224,6 +225,7 @@ class AutoReloader
      * @param string $target The file or dir path
      * @param bool $root
      * @return bool
+     * @throws \RuntimeException
      */
     public function addWatch($target, $root = true)
     {
@@ -254,9 +256,9 @@ class AutoReloader
             $this->watchedDirs[] = $target;
         }
 
-        $files = scandir($target);
+        $files = scandir($target, 0);
         foreach ($files as $f) {
-            if ($f == '.' or $f == '..') {
+            if ($f === '.' || $f === '..') {
                 continue;
             }
 

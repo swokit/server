@@ -8,19 +8,19 @@
 
 namespace inhere\server;
 
-use inhere\server\interfaces\IExtendServer;
-use inhere\library\traits\TraitUseOption;
+use inhere\library\traits\OptionsTrait;
+use inhere\server\interfaces\IPortListenHandler;
 
 /**
- * Class AExtendServerHandler
+ * Class BaseListenHandler
  * @package inhere\server\handlers
  */
-abstract class AExtendServerHandler implements IExtendServer
+abstract class BaseListenHandler implements IPortListenHandler
 {
-    use TraitUseOption;
+    use OptionsTrait;
 
     /**
-     * @var AServerManager
+     * @var AbstractServer
      */
     protected $mgr;
 
@@ -41,15 +41,10 @@ abstract class AExtendServerHandler implements IExtendServer
         }
     }
 
-    public function initCompleted()
-    {
-        // ... ...
-    }
-
     /**
-     * @param AServerManager $mgr
+     * @param AbstractServer $mgr
      */
-    public function setMgr(AServerManager $mgr)
+    public function setMgr(AbstractServer $mgr)
     {
         $this->mgr = $mgr;
     }
@@ -65,36 +60,18 @@ abstract class AExtendServerHandler implements IExtendServer
             return $this->mgr->getConfig();
         }
 
-        return $this->mgr->getConfig()->get($key, $default);
+        return $this->mgr->getValue($key, $default);
     }
 
     /**
      * output log message
-     * @see AServerManager::log()
+     * @see AbstractServer::log()
      * @param  string $msg
      * @param  array $data
      * @param string $type
      */
-    public function log($msg, $data = [], $type = 'debug')
+    public function log($msg, array $data = [], $type = 'debug')
     {
         $this->mgr->log($msg, $data, $type);
-    }
-
-    /**
-     * getCliOut
-     * @return \inhere\console\io\Output
-     */
-    public function getCliOut()
-    {
-        return $this->mgr->getCliOut();
-    }
-
-    /**
-     * getCliOut
-     * @return \inhere\console\io\Input
-     */
-    public function getCliIn()
-    {
-        return $this->mgr->getCliIn();
     }
 }

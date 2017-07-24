@@ -8,7 +8,7 @@
 
 namespace inhere\server\extend;
 
-use inhere\server\AExtendServerHandler;
+use inhere\server\SuiteServer;
 use Swoole\Server as SwServer;
 
 /*
@@ -33,7 +33,7 @@ Tcp config:
  * Class TcpServerHandler
  * @package inhere\server\handlers
  */
-class TcpServerHandler extends AExtendServerHandler
+class TcpServer extends SuiteServer
 {
 
     public function onConnect(SwServer $server, $fd)
