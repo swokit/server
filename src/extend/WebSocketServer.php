@@ -15,11 +15,11 @@ use Swoole\Http\Response as SwResponse;
 use Swoole\Http\Request as SwRequest;
 
 /**
- * Class WSServerHandler
+ * Class WebSocketServer
  * @package inhere\server\handlers
  *
  */
-class WwbSocketServer extends HttpServer
+class WebSocketServer extends HttpServer
 {
     /**
      * frame list
@@ -50,13 +50,12 @@ class WwbSocketServer extends HttpServer
     /**
      * 处理http请求(如果需要的话)
      * @NOTICE 需要在注册此handler时，添加 'onRequest' 事件
-     * @inheritdoc
      */
-    public function onRequest(SwRequest $request, SwResponse $response)
-    {
+//    public function onRequest(SwRequest $request, SwResponse $response)
+//    {
         // $response->end('Not found');
-        parent::onRequest($request, $response);
-    }
+//        parent::onRequest($request, $response);
+//    }
 
     ////////////////////// WS Server event //////////////////////
 
