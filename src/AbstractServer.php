@@ -12,12 +12,8 @@ use inhere\library\traits\ConfigTrait;
 use inhere\server\helpers\ProcessHelper;
 use inhere\server\helpers\ServerHelper;
 use inhere\server\traits\ProcessManageTrait;
-use Swoole\Http\Server as SwHttpServer;
-use Swoole\Websocket\Server as SwWSServer;
 use Swoole\Process as SwProcess;
 use Swoole\Server as SwServer;
-
-use inhere\server\interfaces\InterfaceServer;
 
 use inhere\console\io\Input;
 use inhere\console\io\Output;
@@ -163,7 +159,7 @@ abstract class AbstractServer implements InterfaceServer
     /**
      * @var bool
      */
-    private $daemonize = false;
+    private $daemon = false;
 
     /**
      * current server name
@@ -178,7 +174,8 @@ abstract class AbstractServer implements InterfaceServer
     public $pidFile = '';
 
     /**
-     * @var SwServer|SwHttpServer|SwWSServer
+     * @var \Swoole\Server
+     * |SwHttpServer|SwWSServer
      */
     public $server;
 
@@ -190,25 +187,7 @@ abstract class AbstractServer implements InterfaceServer
     /**
      * @var array
      */
-    protected $supportedEvents = [
-        // basic
-        'start', 'shutdown', 'workerStart', 'workerStop', 'workerError', 'managerStart', 'managerStop',
-        // special
-        'pipeMessage',
-        // tcp/udp
-        'connect', 'receive', 'packet', 'close',
-        // task
-        'task', 'finish',
-        // http server
-        'request',
-        // webSocket server
-        'message', 'open', 'handShake'
-    ];
-
-    /**
-     * @var array
-     */
-    protected $swooleEvents = [
+    protected $swooleEventMap = [
         // 'event'  => 'callback',
         'start' => 'onMasterStart',
         'shutdown' => 'onMasterStop',
@@ -359,7 +338,7 @@ abstract class AbstractServer implements InterfaceServer
     protected function showInformation()
     {
         // output a message before start
-        if ($this->daemonize) {
+        if ($this->daemon) {
             Show::write("You can use <info>stop</info> command to stop server.\n");
         } else {
             Show::write("Press <info>Ctrl-C</info> to quit.\n");
@@ -411,7 +390,7 @@ abstract class AbstractServer implements InterfaceServer
      */
     protected function registerMainServerEvents()
     {
-        $events = $this->swooleEvents;
+        $events = $this->swooleEventMap;
         Show::aList($events, 'Registered swoole events to the main server:( event -> handler )');
 
         foreach ($events as $event => $callback) {
@@ -598,9 +577,9 @@ abstract class AbstractServer implements InterfaceServer
     /**
      * @return bool
      */
-    public function isDaemonize(): bool
+    public function isDaemon(): bool
     {
-        return $this->daemonize;
+        return $this->daemon;
     }
 
     /**
@@ -620,19 +599,19 @@ abstract class AbstractServer implements InterfaceServer
     public function setSwooleEvent($event, $cbName)
     {
         if (!$this->isSupportedEvents($event)) {
-            $supported = implode(',', $this->supportedEvents);
+            $supported = implode(',', self::SWOOLE_EVENTS);
             Show::error("You want add a not supported swoole event: $event. supported: \n $supported", -2);
         }
 
-        $this->swooleEvents[$event] = $cbName;
+        $this->swooleEventMap[$event] = $cbName;
     }
 
     /**
      * @return array
      */
-    public function getSwooleEvents()
+    public function getSwooleEventMap()
     {
-        return $this->swooleEvents;
+        return $this->swooleEventMap;
     }
 
     /**
@@ -681,9 +660,9 @@ abstract class AbstractServer implements InterfaceServer
     /**
      * @return array
      */
-    public function getSupportedEvents()
+    public function getSwooleEvents()
     {
-        return $this->supportedEvents;
+        return self::SWOOLE_EVENTS;
     }
 
     /**
@@ -692,7 +671,7 @@ abstract class AbstractServer implements InterfaceServer
      */
     public function isSupportedEvents($event)
     {
-        return in_array($event, $this->supportedEvents, true);
+        return in_array($event, self::SWOOLE_EVENTS, true);
     }
 
     /**
@@ -761,7 +740,7 @@ abstract class AbstractServer implements InterfaceServer
         }
 
         // if close debug, don't output debug log.
-        if (!$this->daemonize) {
+        if (!$this->daemon) {
             list($ts, $ms) = explode('.', sprintf('%f', microtime(true)));
             $ms = str_pad($ms, 6, 0);
             $time = date('Y-m-d H:i:s', $ts);

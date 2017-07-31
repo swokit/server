@@ -9,13 +9,10 @@
 namespace inhere\server;
 
 use inhere\console\utils\Show;
-use inhere\server\interfaces\ITcpListenHandler;
-use inhere\server\interfaces\IUdpListenHandler;
-use inhere\server\interfaces\IPortListenHandler;
-
 use inhere\exceptions\InvalidArgumentException;
 use inhere\console\utils\Interact;
 
+use inhere\server\portListeners\InterfacePortListener;
 use Swoole\Server as SwServer;
 use Swoole\Http\Server as SwHttpServer;
 use Swoole\Websocket\Server as SwWSServer;
@@ -28,12 +25,6 @@ use Swoole\Server\Port as SwServerPort;
  */
 class SuiteServer extends AbstractServer
 {
-    /**
-     * The handler object instance for the main server
-     * @var IPortListenHandler
-     */
-    protected $extendServer;
-
     /**
      * custom main server event handle callback
      * @var array
@@ -164,7 +155,7 @@ class SuiteServer extends AbstractServer
      */
     protected function registerMainServerEvents()
     {
-        $events = $this->swooleEvents;
+        $events = $this->swooleEventMap;
         $eventInfo = [];
 
         // register event to swoole
@@ -197,17 +188,16 @@ class SuiteServer extends AbstractServer
     /**
      * register a swoole Event Handler Callback
      * @param string $event
-     * @param callable $handler
-     * @return $this
+     * @param callable|string $handler
      */
-    public function onSwoole($event, callable $handler)
+    public function onSwoole($event, $handler)
     {
         // $this->server->on($event, $handler);
         $event = trim($event);
         $this->setSwooleEvent($event, 'A custom handler');
         $this->eventCallbacks[$event] = $handler;
 
-        return $this;
+        $this->setSwooleEvent($event, $handler);
     }
 
     /**
@@ -303,9 +293,9 @@ class SuiteServer extends AbstractServer
                 $evtHandler = $config['event_handler'];
                 $handler = new $evtHandler;
 
-                if (!($handler instanceof ITcpListenHandler) && !($handler instanceof IUdpListenHandler)) {
+                if ($handler instanceof InterfacePortListener) {
                     throw new InvalidArgumentException(
-                        'The event handler must implement of ' . ITcpListenHandler::class . ' Or ' . IUdpListenHandler::class
+                        'The event handler must implement of ' . InterfacePortListener::class
                     );
                 }
 

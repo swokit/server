@@ -6,15 +6,15 @@
  * Time: 15:20
  */
 
-namespace inhere\server\interfaces;
+namespace inhere\server\portListeners;
 
 use inhere\server\AbstractServer;
 
 /**
- * Class IPortListenHandler
- * @package inhere\server\interfaces
+ * Class InterfacePortListener
+ * @package inhere\server\portListeners
  */
-interface IPortListenHandler
+interface InterfacePortListener
 {
     /**
      * @param AbstractServer $mgr

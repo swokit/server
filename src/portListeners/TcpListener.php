@@ -6,16 +6,15 @@
  * Time: 15:20
  */
 
-namespace inhere\server\handlers;
+namespace inhere\server\portListeners;
 
-use inhere\server\interfaces\ITcpListenHandler;
 use Swoole\Server as SwServer;
 
 /**
- * Class TcpListenHandler
- * @package inhere\server\handlers
+ * Class TcpListener
+ * @package inhere\server\portListeners
  */
-class TcpListenHandler extends BaseListenHandler implements ITcpListenHandler
+class TcpListener extends PortListener implements InterfaceTcpListener
 {
     /**
      * {@inheritDoc}

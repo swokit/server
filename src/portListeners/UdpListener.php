@@ -6,16 +6,15 @@
  * Time: 15:23
  */
 
-namespace inhere\server\handlers;
+namespace inhere\server\portListeners;
 
-use inhere\server\interfaces\IUdpListenHandler;
 use Swoole\Server as SwServer;
 
 /**
- * Class UdpListenHandler
- * @package inhere\server\handlers
+ * Class UdpListener
+ * @package inhere\server\portListeners
  */
-class UdpListenHandler extends BaseListenHandler implements IUdpListenHandler
+class UdpListener extends PortListener implements InterfaceUdpListener
 {
     /**
      * 接收到UDP数据包时回调此函数，发生在worker进程中

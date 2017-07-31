@@ -6,11 +6,11 @@
  * Time: 9:21
  */
 
-namespace inhere\server\interfaces;
+namespace inhere\server;
 
 /**
  * Interface IServerManager
- * @package inhere\server\interfaces
+ * @package inhere\server
  */
 interface InterfaceServer
 {
@@ -34,6 +34,24 @@ interface InterfaceServer
     const PROTOCOL_HTTPS = 'https';
     const PROTOCOL_WS = 'ws';  // webSocket
     const PROTOCOL_WSS = 'wss'; // webSocket ssl
+
+    /**
+     * @var array
+     */
+    const SWOOLE_EVENTS = [
+        // basic
+        'start', 'shutdown', 'workerStart', 'workerStop', 'workerError', 'managerStart', 'managerStop',
+        // special
+        'pipeMessage',
+        // tcp/udp
+        'connect', 'receive', 'packet', 'close',
+        // task
+        'task', 'finish',
+        // http server
+        'request',
+        // webSocket server
+        'message', 'open', 'handShake'
+    ];
 
 //    public static function run(array $config = [], $start = true);
 

@@ -127,6 +127,7 @@ class HttpServer extends SuiteServer
 
         // static asset handle
         'enable_static' => true,
+        'document_root' => '', // enable_static_handler
         'assets' => [
             'ext' => [],
             'map' => [

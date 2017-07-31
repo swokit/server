@@ -17,6 +17,8 @@ use Swoole\Server;
 /**
  * Class ProcessManageTrait
  * @package inhere\server\traits
+ *
+ * @property \Swoole\Server $server
  */
 trait ProcessManageTrait
 {

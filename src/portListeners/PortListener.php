@@ -6,16 +6,16 @@
  * Time: 15:20
  */
 
-namespace inhere\server;
+namespace inhere\server\portListeners;
 
 use inhere\library\traits\OptionsTrait;
-use inhere\server\interfaces\IPortListenHandler;
+use inhere\server\AbstractServer;
 
 /**
- * Class BaseListenHandler
- * @package inhere\server\handlers
+ * Class BaseListener
+ * @package inhere\server\portListeners
  */
-abstract class BaseListenHandler implements IPortListenHandler
+abstract class PortListener implements InterfacePortListener
 {
     use OptionsTrait;
 
