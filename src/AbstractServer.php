@@ -276,21 +276,6 @@ abstract class AbstractServer implements InterfaceServer
         return $this;
     }
 
-    /**
-     * run
-     * @param  array $config
-     * @return static
-     * @throws \RuntimeException
-     */
-    public static function run(array $config = [])
-    {
-        if (!self::$mgr) {
-            new static($config);
-        }
-
-        return self::$mgr->start();
-    }
-
 //////////////////////////////////////////////////////////////////////
 /// runtime logic
 //////////////////////////////////////////////////////////////////////
@@ -315,7 +300,7 @@ abstract class AbstractServer implements InterfaceServer
         }
 
         // do something for main server
-        $this->afterCreateMainServer();
+        $this->afterCreateServer();
 
         $this->bootstrapped = true;
 
@@ -359,13 +344,13 @@ abstract class AbstractServer implements InterfaceServer
     abstract protected function createMainServer();
 
     /**
-     * afterCreateMainServer
+     * afterCreateServer
      * @throws \RuntimeException
      */
-    protected function afterCreateMainServer()
+    protected function afterCreateServer()
     {
         // register swoole events handler
-        $this->registerMainServerEvents();
+        $this->registerServerEvents();
 
         // setting swoole config
         $this->server->set($this->config['swoole']);
@@ -388,7 +373,7 @@ abstract class AbstractServer implements InterfaceServer
     /**
      * register Swoole Events
      */
-    protected function registerMainServerEvents()
+    protected function registerServerEvents()
     {
         $events = $this->swooleEventMap;
         Show::aList($events, 'Registered swoole events to the main server:( event -> handler )');
@@ -588,22 +573,37 @@ abstract class AbstractServer implements InterfaceServer
     public function setSwooleEvents(array $events)
     {
         foreach ($events as $key => $value) {
-            $this->setSwooleEvent(is_int($key) ? lcfirst(substr($value, 2)) : $key, $value);
+            $this->setSwooleEvent(
+                is_int($key) && is_string($value) ? lcfirst(substr($value, 2)) : $key,
+                $value
+            );
         }
     }
 
     /**
-     * @param string $event The event name
-     * @param string $cbName The callback name
+     * register a swoole Event Handler Callback
+     * @param string $event
+     * @param callable|string $handler
      */
-    public function setSwooleEvent($event, $cbName)
+    public function onSwoole($event, $handler)
     {
+        $this->setSwooleEvent($event, $handler);
+    }
+
+    /**
+     * @param string $event The event name
+     * @param string|\Closure $cb The callback name
+     */
+    public function setSwooleEvent($event, $cb)
+    {
+        $event = trim($event);
+
         if (!$this->isSupportedEvents($event)) {
             $supported = implode(',', self::SWOOLE_EVENTS);
             Show::error("You want add a not supported swoole event: $event. supported: \n $supported", -2);
         }
 
-        $this->swooleEventMap[$event] = $cbName;
+        $this->swooleEventMap[$event] = $cb;
     }
 
     /**

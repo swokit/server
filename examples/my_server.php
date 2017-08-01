@@ -34,9 +34,6 @@ $config = [
     'main_server' => [
         'type' => 'ws', // http https tcp udp ws wss
         'port' => 9501,
-
-        'extend_server' => \inhere\server\extend\WebSocketServer::class,
-        'extend_events' => [ 'onRequest' ]
     ],
 
     // attach port server by config
@@ -61,6 +58,8 @@ $config = [
     ]
 ];
 
-$mgr = new SuiteServer($config);
+$mgr = new \inhere\server\extend\WebSocketServer($config);
 
-SuiteServer::run();
+
+
+$mgr->run();

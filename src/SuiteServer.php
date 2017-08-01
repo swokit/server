@@ -26,16 +26,6 @@ use Swoole\Server\Port as SwServerPort;
 class SuiteServer extends AbstractServer
 {
     /**
-     * custom main server event handle callback
-     * @var array
-     * [
-     *     'event' => callback handler
-     *     ... ...
-     * ]
-     */
-    protected $eventCallbacks = [];
-
-    /**
      * attached listen port server callback(`Closure`)
      *
      * [
@@ -75,6 +65,10 @@ class SuiteServer extends AbstractServer
 
         return $this;
     }
+
+//////////////////////////////////////////////////////////////////////
+/// create Main Server
+//////////////////////////////////////////////////////////////////////
 
     /**
      * @inheritdoc
@@ -142,35 +136,34 @@ class SuiteServer extends AbstractServer
     /**
      * {@inheritDoc}
      */
-    protected function afterCreateMainServer()
+    protected function afterCreateServer()
     {
-        parent::afterCreateMainServer();
+        parent::afterCreateServer();
 
         // attach registered listen port server to main server
-        $this->startListenPortServers($this->server);
+        $this->startListenServers($this->server);
     }
 
     /**
      * @inheritdoc
      */
-    protected function registerMainServerEvents()
+    protected function registerServerEvents()
     {
         $events = $this->swooleEventMap;
         $eventInfo = [];
 
         // register event to swoole
-        foreach ($events as $name => $method) {
-
-            // is a Closure callback, add by self::on()
-            if ($cb = $this->getEventCallback($name)) {
-                $eventInfo[] = [$name, $method];
+        foreach ($events as $name => $cb) {
+            // is a Closure callback, add by self::onSwoole()
+            if (method_exists($cb, '__invoke')) {
+                $eventInfo[] = [$name, get_class($cb)];
                 $this->server->on($name, $cb);
             }
 
             // if use Custom Outside Handler
-            if (method_exists($this, $method)) {
-                $eventInfo[] = [$name, static::class . "->$method"];
-                $this->server->on($name, array($this, $method));
+            if (method_exists($this, $cb)) {
+                $eventInfo[] = [$name, static::class . "->$cb"];
+                $this->server->on($name, [$this, $cb]);
             }
         }
 
@@ -182,36 +175,6 @@ class SuiteServer extends AbstractServer
     }
 
 //////////////////////////////////////////////////////////////////////
-/// Event Handler
-//////////////////////////////////////////////////////////////////////
-
-    /**
-     * register a swoole Event Handler Callback
-     * @param string $event
-     * @param callable|string $handler
-     */
-    public function onSwoole($event, $handler)
-    {
-        // $this->server->on($event, $handler);
-        $event = trim($event);
-        $this->setSwooleEvent($event, 'A custom handler');
-        $this->eventCallbacks[$event] = $handler;
-
-        $this->setSwooleEvent($event, $handler);
-    }
-
-    /**
-     * get register Event Handler Callback (register by self::on())
-     * @param string $event Event name
-     * @return \Closure|null
-     */
-    public function getEventCallback($event)
-    {
-        $event = strtolower($event);
-        return $this->eventCallbacks[$event] ?? null;
-    }
-
-//////////////////////////////////////////////////////////////////////
 /// attach listen port server
 //////////////////////////////////////////////////////////////////////
 
@@ -219,7 +182,7 @@ class SuiteServer extends AbstractServer
      * start Listen Port Servers
      * @param SwServer $server
      */
-    protected function startListenPortServers(SwServer $server)
+    protected function startListenServers(SwServer $server)
     {
         foreach ($this->attachedListeners as $name => $cb) {
             $msg = "Attach the listen server <info>$name</info> to the main server.";

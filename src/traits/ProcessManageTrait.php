@@ -8,6 +8,7 @@
 
 namespace inhere\server\traits;
 
+use inhere\console\io\Input;
 use inhere\console\utils\Show;
 use inhere\server\helpers\AutoReloader;
 use inhere\server\helpers\ProcessHelper;
@@ -22,6 +23,29 @@ use Swoole\Server;
  */
 trait ProcessManageTrait
 {
+    /**
+     * run
+     * @throws \RuntimeException
+     */
+    public function run()
+    {
+        $input = new Input;
+        $command = $input->getCommand();
+        if (!$command || $input->sameOpt(['h', 'help'])) {
+            return $this->showHelp();
+        }
+
+        $method = $command;
+
+        if (method_exists($this, $method)) {
+            return $this->$method();
+        }
+
+        $this->output->error("Command: $command is not exists!");
+
+        return $this->showHelp($input->getScript(), 0);
+    }
+
     /**
      * @return $this
      */
@@ -231,5 +255,49 @@ trait ProcessManageTrait
     public function getMasterPid($checkRunning = false)
     {
         return ProcessHelper::getPidFromFile($this->pidFile, $checkRunning);
+    }
+
+    /**
+     * @param bool $quit
+     */
+    public function showHelp($scriptName, $quit = false)
+    {
+        // 'bin/test_server.php'
+        // $scriptName = $input->getScriptName();
+
+        if (strpos($scriptName, '.') && 'php' === pathinfo($scriptName, PATHINFO_EXTENSION)) {
+            $scriptName = 'php ' . $scriptName;
+        }
+
+        $version = static::VERSION;
+        $upTime = static::UPDATE_TIME;
+        $supportCommands = ['start', 'reload', 'restart', 'stop', 'info', 'status', 'help'];
+        $commandString = implode('|', $supportCommands);
+
+        Show::helpPanel([
+            'description' => 'Swoole server manager tool, Version <comment>' . $version . '</comment>. Update time ' . $upTime,
+            'usage' => "$scriptName {{$commandString}} [-d ...]",
+            'commands' => [
+                'start' => 'Start the server',
+                'stop' => 'Stop the server',
+                'reload' => 'Reload all workers of the started server',
+                'restart' => 'Stop the server, After start the server.',
+                'info' => 'Show the server information for current project',
+                'status' => 'Show the started server status information',
+                'help' => 'Display this help message',
+            ],
+            'options' => [
+                '-d' => 'Run the server on daemonize(on start/restart).',
+                '--task' => 'Only reload task worker, when reload server',
+                '-n, --worker-number' => 'started worker number',
+                '-h, --help' => 'Display this help message',
+            ],
+            'examples' => [
+                "<info>$scriptName start -d</info> Start server on daemonize mode.",
+                "<info>$scriptName reload --task</info> Start server on daemonize mode."
+            ],
+        ], $quit);
+
+        return true;
     }
 }
