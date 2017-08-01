@@ -41,10 +41,9 @@ $config = [
         'test0' => [
             'host' => '0.0.0.0',
             'port' => '9761',
-            'type' => 'udp', //
+            'type' => 'udp',
             // must setting the handler class in config.
-            'event_handler' => \inhere\server\handlers\UdpListenHandler::class,
-            'event_list' => 'onPacket',
+            'listener' => \inhere\server\portListeners\UdpListener::class,
         ]
     ],
 
@@ -60,6 +59,9 @@ $config = [
 
 $mgr = new \inhere\server\extend\WebSocketServer($config);
 
-
+$mgr->attachListener('port2', new \inhere\server\portListeners\UdpListener([
+    'host' => '0.0.0.0',
+    'port' => '9761',
+]));
 
 $mgr->run();

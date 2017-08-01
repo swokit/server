@@ -8,17 +8,20 @@
 
 namespace inhere\server;
 
-use inhere\library\traits\ConfigTrait;
-use inhere\server\helpers\ProcessHelper;
-use inhere\server\helpers\ServerHelper;
-use inhere\server\traits\ProcessManageTrait;
-use Swoole\Process as SwProcess;
-use Swoole\Server as SwServer;
-
 use inhere\console\io\Input;
 use inhere\console\io\Output;
 use inhere\console\utils\Show;
+
+use inhere\library\traits\ConfigTrait;
 use inhere\library\utils\LiteLogger;
+
+use inhere\server\helpers\ServerHelper;
+use inhere\server\traits\ProcessManageTrait;
+use inhere\server\traits\ServerCreateTrait;
+use inhere\server\traits\SomeSwooleEventTrait;
+
+use Swoole\Process;
+use Swoole\Server;
 
 /**
  * Class AServerManager
@@ -27,33 +30,14 @@ use inhere\library\utils\LiteLogger;
  * Running processes:
  *
  * ```
- * create manager object ( $mgr = new SuiteServer )
- *       |
- *   init()
- *       |
- * some custom logic, if need. (eg: set a main server handler, set app service, register attach listen port service)
- *       |
- * SuiteServer::run()
- *       |
- *   bootstrap()
- *      |
- *   handleCommand() ------> start, stop, restart, help
- *      |
- *      | if need start server, go on.
- *      | no, exit.
- *      |
- *   startBaseService()
- *      |
- *   showInformation()
- *      |
- *    start() // do start swoole server.
- *
  * ```
  */
 abstract class AbstractServer implements InterfaceServer
 {
-    use ProcessManageTrait;
     use ConfigTrait;
+    use ProcessManageTrait;
+    use ServerCreateTrait;
+    use SomeSwooleEventTrait;
 
     /**
      * cli input instance
@@ -140,6 +124,8 @@ abstract class AbstractServer implements InterfaceServer
             // 'ssl_cert_file' => __DIR__.'/config/ssl.crt',
             // 'ssl_key_file' => __DIR__.'/config/ssl.key',
         ],
+
+        'options' => []
     ];
 
     /**
@@ -147,7 +133,11 @@ abstract class AbstractServer implements InterfaceServer
      * @var static
      */
     public static $mgr;
-    private static $_statistics = [];
+
+    /**
+     * @var array
+     */
+    protected static $_statistics = [];
 
     private $bootstrapped = false;
 
@@ -174,13 +164,12 @@ abstract class AbstractServer implements InterfaceServer
     public $pidFile = '';
 
     /**
-     * @var \Swoole\Server
-     * |SwHttpServer|SwWSServer
+     * @var Server
      */
     public $server;
 
     /**
-     * @var SwProcess
+     * @var Process
      */
     public $reloadWorker;
 
@@ -273,6 +262,18 @@ abstract class AbstractServer implements InterfaceServer
         // Get server is debug mode
         $this->debug = (bool)$this->getValue('debug', false);
 
+        // register attach server from config
+        if ($attachServers = $this->config['attach_servers']) {
+            foreach ((array)$attachServers as $name => $conf) {
+                $this->attachPortListener($name, $conf);
+            }
+        }
+
+        // register main server event method
+        if ($methods = $this->getValue('main_server.extend_events')) {
+            $this->setSwooleEvents($methods);
+        }
+
         return $this;
     }
 
@@ -295,8 +296,8 @@ abstract class AbstractServer implements InterfaceServer
         // create swoole server instance
         $this->server = $this->createMainServer();
 
-        if (!$this->server || !($this->server instanceof SwServer)) {
-            throw new \RuntimeException('The server instance must instanceof ' . SwServer::class);
+        if (!$this->server || !($this->server instanceof Server)) {
+            throw new \RuntimeException('The server instance must instanceof ' . Server::class);
         }
 
         // do something for main server
@@ -322,6 +323,40 @@ abstract class AbstractServer implements InterfaceServer
      */
     protected function showInformation()
     {
+        $swOpts = $this->config['swoole'];
+        $main = $this->config['main_server'];
+        $panelData = [
+            'PHP Version' => PHP_VERSION,
+            'Operate System' => PHP_OS,
+            'Swoole Info' => [
+                'version' => SWOOLE_VERSION,
+                'coroutine' => class_exists('\Swoole\Coroutine', false),
+            ],
+            'Swoole Config' => [
+                'dispatch_mode' => $swOpts['dispatch_mode'],
+                'worker_num' => $swOpts['worker_num'],
+                'task_worker_num' => $swOpts['task_worker_num'],
+                'max_request' => $swOpts['max_request'],
+            ],
+            'Main Server' => [
+                'type' => $main['type'],
+                'mode' => $main['mode'],
+                'host' => $main['host'],
+                'port' => $main['port'],
+                'class' => static::class,
+                'extClass' => $main['extend_server'] ?? 'NO setting',
+            ],
+            'Project Config' => [
+                'name' => $this->name,
+                'path' => $this->config['root_path'],
+                'auto_reload' => $this->config['auto_reload'],
+                'pid_file' => $this->config['pid_file'],
+            ],
+            'Server Log' => $this->config['log_service'],
+        ];
+
+        Show::panel($panelData, 'Server Information');
+
         // output a message before start
         if ($this->daemon) {
             Show::write("You can use <info>stop</info> command to stop server.\n");
@@ -339,11 +374,6 @@ abstract class AbstractServer implements InterfaceServer
     }
 
     /**
-     * @return SwServer
-     */
-    abstract protected function createMainServer();
-
-    /**
      * afterCreateServer
      * @throws \RuntimeException
      */
@@ -357,6 +387,9 @@ abstract class AbstractServer implements InterfaceServer
 
         // create Reload Worker
         $this->createHotReloader($this->server);
+
+        // attach registered listen port server to main server
+        $this->startListenServers($this->server);
     }
 
     /**
@@ -387,151 +420,6 @@ abstract class AbstractServer implements InterfaceServer
         }
     }
 
-//////////////////////////////////////////////////////////////////////
-/// swoole event handler
-//////////////////////////////////////////////////////////////////////
-
-    /**
-     * on Master Start
-     * @param  SwServer $server
-     */
-    public function onMasterStart(SwServer $server)
-    {
-        $masterPid = $server->master_pid;
-        $projectPath = $this->getValue('root_path');
-
-        // save master process id to file.
-        if ($pidFile = $this->pidFile) {
-            file_put_contents($this->pidFile, $masterPid);
-        }
-
-        ProcessHelper::setTitle("swoole: master ({$this->name} IN $projectPath)");
-
-        $this->log("The master process success started. (PID:<notice>{$masterPid}</notice>, pid_file: $pidFile)");
-    }
-
-    /**
-     * on Master Stop
-     * @param  SwServer $server
-     */
-    public function onMasterStop(SwServer $server)
-    {
-        $this->log("The swoole master process(PID: {$server->master_pid}) stopped.");
-
-        $this->doClear();
-    }
-
-    /**
-     * doClear
-     */
-    protected function doClear()
-    {
-        if ($this->pidFile && file_exists($this->pidFile)) {
-            unlink($this->pidFile);
-        }
-
-        self::$_statistics['stop_time'] = microtime(1);
-    }
-
-    /**
-     * onConnect
-     * @param  SwServer $server
-     * @param  int $fd 客户端的唯一标识符. 一个自增数字，范围是 1 ～ 1600万
-     */
-    abstract public function onConnect(SwServer $server, $fd);
-
-    abstract public function onClose(SwServer $server, $fd);
-
-    /**
-     * on Manager Start
-     * @param  SwServer $server
-     */
-    public function onManagerStart(SwServer $server)
-    {
-        // file_put_contents($pidFile, ',' . $server->manager_pid, FILE_APPEND);
-        ProcessHelper::setTitle("swoole: manager ({$this->name})");
-
-        $this->log("The manager process success started. (PID:{$server->manager_pid})");
-    }
-
-    /**
-     * on Manager Stop
-     * @param  SwServer $server
-     */
-    public function onManagerStop(SwServer $server)
-    {
-        $this->log("The swoole manager process stopped. (PID {$server->manager_pid})");
-    }
-
-    /**
-     * on Worker Start
-     *   应当在onWorkerStart中创建连接对象
-     * @link https://wiki.swoole.com/wiki/page/325.html
-     * @param  SwServer $server
-     * @param  int $workerId The worker index id in the all workers.
-     */
-    public function onWorkerStart(SwServer $server, $workerId)
-    {
-        $taskMark = $server->taskworker ? 'task-worker' : 'event-worker';
-
-        $this->log("The #<primary>{$workerId}</primary> {$taskMark} process success started. (PID:{$server->worker_pid})");
-
-        ProcessHelper::setTitle("swoole: {$taskMark} ({$this->name})");
-
-        // ServerHelper::setUserAndGroup();
-
-        // 此数组中的文件表示进程启动前就加载了，所以无法reload
-        // Show::write('进程启动前就加载了，无法reload的文件：');
-        // Show::write(get_included_files());
-    }
-
-    /**
-     * @param SwServer $server
-     * @param $workerId
-     */
-    public function onWorkerStop(SwServer $server, $workerId)
-    {
-        $this->log("The swoole #<info>$workerId</info> worker process stopped. (PID:{$server->worker_pid})");
-    }
-
-    /**
-     * onPipeMessage
-     *  能接收到 `$server->sendMessage()` 发送的消息
-     * @param  SwServer $server
-     * @param  int $srcWorkerId
-     * @param  mixed $data
-     */
-    public function onPipeMessage(SwServer $server, $srcWorkerId, $data)
-    {
-        $this->log("#{$server->worker_id} message from #$srcWorkerId: $data");
-    }
-
-    ////////////////////// Task Event //////////////////////
-
-    /**
-     * 处理异步任务( onTask )
-     * @param  SwServer $server
-     * @param  int $taskId
-     * @param  int $fromId
-     * @param  mixed $data
-     */
-    public function onTask(SwServer $server, $taskId, $fromId, $data)
-    {
-        // $this->log("Handle New AsyncTask[id:$taskId]");
-        // 返回任务执行的结果(finish操作是可选的，也可以不返回任何结果)
-        // $server->finish("$data -> OK");
-    }
-
-    /**
-     * 处理异步任务的结果
-     * @param  SwServer $server
-     * @param  int $taskId
-     * @param  mixed $data
-     */
-    public function onFinish(SwServer $server, $taskId, $data)
-    {
-        $this->log("AsyncTask[$taskId] Finish. Data: $data");
-    }
 
 //////////////////////////////////////////////////////////////////////
 /// swoole server method
@@ -707,20 +595,6 @@ abstract class AbstractServer implements InterfaceServer
         }
     }
 
-    /**
-     * 使当前worker进程停止运行，并立即触发onWorkerStop回调函数
-     * @param null|int $workerId
-     * @return bool
-     */
-    public function stopWorker($workerId = null)
-    {
-        if ($this->server) {
-            return $this->server->stop($workerId);
-        }
-
-        return false;
-    }
-
 //////////////////////////////////////////////////////////////////////
 /// some help method
 //////////////////////////////////////////////////////////////////////
@@ -744,14 +618,13 @@ abstract class AbstractServer implements InterfaceServer
             list($ts, $ms) = explode('.', sprintf('%f', microtime(true)));
             $ms = str_pad($ms, 6, 0);
             $time = date('Y-m-d H:i:s', $ts);
-
             $json = $data ? json_encode($data) : '';
-            $type = strtoupper($type);
-            Show::write("[{$time}.{$ms}] [$type] $msg {$json}");
+
+            Show::write(sprintf('[{%s}.{%s}] [%s] %s %s', $time, $ms, strtoupper($type), $msg, $json));
         }
 
         if ($this->hasLogger()) {
-            $this->getLogger()->$type(strip_tags($msg), $data);
+            $this->getLogger()->log($type, strip_tags($msg), $data);
         }
 
         // return;

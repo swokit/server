@@ -19,7 +19,7 @@ use Swoole\Server;
  * Class ProcessManageTrait
  * @package inhere\server\traits
  *
- * @property \Swoole\Server $server
+ * @property Server $server
  */
 trait ProcessManageTrait
 {
@@ -32,7 +32,7 @@ trait ProcessManageTrait
         $input = new Input;
         $command = $input->getCommand();
         if (!$command || $input->sameOpt(['h', 'help'])) {
-            return $this->showHelp();
+            return $this->showHelp($input->getScript());
         }
 
         $method = $command;
@@ -41,7 +41,7 @@ trait ProcessManageTrait
             return $this->$method();
         }
 
-        $this->output->error("Command: $command is not exists!");
+        Show::error("Command: $command is not exists!");
 
         return $this->showHelp($input->getScript(), 0);
     }
@@ -258,7 +258,9 @@ trait ProcessManageTrait
     }
 
     /**
+     * @param string $scriptName
      * @param bool $quit
+     * @return bool
      */
     public function showHelp($scriptName, $quit = false)
     {

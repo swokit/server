@@ -17,6 +17,11 @@ use Swoole\Server as SwServer;
 class UdpListener extends PortListener implements InterfaceUdpListener
 {
     /**
+     * @var string
+     */
+    protected $type = 'udp';
+
+    /**
      * 接收到UDP数据包时回调此函数，发生在worker进程中
      * @notice 如果没有此方法，会调用 `onReceive` 替代
      * @param  SwServer $server

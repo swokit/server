@@ -9,19 +9,7 @@ $server = new TcpServer($config);
 
 ....
 
-TcpServer::run();
-```
-
-- auto create instance
-
-```
-TcpServer::run();
-```
-
-## use `SuiteServer`
-
-```
-SuiteServer::run($config);
+$server->run();
 ```
 
 ## 注意事项

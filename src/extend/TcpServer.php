@@ -8,7 +8,7 @@
 
 namespace inhere\server\extend;
 
-use inhere\server\SuiteServer;
+use inhere\server\AbstractServer;
 use Swoole\Server as SwServer;
 
 /*
@@ -33,9 +33,8 @@ Tcp config:
  * Class TcpServerHandler
  * @package inhere\server\handlers
  */
-class TcpServer extends SuiteServer
+class TcpServer extends AbstractServer
 {
-
     public function onConnect(SwServer $server, $fd)
     {
         $this->log("Has a new client [FD:$fd] connection.");

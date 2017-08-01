@@ -9,6 +9,7 @@
 namespace inhere\server\portListeners;
 
 use inhere\server\AbstractServer;
+use Swoole\Server;
 
 /**
  * Class InterfacePortListener
@@ -16,6 +17,11 @@ use inhere\server\AbstractServer;
  */
 interface InterfacePortListener
 {
+    /**
+     * @param Server $server
+     */
+    public function createPortServer(Server $server);
+
     /**
      * @param AbstractServer $mgr
      */

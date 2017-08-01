@@ -12,7 +12,7 @@ use inhere\console\utils\Show;
 use inhere\library\files\Directory;
 use inhere\library\helpers\PhpHelper;
 use inhere\library\traits\OptionsTrait;
-use inhere\server\SuiteServer;
+use inhere\server\AbstractServer;
 use Swoole\Server as SwServer;
 use Swoole\Http\Response as SwResponse;
 use Swoole\Http\Request as SwRequest;
@@ -48,13 +48,12 @@ http config:
 ```
 */
 
-
 /**
  * Class HttpServerHandler
  * @package inhere\server\handlers
  *
  */
-class HttpServer extends SuiteServer
+class HttpServer extends AbstractServer
 {
     use OptionsTrait;
 
@@ -107,7 +106,7 @@ class HttpServer extends SuiteServer
     /**
      * @var array
      */
-    protected $options = [
+    protected $defaultOptions = [
         'start_session' => false,
 
         // @link http://php.net/manual/zh/session.configuration.php
@@ -143,6 +142,13 @@ class HttpServer extends SuiteServer
             'gzip' => true,
         ],
     ];
+
+    public function __construct(array $config = [], $bootstrap = false)
+    {
+        $this->config['options'] = $this->defaultOptions;
+
+        parent::__construct($config, $bootstrap);
+    }
 
     public function beforeStart()
     {
@@ -519,8 +525,9 @@ class HttpServer extends SuiteServer
         $message = $error['message'];
         $file = $error['file'];
         $line = $error['line'];
-        $log = "\n异常提示：$message ($file:$line)\nStack trace:\n";
+        $log = "\nException：$message\nFile:$file($line)\nStack trace:\n";
         $trace = debug_backtrace(1);
+
         foreach ($trace as $i => $t) {
             if (!isset($t['file'])) {
                 $t['file'] = 'unknown';
@@ -537,9 +544,11 @@ class HttpServer extends SuiteServer
             }
             $log .= "{$t['function']}()\n";
         }
+
         if (isset($_SERVER['REQUEST_URI'])) {
-            $log .= '[QUERY] ' . $_SERVER['REQUEST_URI'];
+            $log .= '[URI' . $_SERVER['REQUEST_URI'] . ']';
         }
+
         if ($this->response) {
             $this->response->status(500);
             $this->response->end($log);
@@ -573,4 +582,11 @@ class HttpServer extends SuiteServer
         return $this->rid;
     }
 
+    /**
+     * @return array
+     */
+    public function getDefaultOptions(): array
+    {
+        return $this->defaultOptions;
+    }
 }
