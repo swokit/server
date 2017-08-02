@@ -8,8 +8,6 @@
 
 namespace inhere\server;
 
-use inhere\console\io\Input;
-use inhere\console\io\Output;
 use inhere\console\utils\Show;
 
 use inhere\library\traits\ConfigTrait;
@@ -40,16 +38,14 @@ abstract class AbstractServer implements InterfaceServer
     use SomeSwooleEventTrait;
 
     /**
-     * cli input instance
-     * @var Input
+     * @var int
      */
-    protected $cliIn;
+    protected $masterPid;
 
     /**
-     * cli output instance
-     * @var Output
+     * @var int
      */
-    protected $cliOut;
+    protected $managerPid;
 
     /**
      * config data instance
@@ -282,30 +278,28 @@ abstract class AbstractServer implements InterfaceServer
 //////////////////////////////////////////////////////////////////////
 
     /**
-     * @return $this
+     * bootstrap
      */
     public function bootstrap()
     {
         $this->bootstrapped = false;
 
         // prepare start server
-        $this
-            ->startBaseService()
-            ->showInformation();
+        $this->startBaseService();
+
+        // display some messages
+        $this->showInformation();
+
+        // do something for before create main server
+        $this->beforeCreateServer();
 
         // create swoole server instance
-        $this->server = $this->createMainServer();
+        $this->createMainServer();
 
-        if (!$this->server || !($this->server instanceof Server)) {
-            throw new \RuntimeException('The server instance must instanceof ' . Server::class);
-        }
-
-        // do something for main server
+        // do something for after create main server
         $this->afterCreateServer();
 
         $this->bootstrapped = true;
-
-        return $this;
     }
 
     protected function startBaseService()
@@ -314,8 +308,6 @@ abstract class AbstractServer implements InterfaceServer
         if ($logService = $this->getValue('log_service')) {
             LiteLogger::make($logService);
         }
-
-        return $this;
     }
 
     /**
@@ -355,7 +347,10 @@ abstract class AbstractServer implements InterfaceServer
             'Server Log' => $this->config['log_service'],
         ];
 
-        Show::panel($panelData, 'Server Information');
+
+        // 'Server Information'
+        Show::mList($panelData);
+        // Show::panel($panelData, 'Server Information');
 
         // output a message before start
         if ($this->daemon) {
@@ -371,53 +366,6 @@ abstract class AbstractServer implements InterfaceServer
     protected function showRuntimeStatus()
     {
         Show::notice('Sorry, The function un-completed!', 0);
-    }
-
-    /**
-     * afterCreateServer
-     * @throws \RuntimeException
-     */
-    protected function afterCreateServer()
-    {
-        // register swoole events handler
-        $this->registerServerEvents();
-
-        // setting swoole config
-        $this->server->set($this->config['swoole']);
-
-        // create Reload Worker
-        $this->createHotReloader($this->server);
-
-        // attach registered listen port server to main server
-        $this->startListenServers($this->server);
-    }
-
-    /**
-     * before Server Start
-     * @param \Closure|null $callback
-     */
-    public function beforeServerStart(\Closure $callback = null)
-    {
-        if ($callback) {
-            $callback($this);
-        }
-    }
-
-    /**
-     * register Swoole Events
-     */
-    protected function registerServerEvents()
-    {
-        $events = $this->swooleEventMap;
-        Show::aList($events, 'Registered swoole events to the main server:( event -> handler )');
-
-        foreach ($events as $event => $callback) {
-
-            // e.g $server->on('Request', [$this, 'onRequest']);
-            if (method_exists($this, $callback)) {
-                $this->server->on($event, [$this, $callback]);
-            }
-        }
     }
 
 
@@ -575,6 +523,29 @@ abstract class AbstractServer implements InterfaceServer
         return $this->swooleProtocolEvents[$protocol] ?? null;
     }
 
+    /**
+     * @return int
+     */
+    public function getMasterPid(): int
+    {
+        return $this->masterPid;
+    }
+
+    /**
+     * @return int
+     */
+    public function getManagerPid(): int
+    {
+        return $this->managerPid;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getStatistics(): array
+    {
+        return self::$_statistics;
+    }
 
 //////////////////////////////////////////////////////////////////////
 /// some help method(from swoole)

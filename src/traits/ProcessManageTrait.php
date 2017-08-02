@@ -58,7 +58,6 @@ trait ProcessManageTrait
 
     protected function beforeStart()
     {
-
     }
 
     /**
@@ -66,7 +65,7 @@ trait ProcessManageTrait
      */
     public function start()
     {
-        if ($masterPid = $this->getMasterPid(true)) {
+        if ($masterPid = $this->getPidFromFile(true)) {
             return Show::error("The swoole server({$this->name}) have been started. (PID:{$masterPid})", true);
         }
 
@@ -81,9 +80,16 @@ trait ProcessManageTrait
         $this->beforeServerStart();
 
         // 对于Server的配置即 $server->set() 中传入的参数设置，必须关闭/重启整个Server才可以重新加载
+
         $this->server->start();
 
+        $this->afterStart();
+
         return 0;
+    }
+
+    protected function afterStart()
+    {
     }
 
     /**
@@ -93,7 +99,7 @@ trait ProcessManageTrait
      */
     public function reload($onlyTaskWorker = false)
     {
-        if (!$masterPid = $this->getMasterPid(true)) {
+        if (!$masterPid = $this->getPidFromFile(true)) {
             return Show::error("The swoole server({$this->name}) is not started.", true);
         }
 
@@ -118,7 +124,7 @@ trait ProcessManageTrait
      */
     public function restart()
     {
-        if ($this->getMasterPid(true)) {
+        if ($this->getPidFromFile(true)) {
             $this->stop(false);
         }
 
@@ -132,7 +138,7 @@ trait ProcessManageTrait
      */
     public function stop($quit = true)
     {
-        if (!$masterPid = $this->getMasterPid(true)) {
+        if (!$masterPid = $this->getPidFromFile(true)) {
             return Show::error("The swoole server({$this->name}) is not running.", true);
         }
 
@@ -142,14 +148,14 @@ trait ProcessManageTrait
         // 向主进程发送此信号(SIGTERM)服务器将安全终止；也可在PHP代码中调用`$server->shutdown()` 完成此操作
         $masterPid && posix_kill($masterPid, SIGTERM);
 
-        $timeout = 5;
+        $timeout = 10;
         $startTime = time();
 
         // retry stop if not stopped.
         while (true) {
-            $isRunning = ($masterPid > 0) && @posix_kill($masterPid, 0);
+            Show::write('.', false);
 
-            if (!$isRunning) {
+            if (!@posix_kill($masterPid, 0)) {
                 break;
             }
 
@@ -162,12 +168,10 @@ trait ProcessManageTrait
             continue;
         }
 
-        if ($this->pidFile && file_exists($this->pidFile)) {
-            unlink($this->pidFile);
-        }
+        $this->removePidFile();
 
         // stop success
-        return Show::success("The swoole server({$this->name}) process stop success.", $quit);
+        return Show::success("Stopped.\nThe swoole server({$this->name}) process stop success.", $quit);
     }
 
     /**
@@ -252,7 +256,7 @@ trait ProcessManageTrait
      * @param bool $checkRunning
      * @return int
      */
-    public function getMasterPid($checkRunning = false)
+    public function getPidFromFile($checkRunning = false)
     {
         return ProcessHelper::getPidFromFile($this->pidFile, $checkRunning);
     }
@@ -301,5 +305,30 @@ trait ProcessManageTrait
         ], $quit);
 
         return true;
+    }
+
+    /**
+     * @param (int) $masterPid
+     * @return bool|int
+     */
+    protected function createPidFile($masterPid)
+    {
+        if ($this->pidFile) {
+            return file_put_contents($this->pidFile, $masterPid);
+        }
+
+        return false;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function removePidFile()
+    {
+        if ($this->pidFile && file_exists($this->pidFile)) {
+            return unlink($this->pidFile);
+        }
+
+        return false;
     }
 }

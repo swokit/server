@@ -60,7 +60,29 @@ interface InterfaceServer
     public function start();
 
     /**
+     * record log message
+     * @param  string $msg
+     * @param  array $data
+     * @param string $type
+     * @return void
+     * @throws \RuntimeException
+     */
+    public function log($msg, array $data = [], $type = 'info');
+
+    /**
      * @return array
      */
     public function getSupportedProtocols();
+
+    /**
+     * @return array
+     */
+    public function getConfig();
+
+    /**
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    public function getValue(string $key, $default = null);
 }

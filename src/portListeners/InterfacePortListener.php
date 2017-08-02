@@ -8,7 +8,7 @@
 
 namespace inhere\server\portListeners;
 
-use inhere\server\AbstractServer;
+use inhere\server\InterfaceServer;
 use Swoole\Server;
 
 /**
@@ -17,15 +17,24 @@ use Swoole\Server;
  */
 interface InterfacePortListener
 {
+
+    /**
+     * @param InterfaceServer $mgr
+     * @param Server $server
+     * @return \Swoole\Server\Port
+     */
+    public function init(InterfaceServer $mgr, Server $server);
+
     /**
      * @param Server $server
+     * @return Server\Port
      */
     public function createPortServer(Server $server);
 
     /**
-     * @param AbstractServer $mgr
+     * @param InterfaceServer $mgr
      */
-    public function setMgr(AbstractServer $mgr);
+    public function setMgr(InterfaceServer $mgr);
 
     /**
      * @param null $key

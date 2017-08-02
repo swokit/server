@@ -39,7 +39,7 @@ $config = [
 
     // attach port server by config
     'attach_servers' => [
-        'test0' => [
+        'port1' => [
             'host' => '0.0.0.0',
             'port' => '9761',
             'type' => 'udp',

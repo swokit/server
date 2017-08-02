@@ -29,16 +29,13 @@ trait SomeSwooleEventTrait
     public function onMasterStart(SwServer $server)
     {
         $masterPid = $server->master_pid;
-        $projectPath = $this->getValue('root_path');
 
         // save master process id to file.
-        if ($pidFile = $this->pidFile) {
-            file_put_contents($this->pidFile, $masterPid);
-        }
+        $this->createPidFile($masterPid);
 
-        ProcessHelper::setTitle("swoole: master ({$this->name} IN $projectPath)");
+        ProcessHelper::setTitle(sprintf('swoole: master (%s IN %s)', $this->name, $this->getValue('root_path')));
 
-        $this->log("The master process success started. (PID:<notice>{$masterPid}</notice>, pid_file: $pidFile)");
+        $this->log("The master process success started. (PID:<notice>{$masterPid}</notice>, pid_file: $this->pidFile)");
     }
 
     /**
@@ -57,9 +54,7 @@ trait SomeSwooleEventTrait
      */
     protected function doClear()
     {
-        if ($this->pidFile && file_exists($this->pidFile)) {
-            unlink($this->pidFile);
-        }
+        $this->removePidFile();
 
         self::$_statistics['stop_time'] = microtime(1);
     }

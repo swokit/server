@@ -11,6 +11,7 @@ namespace inhere\server\traits;
 
 use inhere\console\utils\Show;
 use inhere\library\helpers\Arr;
+use inhere\server\InterfaceServer;
 use inhere\server\portListeners\InterfacePortListener;
 use Swoole\Server;
 use Swoole\Http\Server as SWHttpServer;
@@ -50,6 +51,13 @@ trait ServerCreateTrait
 //////////////////////////////////////////////////////////////////////
 
     /**
+     * before create Server
+     */
+    public function beforeCreateServer()
+    {
+    }
+
+    /**
      * @inheritdoc
      */
     protected function createMainServer()
@@ -83,7 +91,6 @@ trait ServerCreateTrait
 
             case self::PROTOCOL_HTTPS:
                 $this->checkEnvWhenEnableSSL();
-
                 $server = new SWHttpServer($host, $port, $mode, SWOOLE_SOCK_TCP | SWOOLE_SSL);
                 break;
 
@@ -94,7 +101,6 @@ trait ServerCreateTrait
 
             case self::PROTOCOL_WSS:
                 $this->checkEnvWhenEnableSSL();
-
                 $server = new WSServer($host, $port, $mode, SWOOLE_SOCK_TCP | SWOOLE_SSL);
                 $protocolEvents = $this->swooleProtocolEvents[self::PROTOCOL_WS];
                 break;
@@ -105,28 +111,50 @@ trait ServerCreateTrait
                 break;
         }
 
-        $this->log("Create the main swoole server. on <default>{$host}:{$port}</default>(<info>$type</info>)");
+        $this->log("Create the main swoole server. on <blue>$type</blue>://<cyan>{$host}:{$port}</cyan>");
 
         $this->setSwooleEvents($protocolEvents);
 
-        return $server;
+        $this->server = $server;
     }
 
     /**
-     * {@inheritDoc}
+     * afterCreateServer
+     * @throws \RuntimeException
      */
     protected function afterCreateServer()
     {
+        // register swoole events handler
+        $this->registerServerEvents();
+
+        // setting swoole config
+        $this->server->set($this->config['swoole']);
+
+        // create Reload Worker
+        $this->createHotReloader($this->server);
+
         // attach registered listen port server to main server
         $this->startListenServers($this->server);
     }
 
     /**
-     * @inheritdoc
+     * before Server Start
+     * @param \Closure|null $callback
+     */
+    public function beforeServerStart(\Closure $callback = null)
+    {
+        if ($callback) {
+            $callback($this);
+        }
+    }
+
+    /**
+     * register Swoole Events
      */
     protected function registerServerEvents()
     {
         $eventInfo = [];
+        // Show::aList($this->swooleEventMap, 'Registered swoole events to the main server: event -> handler');
 
         // register event to swoole
         foreach ($this->swooleEventMap as $name => $cb) {
@@ -143,11 +171,10 @@ trait ServerCreateTrait
             }
         }
 
-        $opts = [
+        Show::table($eventInfo, 'Registered events to the main server', [
             'showBorder' => 0,
             'tHead' => ['event name', 'event handler']
-        ];
-        Show::table($eventInfo, 'Registered swoole events to the main server', $opts);
+        ]);
     }
 
 //////////////////////////////////////////////////////////////////////
@@ -161,19 +188,21 @@ trait ServerCreateTrait
     protected function startListenServers(Server $server)
     {
         foreach ($this->attachedListeners as $name => $cb) {
-            $msg = "Attach the listen server <info>$name</info> to the main server.";
+            $msg = "Attach the listen server <info>$name</info> to the main server";
 
             if ($cb instanceof \Closure) {
                 $port = $cb($server, $this);
             } else {
-                /** @var InterfacePortListener $cb */
-                $cb->setMgr($this);
-                $port = $cb->createPortServer($server);
+                /**
+                 * @var InterfacePortListener $cb
+                 * @var InterfaceServer $this
+                 */
+                $port = $cb->init($this, $server);
             }
 
             if ($port) {
                 $type = $port->type === SWOOLE_SOCK_TCP ? 'tcp' : 'udp';
-                $msg .= " on <blue>{$port->host}:{$port->port}</blue>($type)";
+                $msg .= "(<blue>$type://{$port->host}:{$port->port}</blue>)";
             }
 
             $this->log($msg);
