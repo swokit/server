@@ -277,7 +277,7 @@ trait ProcessManageTrait
         $commandString = implode('|', $supportCommands);
 
         Show::helpPanel([
-            'description' => 'Swoole server manager tool, Version <comment>' . $version . '</comment>. Update time ' . $upTime,
+            'description' => 'Swoole server manager tool, Version <comment>' . $version . '</comment> Update time ' . $upTime,
             'usage' => "$scriptName {{$commandString}} [-d ...]",
             'commands' => [
                 'start' => 'Start the server',

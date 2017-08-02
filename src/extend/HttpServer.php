@@ -143,6 +143,9 @@ class HttpServer extends AbstractServer
         ],
     ];
 
+    /**
+     * {@inheritDoc}
+     */
     public function __construct(array $config = [], $bootstrap = false)
     {
         $this->config['options'] = $this->defaultOptions;
@@ -152,7 +155,7 @@ class HttpServer extends AbstractServer
 
     public function beforeStart()
     {
-        Show::mList($this->options);
+        Show::mList($this->config['options']);
     }
 
     /**
@@ -316,7 +319,7 @@ class HttpServer extends AbstractServer
         }
 
         // reset supper global var.
-        $this->resetGlobal();
+        $this->resetGlobalData();
     }
 
     /**
@@ -371,8 +374,9 @@ class HttpServer extends AbstractServer
     /**
      * reset Global
      */
-    protected function resetGlobal()
+    protected function resetGlobalData()
     {
+        $this->response = $this->request = null;
         $_REQUEST = $_SESSION = $_COOKIE = $_FILES = $_POST = $_SERVER = $_GET = [];
     }
 

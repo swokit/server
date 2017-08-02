@@ -35,17 +35,26 @@ class WebSocketServer extends HttpServer
     /**
      * {@inheritDoc}
      */
-    public function init()
+    public function __construct(array $config = [], $bootstrap = false)
     {
-        parent::init();
-
-        $this->options['response'] = array_merge([
+        $this->defaultOptions['response'] = [
+            'gzip' => true,
             'keep_alive' => 1,
             'heart_time' => 1,
             'max_connect' => 10000,
             'max_frame_size' => 2097152,
-        ], $this->options['response']);
+        ];
+
+        parent::__construct($config, $bootstrap);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    // public function init()
+    // {
+    //     parent::init();
+    // }
 
     /**
      * 处理http请求(如果需要的话)

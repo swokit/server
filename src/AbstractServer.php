@@ -620,7 +620,7 @@ abstract class AbstractServer implements InterfaceServer
             $time = date('Y-m-d H:i:s', $ts);
             $json = $data ? json_encode($data) : '';
 
-            Show::write(sprintf('[{%s}.{%s}] [%s] %s %s', $time, $ms, strtoupper($type), $msg, $json));
+            Show::write(sprintf('[%s.%s] [%s] %s %s', $time, $ms, strtoupper($type), $msg, $json));
         }
 
         if ($this->hasLogger()) {

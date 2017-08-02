@@ -167,6 +167,7 @@ trait ServerCreateTrait
                 $port = $cb($server, $this);
             } else {
                 /** @var InterfacePortListener $cb */
+                $cb->setMgr($this);
                 $port = $cb->createPortServer($server);
             }
 
