@@ -33,7 +33,7 @@ $config = [
 
     // main server
     'main_server' => [
-        'type' => 'ws', // http https tcp udp ws wss
+        'type' => 'tcp', // http https tcp udp ws wss
         'port' => 9501,
     ],
 
@@ -58,7 +58,8 @@ $config = [
     ]
 ];
 
-$mgr = new \inhere\server\extend\WebSocketServer($config);
+// $mgr = new \inhere\server\extend\WebSocketServer($config);
+$mgr = new \inhere\server\extend\TcpServer($config);
 
 $mgr->attachListener('port2', new \inhere\server\portListeners\UdpListener([
     'host' => '0.0.0.0',

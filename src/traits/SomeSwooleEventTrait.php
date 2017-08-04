@@ -28,7 +28,7 @@ trait SomeSwooleEventTrait
      */
     public function onMasterStart(SwServer $server)
     {
-        $masterPid = $server->master_pid;
+        $this->masterPid = $masterPid = $server->master_pid;
 
         // save master process id to file.
         $this->createPidFile($masterPid);
@@ -46,36 +46,9 @@ trait SomeSwooleEventTrait
     {
         $this->log("The swoole master process(PID: {$server->master_pid}) stopped.");
 
-        $this->doClear();
-    }
-
-    /**
-     * doClear
-     */
-    protected function doClear()
-    {
         $this->removePidFile();
 
         self::$_statistics['stop_time'] = microtime(1);
-    }
-
-    /**
-     * onConnect
-     * @param  SwServer $server
-     * @param  int $fd 客户端的唯一标识符. 一个自增数字，范围是 1 ～ 1600万
-     */
-    public function onConnect(SwServer $server, $fd)
-    {
-        $this->log("onConnect: Has a new client [fd:$fd] connection to the main server.(workerId: {$server->worker_id})");
-    }
-
-    /**
-     * @param SwServer $server
-     * @param $fd
-     */
-    public function onClose(SwServer $server, $fd)
-    {
-        $this->log("onConnect: The client [fd:$fd] connection closed on the main server.(workerId: {$server->worker_id})");
     }
 
     /**
@@ -84,7 +57,9 @@ trait SomeSwooleEventTrait
      */
     public function onManagerStart(SwServer $server)
     {
-        // file_put_contents($pidFile, ',' . $server->manager_pid, FILE_APPEND);
+        $this->masterPid = $server->manager_pid;
+
+        // file_put_contents($this->pidFile, ',' . $server->manager_pid, FILE_APPEND);
         ProcessHelper::setTitle("swoole: manager ({$this->name})");
 
         $this->log("The manager process success started. (PID:{$server->manager_pid})");
@@ -140,6 +115,25 @@ trait SomeSwooleEventTrait
     public function onPipeMessage(SwServer $server, $srcWorkerId, $data)
     {
         $this->log("#{$server->worker_id} message from #$srcWorkerId: $data");
+    }
+
+    /**
+     * onConnect
+     * @param  SwServer $server
+     * @param  int $fd 客户端的唯一标识符. 一个自增数字，范围是 1 ～ 1600万
+     */
+    public function onConnect(SwServer $server, $fd)
+    {
+        $this->log("onConnect: Has a new client [fd:$fd] connection to the main server.(workerId: {$server->worker_id})");
+    }
+
+    /**
+     * @param SwServer $server
+     * @param $fd
+     */
+    public function onClose(SwServer $server, $fd)
+    {
+        $this->log("onConnect: The client [fd:$fd] connection closed on the main server.(workerId: {$server->worker_id})");
     }
 
     ////////////////////// Task Event //////////////////////

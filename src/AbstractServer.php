@@ -211,15 +211,16 @@ abstract class AbstractServer implements InterfaceServer
     /**
      * BaseServer constructor.
      * @param array $config
-     * @param bool $bootstrap
      */
-    public function __construct(array $config = [], $bootstrap = false)
+    public function __construct(array $config = [])
     {
         ServerHelper::checkRuntimeEnv();
         self::$mgr = $this;
 
         $this->setConfig($config);
+
         $this->init();
+        $this->bootstrap();
     }
 
     /**

@@ -129,9 +129,9 @@ trait ServerCreateTrait
 
         // setting swoole config
         $this->server->set($this->config['swoole']);
-
+var_dump(getmypid());
         // create Reload Worker
-        $this->createHotReloader($this->server);
+        $this->createHotReloader();
 
         // attach registered listen port server to main server
         $this->startListenServers($this->server);
@@ -202,7 +202,7 @@ trait ServerCreateTrait
 
             if ($port) {
                 $type = $port->type === SWOOLE_SOCK_TCP ? 'tcp' : 'udp';
-                $msg .= "(<blue>$type://{$port->host}:{$port->port}</blue>)";
+                $msg .= "(<cyan>$type://{$port->host}:{$port->port}</cyan>)";
             }
 
             $this->log($msg);

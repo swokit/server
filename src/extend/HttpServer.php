@@ -146,11 +146,11 @@ class HttpServer extends AbstractServer
     /**
      * {@inheritDoc}
      */
-    public function __construct(array $config = [], $bootstrap = false)
+    public function __construct(array $config = [])
     {
         $this->config['options'] = $this->defaultOptions;
 
-        parent::__construct($config, $bootstrap);
+        parent::__construct($config);
     }
 
     public function beforeStart()

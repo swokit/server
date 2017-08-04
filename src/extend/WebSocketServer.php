@@ -35,7 +35,7 @@ class WebSocketServer extends HttpServer
     /**
      * {@inheritDoc}
      */
-    public function __construct(array $config = [], $bootstrap = false)
+    public function __construct(array $config = [])
     {
         $this->defaultOptions['response'] = [
             'gzip' => true,
@@ -45,7 +45,7 @@ class WebSocketServer extends HttpServer
             'max_frame_size' => 2097152,
         ];
 
-        parent::__construct($config, $bootstrap);
+        parent::__construct($config);
     }
 
     /**

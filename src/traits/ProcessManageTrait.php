@@ -31,6 +31,7 @@ trait ProcessManageTrait
     {
         $input = new Input;
         $command = $input->getCommand();
+
         if (!$command || $input->sameOpt(['h', 'help'])) {
             return $this->showHelp($input->getScript());
         }
@@ -38,6 +39,7 @@ trait ProcessManageTrait
         $method = $command;
 
         if (method_exists($this, $method)) {
+            $this->loadCommandLineOpts($input);
             return $this->$method();
         }
 
@@ -46,12 +48,24 @@ trait ProcessManageTrait
         return $this->showHelp($input->getScript(), 0);
     }
 
+    protected function loadCommandLineOpts($input)
+    {
+        if (($val = $input->sameOpt(['d', 'daemon'])) !== null) {
+            $this->asDaemon($val);
+        }
+
+        if (($val = $input->sameOpt(['n', 'worker-number'])) > 0) {
+            $this->config['swoole']['worker_num'] = $val;
+        }
+    }
+
     /**
      * @return $this
      */
-    public function asDaemon()
+    public function asDaemon($value = true)
     {
-        $this->config['swoole']['daemonize'] = true;
+        $this->daemon = (bool)$value;
+        $this->config['swoole']['daemonize'] = (bool)$value;
 
         return $this;
     }
@@ -63,24 +77,26 @@ trait ProcessManageTrait
     /**
      * Do start server
      */
-    public function start()
+    public function start($daemon = null)
     {
         if ($masterPid = $this->getPidFromFile(true)) {
             return Show::error("The swoole server({$this->name}) have been started. (PID:{$masterPid})", true);
+        }
+
+        if (null !== $daemon) {
+            $this->asDaemon($daemon);
         }
 
         if (!$this->bootstrapped) {
             $this->bootstrap();
         }
 
-        $this->beforeStart();
-
         self::$_statistics['start_time'] = microtime(1);
 
+        $this->beforeStart();
         $this->beforeServerStart();
 
         // 对于Server的配置即 $server->set() 中传入的参数设置，必须关闭/重启整个Server才可以重新加载
-
         $this->server->start();
 
         $this->afterStart();
@@ -90,6 +106,7 @@ trait ProcessManageTrait
 
     protected function afterStart()
     {
+        Show::write('Aborting...');
     }
 
     /**
@@ -142,7 +159,7 @@ trait ProcessManageTrait
             return Show::error("The swoole server({$this->name}) is not running.", true);
         }
 
-        Show::write("The swoole server({$this->name}) process stopping ...");
+        Show::write("The swoole server({$this->name}) process stopping ", false);
 
         // do stop
         // 向主进程发送此信号(SIGTERM)服务器将安全终止；也可在PHP代码中调用`$server->shutdown()` 完成此操作
@@ -164,8 +181,7 @@ trait ProcessManageTrait
                 Show::error("The swoole server({$this->name}) process stop fail!", -1);
             }
 
-            usleep(10000);
-            continue;
+            sleep(1);
         }
 
         $this->removePidFile();
@@ -191,11 +207,10 @@ trait ProcessManageTrait
     /**
      * create code hot reload worker
      * @see https://wiki.swoole.com/wiki/page/390.html
-     * @param  Server $server
      * @return bool
      * @throws \RuntimeException
      */
-    protected function createHotReloader(Server $server)
+    protected function createHotReloader()
     {
         $mgr = $this;
         $reload = $this->config['auto_reload'];
@@ -206,7 +221,7 @@ trait ProcessManageTrait
 
         $options = [
             'dirs' => $reload,
-            'masterPid' => $server->master_pid
+            'masterPid' => $this->server->master_pid
         ];
 
         // 创建用户自定义的工作进程worker
@@ -236,7 +251,6 @@ trait ProcessManageTrait
             //     // 重启所有worker进程
             //     if ( $msg === 'reload' ) {
             //         $onlyReloadTaskWorker = false;
-
             //         $server->reload($onlyReloadTaskWorker);
             //     } else {
             //         foreach($server->connections as $conn) {
@@ -247,7 +261,7 @@ trait ProcessManageTrait
         });
 
         // addProcess添加的用户进程中无法使用task投递任务，请使用 $server->sendMessage() 接口与工作进程通信
-        $server->addProcess($this->reloadWorker);
+        $this->server->addProcess($this->reloadWorker);
 
         return true;
     }
@@ -293,8 +307,8 @@ trait ProcessManageTrait
                 'help' => 'Display this help message',
             ],
             'options' => [
-                '-d' => 'Run the server on daemonize(on start/restart).',
                 '--task' => 'Only reload task worker, when reload server',
+                '-d, --daemon' => 'Run the server on daemonize(on start/restart).',
                 '-n, --worker-number' => 'started worker number',
                 '-h, --help' => 'Display this help message',
             ],
