@@ -26,6 +26,8 @@ use Swoole\Server\Port;
  */
 trait ServerCreateTrait
 {
+    protected $extServer;
+
     /**
      * attached listen port server callback(`Closure`)
      *
@@ -111,7 +113,7 @@ trait ServerCreateTrait
                 break;
         }
 
-        $this->log("Create the main swoole server. on <blue>$type</blue>://<cyan>{$host}:{$port}</cyan>");
+        $this->log("Create the main swoole server. on <cyan>$type://{$host}:{$port}</cyan>");
 
         $this->setSwooleEvents($protocolEvents);
 
@@ -129,23 +131,12 @@ trait ServerCreateTrait
 
         // setting swoole config
         $this->server->set($this->config['swoole']);
-var_dump(getmypid());
+
         // create Reload Worker
         $this->createHotReloader();
 
         // attach registered listen port server to main server
         $this->startListenServers($this->server);
-    }
-
-    /**
-     * before Server Start
-     * @param \Closure|null $callback
-     */
-    public function beforeServerStart(\Closure $callback = null)
-    {
-        if ($callback) {
-            $callback($this);
-        }
     }
 
     /**
@@ -159,15 +150,21 @@ var_dump(getmypid());
         // register event to swoole
         foreach ($this->swooleEventMap as $name => $cb) {
             // is a Closure callback, add by self::onSwoole()
-            if (method_exists($cb, '__invoke')) {
+            if (is_object($cb) && method_exists($cb, '__invoke')) {
                 $eventInfo[] = [$name, get_class($cb)];
                 $this->server->on($name, $cb);
-            }
 
             // if use Custom Outside Handler
-            if (method_exists($this, $cb)) {
+            } elseif ($this->extServer && method_exists($this->extServer, $cb)) {
+                $eventInfo[] = [$name, get_class($this->extServer) . "->$cb"];
+                $this->server->on($name, [$this->extServer, $cb]);
+            // if use Custom Outside Handler
+            } elseif (method_exists($this, $cb)) {
                 $eventInfo[] = [$name, static::class . "->$cb"];
                 $this->server->on($name, [$this, $cb]);
+            } elseif (function_exists($cb)) {
+                $eventInfo[] = [$name, $cb];
+                $this->server->on($name, $cb);
             }
         }
 

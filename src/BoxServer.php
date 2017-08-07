@@ -30,7 +30,7 @@ use Swoole\Server;
  * ```
  * ```
  */
-abstract class AbstractServer implements InterfaceServer
+class BoxServer implements InterfaceServer
 {
     use ConfigTrait;
     use ProcessManageTrait;
@@ -38,14 +38,49 @@ abstract class AbstractServer implements InterfaceServer
     use SomeSwooleEventTrait;
 
     /**
-     * @var int
+     * server manager
+     * @var static
      */
-    protected $masterPid;
+    public static $mgr;
 
     /**
-     * @var int
+     * @var array
      */
-    protected $managerPid;
+    protected static $_statistics = [];
+
+    private $bootstrapped = false;
+
+    /**
+     * @var bool
+     */
+    private $debug = false;
+
+    /**
+     * @var bool
+     */
+    private $daemon = false;
+
+    /**
+     * current server name
+     * @var string
+     */
+    public $name;
+
+    /**
+     * pid File
+     * @var string
+     */
+    public $pidFile = '';
+
+    /**
+     * @var Server
+     */
+    public $server;
+
+    /**
+     * @var Process
+     */
+    public $reloadWorker;
 
     /**
      * config data instance
@@ -125,51 +160,6 @@ abstract class AbstractServer implements InterfaceServer
     ];
 
     /**
-     * server manager
-     * @var static
-     */
-    public static $mgr;
-
-    /**
-     * @var array
-     */
-    protected static $_statistics = [];
-
-    private $bootstrapped = false;
-
-    /**
-     * @var bool
-     */
-    private $debug = false;
-
-    /**
-     * @var bool
-     */
-    private $daemon = false;
-
-    /**
-     * current server name
-     * @var string
-     */
-    public $name;
-
-    /**
-     * pid File
-     * @var string
-     */
-    public $pidFile = '';
-
-    /**
-     * @var Server
-     */
-    public $server;
-
-    /**
-     * @var Process
-     */
-    public $reloadWorker;
-
-    /**
      * @var array
      */
     protected $swooleEventMap = [
@@ -220,7 +210,7 @@ abstract class AbstractServer implements InterfaceServer
         $this->setConfig($config);
 
         $this->init();
-        $this->bootstrap();
+        // $this->bootstrap();
     }
 
     /**
@@ -319,8 +309,10 @@ abstract class AbstractServer implements InterfaceServer
         $swOpts = $this->config['swoole'];
         $main = $this->config['main_server'];
         $panelData = [
-            'PHP Version' => PHP_VERSION,
-            'Operate System' => PHP_OS,
+            'System Info' => [
+                'PHP Version' => PHP_VERSION,
+                'Operate System' => PHP_OS,
+            ],
             'Swoole Info' => [
                 'version' => SWOOLE_VERSION,
                 'coroutine' => class_exists('\Swoole\Coroutine', false),
@@ -522,22 +514,6 @@ abstract class AbstractServer implements InterfaceServer
         }
 
         return $this->swooleProtocolEvents[$protocol] ?? null;
-    }
-
-    /**
-     * @return int
-     */
-    public function getMasterPid(): int
-    {
-        return $this->masterPid;
-    }
-
-    /**
-     * @return int
-     */
-    public function getManagerPid(): int
-    {
-        return $this->managerPid;
     }
 
     /**

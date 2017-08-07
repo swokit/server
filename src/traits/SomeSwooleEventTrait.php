@@ -28,7 +28,7 @@ trait SomeSwooleEventTrait
      */
     public function onMasterStart(SwServer $server)
     {
-        $this->masterPid = $masterPid = $server->master_pid;
+        $masterPid = $server->master_pid;
 
         // save master process id to file.
         $this->createPidFile($masterPid);
@@ -57,7 +57,7 @@ trait SomeSwooleEventTrait
      */
     public function onManagerStart(SwServer $server)
     {
-        $this->masterPid = $server->manager_pid;
+        $server->manager_pid;
 
         // file_put_contents($this->pidFile, ',' . $server->manager_pid, FILE_APPEND);
         ProcessHelper::setTitle("swoole: manager ({$this->name})");

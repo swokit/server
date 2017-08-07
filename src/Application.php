@@ -101,8 +101,8 @@ class Application
             $scriptName = 'php ' . $scriptName;
         }
 
-        $version = AbstractServer::VERSION;
-        $upTime = AbstractServer::UPDATE_TIME;
+        $version = BoxServer::VERSION;
+        $upTime = BoxServer::UPDATE_TIME;
         $supportCommands = ['start', 'reload', 'restart', 'stop', 'info', 'status', 'help'];
         $commandString = implode('|', $supportCommands);
 

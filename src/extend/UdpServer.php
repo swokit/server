@@ -8,7 +8,7 @@
 
 namespace inhere\server\handlers;
 
-use inhere\server\AbstractServer;
+use inhere\server\BoxServer;
 use Swoole\Server as SwServer;
 
 /**
@@ -19,7 +19,7 @@ use Swoole\Server as SwServer;
  * 直接可以向Server监听的端口发送数据包。对应的事件为 onPacket。
  *
  */
-class UdpServer extends AbstractServer
+class UdpServer extends BoxServer
 {
     /**
      * 接收数据的回调

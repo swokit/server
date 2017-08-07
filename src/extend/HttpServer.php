@@ -12,7 +12,7 @@ use inhere\console\utils\Show;
 use inhere\library\files\Directory;
 use inhere\library\helpers\PhpHelper;
 use inhere\library\traits\OptionsTrait;
-use inhere\server\AbstractServer;
+use inhere\server\BoxServer;
 use Swoole\Server as SwServer;
 use Swoole\Http\Response as SwResponse;
 use Swoole\Http\Request as SwRequest;
@@ -53,7 +53,7 @@ http config:
  * @package inhere\server\handlers
  *
  */
-class HttpServer extends AbstractServer
+class HttpServer extends BoxServer
 {
     use OptionsTrait;
 

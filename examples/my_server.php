@@ -18,10 +18,10 @@ require __DIR__ . '/s-autoload.php';
 $config = [
     'debug' => true,
     'name' => 'demo',
-    'pid_file' => __DIR__ . '/logs/suite_server.pid',
+    'pid_file' => __DIR__ . '/logs/test_server.pid',
     'log_service' => [
         'name'     => 'slim_server',
-        'basePath' => __DIR__ . '/logs/suite_server',
+        'basePath' => __DIR__ . '/logs/test_server',
         'logThreshold' => 0,
     ],
     'auto_reload' => 'src,config',

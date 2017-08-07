@@ -70,10 +70,6 @@ trait ProcessManageTrait
         return $this;
     }
 
-    protected function beforeStart()
-    {
-    }
-
     /**
      * Do start server
      */
@@ -93,20 +89,17 @@ trait ProcessManageTrait
 
         self::$_statistics['start_time'] = microtime(1);
 
-        $this->beforeStart();
         $this->beforeServerStart();
 
         // 对于Server的配置即 $server->set() 中传入的参数设置，必须关闭/重启整个Server才可以重新加载
         $this->server->start();
-
-        $this->afterStart();
-
-        return 0;
     }
 
-    protected function afterStart()
+    /**
+     * before Server Start
+     */
+    public function beforeServerStart()
     {
-        Show::write('Aborting...');
     }
 
     /**
@@ -159,7 +152,7 @@ trait ProcessManageTrait
             return Show::error("The swoole server({$this->name}) is not running.", true);
         }
 
-        Show::write("The swoole server({$this->name}) process stopping ", false);
+        Show::write("The swoole server({$this->name}:{$masterPid}) process stopping ", false);
 
         // do stop
         // 向主进程发送此信号(SIGTERM)服务器将安全终止；也可在PHP代码中调用`$server->shutdown()` 完成此操作
@@ -181,13 +174,13 @@ trait ProcessManageTrait
                 Show::error("The swoole server({$this->name}) process stop fail!", -1);
             }
 
-            sleep(1);
+            usleep(300000);
         }
 
         $this->removePidFile();
 
         // stop success
-        return Show::success("Stopped.\nThe swoole server({$this->name}) process stop success.", $quit);
+        return Show::write(" <success>Stopped</success>\nThe swoole server({$this->name}) process stop success", $quit);
     }
 
     /**
@@ -212,28 +205,29 @@ trait ProcessManageTrait
      */
     protected function createHotReloader()
     {
-        $mgr = $this;
         $reload = $this->config['auto_reload'];
 
         if (!$reload || !function_exists('inotify_init')) {
             return false;
         }
 
+        $mgr = $this;
         $options = [
             'dirs' => $reload,
-            'masterPid' => $this->server->master_pid
+            // 'masterPid' => $this->server->master_pid
         ];
 
         // 创建用户自定义的工作进程worker
         $this->reloadWorker = new Process(function (Process $process) use ($options, $mgr) {
             ProcessHelper::setTitle("swoole: reloader ({$mgr->name})");
-            $kit = new AutoReloader($options['masterPid']);
 
+            $svrPid = $mgr->server->master_pid;
             $onlyReloadTask = isset($options['only_reload_task']) ? (bool)$options['only_reload_task'] : false;
             $dirs = array_map('trim', explode(',', $options['dirs']));
 
-            $mgr->log("The reloader worker process success started. (PID: {$process->pid}, Watched: <info>{$options['dirs']}</info>)");
+            $mgr->log("The reloader worker process success started. (PID: {$process->pid}, SVR_PID: $svrPid, Watched: <info>{$options['dirs']}</info>)");
 
+            $kit = new AutoReloader($svrPid);
             $kit
                 ->addWatches($dirs, $this->config['root_path'])
                 ->setReloadHandler(function ($pid) use ($mgr, $onlyReloadTask) {

@@ -9,7 +9,7 @@
 namespace inhere\server;
 
 /**
- * Interface IServerManager
+ * Interface InterfaceServer
  * @package inhere\server
  */
 interface InterfaceServer
