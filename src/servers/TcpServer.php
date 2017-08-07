@@ -8,8 +8,8 @@
 
 namespace inhere\server\extend;
 
-use inhere\server\AbstractExtendServer;
-use Swoole\Server;
+use inhere\server\BoxServer;
+use Swoole\Server as SwServer;
 
 /*
 Tcp config:
@@ -33,9 +33,9 @@ Tcp config:
  * Class TcpServerHandler
  * @package inhere\server\handlers
  */
-class TcpServer extends AbstractExtendServer
+class TcpServer extends BoxServer
 {
-    public function onConnect(Server $server, $fd)
+    public function onConnect(SwServer $server, $fd)
     {
         $this->log("Has a new client [FD:$fd] connection.");
     }
@@ -43,12 +43,12 @@ class TcpServer extends AbstractExtendServer
     /**
      * 接收到数据
      *     使用 `fd` 保存客户端IP，`from_id` 保存 `from_fd` 和 `port`
-     * @param  Server $server
+     * @param  SwServer $server
      * @param  int $fd
      * @param  int $fromId
      * @param  mixed $data
      */
-    public function onReceive(Server $server, $fd, $fromId, $data)
+    public function onReceive(SwServer $server, $fd, $fromId, $data)
     {
         $data = trim($data);
         $this->log("Receive data [$data] from client [FD:$fd].");
@@ -61,7 +61,7 @@ class TcpServer extends AbstractExtendServer
         // example 1 add task
         // $taskId = $server->task($data);
         // 需swoole-1.8.6或更高版本
-        // $server->task("task data", -1, function (Server $server, $task_id, $data) {
+        // $server->task("task data", -1, function (SwServer $server, $task_id, $data) {
         //     echo "Task Callback: ";
         //     var_dump($task_id, $data);
         // });
@@ -76,7 +76,7 @@ class TcpServer extends AbstractExtendServer
         // }
     }
 
-    public function onClose(Server $server, $fd)
+    public function onClose(SwServer $server, $fd)
     {
         $this->log("The client [FD:$fd] connection closed.");
     }

@@ -26,8 +26,6 @@ use Swoole\Server\Port;
  */
 trait ServerCreateTrait
 {
-    protected $extServer;
-
     /**
      * attached listen port server callback(`Closure`)
      *
@@ -126,6 +124,11 @@ trait ServerCreateTrait
      */
     protected function afterCreateServer()
     {
+        if ($extServer = $this->config['main_server']['extend_server']) {
+            $this->extServer = new $extServer($this->config['options']);
+            $this->extServer->setMgr($this);
+        }
+
         // register swoole events handler
         $this->registerServerEvents();
 
@@ -283,4 +286,5 @@ trait ServerCreateTrait
     {
         return isset($this->attachedNames[$name]);
     }
+
 }

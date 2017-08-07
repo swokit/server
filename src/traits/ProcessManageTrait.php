@@ -225,7 +225,7 @@ trait ProcessManageTrait
             $onlyReloadTask = isset($options['only_reload_task']) ? (bool)$options['only_reload_task'] : false;
             $dirs = array_map('trim', explode(',', $options['dirs']));
 
-            $mgr->log("The reloader worker process success started. (PID: {$process->pid}, SVR_PID: $svrPid, Watched: <info>{$options['dirs']}</info>)");
+            $mgr->log("The reloader worker process success started. (PID:{$process->pid}, SVR_PID:$svrPid, Watched:<info>{$options['dirs']}</info>)");
 
             $kit = new AutoReloader($svrPid);
             $kit

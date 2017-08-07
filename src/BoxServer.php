@@ -78,6 +78,11 @@ class BoxServer implements InterfaceServer
     public $server;
 
     /**
+     * @var InterfaceExtendServer
+     */
+    protected $extServer;
+
+    /**
      * @var Process
      */
     public $reloadWorker;
@@ -522,6 +527,16 @@ class BoxServer implements InterfaceServer
     public static function getStatistics(): array
     {
         return self::$_statistics;
+    }
+
+    public function setExtServer(InterfaceExtendServer $extServer)
+    {
+        $this->extServer = $extServer;
+    }
+
+    public function getExtServer()
+    {
+        return $this->extServer;
     }
 
 //////////////////////////////////////////////////////////////////////

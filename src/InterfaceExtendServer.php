@@ -16,5 +16,4 @@ interface InterfaceExtendServer
 {
     public function setMgr(InterfaceServer $mgr);
 
-    public function init(InterfaceServer $mgr);
 }

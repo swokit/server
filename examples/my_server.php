@@ -35,6 +35,7 @@ $config = [
     'main_server' => [
         'type' => 'tcp', // http https tcp udp ws wss
         'port' => 9501,
+        'extend_server' => \inhere\server\extend\TcpServer::class,
     ],
 
     // attach port server by config
@@ -59,7 +60,7 @@ $config = [
 ];
 
 // $mgr = new \inhere\server\extend\WebSocketServer($config);
-$mgr = new \inhere\server\extend\TcpServer($config);
+$mgr = new \inhere\server\BoxServer($config);
 
 $mgr->attachListener('port2', new \inhere\server\portListeners\UdpListener([
     'host' => '0.0.0.0',

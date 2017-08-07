@@ -8,6 +8,8 @@
 
 namespace inhere\server;
 
+use inhere\library\traits\OptionsTrait;
+
 /**
  * Interface AbstractExtendServer
  * @package inhere\server
@@ -30,6 +32,8 @@ abstract class AbstractExtendServer implements InterfaceExtendServer
         if ($options) {
             $this->setOptions($options);
         }
+
+        $this->init();
     }
 
     public function setMgr(InterfaceServer $mgr)
@@ -37,9 +41,8 @@ abstract class AbstractExtendServer implements InterfaceExtendServer
         $this->mgr = $mgr;
     }
 
-    public function init(InterfaceServer $mgr)
+    protected function init()
     {
-        $this->mgr = $mgr;
     }
 
     public function __call($method, array $args = [])
