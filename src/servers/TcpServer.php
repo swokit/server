@@ -6,7 +6,7 @@
  * Time: 16:04
  */
 
-namespace inhere\server\extend;
+namespace inhere\server\servers;
 
 use inhere\server\BoxServer;
 use Swoole\Server as SwServer;
@@ -31,7 +31,7 @@ Tcp config:
 
 /**
  * Class TcpServerHandler
- * @package inhere\server\handlers
+ * @package inhere\server\servers
  */
 class TcpServer extends BoxServer
 {

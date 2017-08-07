@@ -8,6 +8,7 @@
 
 namespace inhere\server;
 
+use inhere\console\io\Input;
 use inhere\console\utils\Show;
 
 use inhere\library\traits\ConfigTrait;
@@ -71,6 +72,11 @@ class BoxServer implements InterfaceServer
      * @var string
      */
     public $pidFile = '';
+
+    /**
+     * @var Input
+     */
+    public $input;
 
     /**
      * @var Server
@@ -212,10 +218,11 @@ class BoxServer implements InterfaceServer
         ServerHelper::checkRuntimeEnv();
         self::$mgr = $this;
 
+        $this->input = new Input;
+
         $this->setConfig($config);
 
         $this->init();
-        // $this->bootstrap();
     }
 
     /**
@@ -224,6 +231,8 @@ class BoxServer implements InterfaceServer
      */
     protected function init()
     {
+        $this->loadCommandLineOpts($this->input);
+
         if (!$this->pidFile = $this->getValue('pid_file')) {
             throw new \RuntimeException('The config option \'pid_file\' is must setting');
         }
@@ -241,15 +250,6 @@ class BoxServer implements InterfaceServer
             $this->name = basename($this->getValue('root_path'));
             $this->setConfig(['name' => $this->name]);
         }
-
-        // $currentUser = ServerHelper::getCurrentUser();
-
-        // Get unix user of the worker process.
-        // if (!$this->user = $this->getValue('swoole.user')) {
-        //     $this->user = $currentUser;
-        // } else if (posix_getuid() !== 0 && $this->user != $currentUser) {
-        //     Show::block('You must have the root privileges to change uid and gid.', 'WARNING', 'warning');
-        // }
 
         // Get server is debug mode
         $this->debug = (bool)$this->getValue('debug', false);
@@ -269,8 +269,22 @@ class BoxServer implements InterfaceServer
         return $this;
     }
 
+    /**
+     * @param Input $input
+     */
+    protected function loadCommandLineOpts(Input $input)
+    {
+        if (($val = $input->sameOpt(['d', 'daemon'])) !== null) {
+            $this->asDaemon($val);
+        }
+
+        if (($val = $input->sameOpt(['n', 'worker-number'])) > 0) {
+            $this->config['swoole']['worker_num'] = $val;
+        }
+    }
+
 //////////////////////////////////////////////////////////////////////
-/// runtime logic
+/// start server logic
 //////////////////////////////////////////////////////////////////////
 
     /**

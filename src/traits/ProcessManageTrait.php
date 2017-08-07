@@ -29,7 +29,7 @@ trait ProcessManageTrait
      */
     public function run()
     {
-        $input = new Input;
+        $input = $this->input;
         $command = $input->getCommand();
 
         if (!$command || $input->sameOpt(['h', 'help'])) {
@@ -39,7 +39,6 @@ trait ProcessManageTrait
         $method = $command;
 
         if (method_exists($this, $method)) {
-            $this->loadCommandLineOpts($input);
             return $this->$method();
         }
 
@@ -48,18 +47,8 @@ trait ProcessManageTrait
         return $this->showHelp($input->getScript(), 0);
     }
 
-    protected function loadCommandLineOpts($input)
-    {
-        if (($val = $input->sameOpt(['d', 'daemon'])) !== null) {
-            $this->asDaemon($val);
-        }
-
-        if (($val = $input->sameOpt(['n', 'worker-number'])) > 0) {
-            $this->config['swoole']['worker_num'] = $val;
-        }
-    }
-
     /**
+     * @param bool $value
      * @return $this
      */
     public function asDaemon($value = true)
@@ -72,11 +61,12 @@ trait ProcessManageTrait
 
     /**
      * Do start server
+     * @param null|bool $daemon
      */
     public function start($daemon = null)
     {
-        if ($masterPid = $this->getPidFromFile(true)) {
-            return Show::error("The swoole server({$this->name}) have been started. (PID:{$masterPid})", true);
+        if ($pid = $this->getPidFromFile(true)) {
+            Show::error("The swoole server({$this->name}) have been started. (PID:{$pid})", -1);
         }
 
         if (null !== $daemon) {
@@ -261,15 +251,6 @@ trait ProcessManageTrait
     }
 
     /**
-     * @param bool $checkRunning
-     * @return int
-     */
-    public function getPidFromFile($checkRunning = false)
-    {
-        return ProcessHelper::getPidFromFile($this->pidFile, $checkRunning);
-    }
-
-    /**
      * @param string $scriptName
      * @param bool $quit
      * @return bool
@@ -313,6 +294,15 @@ trait ProcessManageTrait
         ], $quit);
 
         return true;
+    }
+
+    /**
+     * @param bool $checkRunning
+     * @return int
+     */
+    public function getPidFromFile($checkRunning = false)
+    {
+        return ProcessHelper::getPidFromFile($this->pidFile, $checkRunning);
     }
 
     /**

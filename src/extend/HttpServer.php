@@ -6,11 +6,11 @@
  * Time: 16:04
  */
 
-namespace inhere\server\servers;
+namespace inhere\server\extend;
 
 use inhere\console\utils\Show;
-use inhere\server\BoxServer;
-use inhere\server\extend\HttpServerTrait;
+use inhere\library\traits\OptionsTrait;
+use inhere\server\AbstractExtendServer;
 
 /*
 
@@ -48,7 +48,7 @@ http config:
  * @package inhere\server\handlers
  *
  */
-class HttpServer extends BoxServer
+class HttpServer extends AbstractExtendServer
 {
     use HttpServerTrait;
 
