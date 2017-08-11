@@ -10,9 +10,8 @@ namespace inhere\server\servers;
 
 use Swoole\Server as SwServer;
 use Swoole\Websocket\Frame;
-use Swoole\Websocket\Server as SwWSServer;
-use Swoole\Http\Response as SwResponse;
-use Swoole\Http\Request as SwRequest;
+use Swoole\Websocket\Server;
+use Swoole\Http\Request;
 
 /**
  * Class WebSocketServer
@@ -21,6 +20,30 @@ use Swoole\Http\Request as SwRequest;
  */
 class WebSocketServer extends HttpServer
 {
+    const OPCODE_CONTINUATION_FRAME = 0x0;
+    const OPCODE_TEXT_FRAME         = 0x1;
+    const OPCODE_BINARY_FRAME       = 0x2;
+    const OPCODE_CONNECTION_CLOSE   = 0x8;
+    const OPCODE_PING               = 0x9;
+    const OPCODE_PONG               = 0xa;
+
+    const CLOSE_NORMAL              = 1000;
+    const CLOSE_GOING_AWAY          = 1001;
+    const CLOSE_PROTOCOL_ERROR      = 1002;
+    const CLOSE_DATA_ERROR          = 1003;
+    const CLOSE_STATUS_ERROR        = 1005;
+    const CLOSE_ABNORMAL            = 1006;
+    const CLOSE_MESSAGE_ERROR       = 1007;
+    const CLOSE_POLICY_ERROR        = 1008;
+    const CLOSE_MESSAGE_TOO_BIG     = 1009;
+    const CLOSE_EXTENSION_MISSING   = 1010;
+    const CLOSE_SERVER_ERROR        = 1011;
+    const CLOSE_TLS                 = 1015;
+
+    const WEBSOCKET_VERSION         = 13;
+    
+    const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
+    
     /**
      * frame list
      * @var array
@@ -60,7 +83,7 @@ class WebSocketServer extends HttpServer
      * 处理http请求(如果需要的话)
      * @NOTICE 需要在注册此handler时，添加 'onRequest' 事件
      */
-//    public function onRequest(SwRequest $request, SwResponse $response)
+//    public function onRequest(Request $request, Response $response)
 //    {
         // $response->end('Not found');
 //        parent::onRequest($request, $response);
@@ -70,10 +93,10 @@ class WebSocketServer extends HttpServer
 
     /**
      * webSocket 连接上时
-     * @param  SwWSServer $server
-     * @param  SwRequest $request
+     * @param  Server $server
+     * @param  Request $request
      */
-    public function onOpen(SwWSServer $server, SwRequest $request)
+    public function onOpen(Server $server, Request $request)
     {
         $this->rid = base_convert(str_replace('.', '', microtime(1)), 10, 16) . "0{$request->fd}";
 
@@ -85,15 +108,15 @@ class WebSocketServer extends HttpServer
 
     /**
      * webSocket 收到消息时
-     * @param  SwWSServer $server
+     * @param  Server $server
      * @param  Frame $frame
      */
-    public function onMessage(SwWSServer $server, Frame $frame)
+    public function onMessage(Server $server, Frame $frame)
     {
         $this->log("onMessage: Client [fd:{$frame->fd}] send message: {$frame->data}");
 
         // send message to all
-        // ServerHelper::broadcastMessage($server, $frame->data);
+        // $this->broadcast($server, $frame->data);
 
         // send message to fd.
         $server->push($frame->fd, "server: {$frame->data}");
@@ -144,13 +167,13 @@ class WebSocketServer extends HttpServer
 
     /**
      * send message to all client user
-     * @param SwWSServer $server
+     * @param Server $server
      * @param array $data
      */
-    public function broadcast(SwWSServer $server, $data)
+    public function broadcast(Server $server, $data)
     {
         foreach ($server->connections as $fd) {
-            $server->push($fd, json_encode((array)$data));
+            $server->push($fd, json_encode($data));
         }
     }
 }

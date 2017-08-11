@@ -35,9 +35,13 @@ Tcp config:
  */
 class TcpServer extends AbstractExtendServer
 {
+    /**
+     * @param Server $server
+     * @param $fd
+     */
     public function onConnect(Server $server, $fd)
     {
-        $this->log("Has a new client [FD:$fd] connection.");
+        $this->log("Has a new client [FD:$fd] connection. worker id is: {$server->worker_id}");
     }
 
     /**
@@ -51,7 +55,7 @@ class TcpServer extends AbstractExtendServer
     public function onReceive(Server $server, $fd, $fromId, $data)
     {
         $data = trim($data);
-        $this->log("Receive data [$data] from client [FD:$fd].");
+        $this->log("Receive data [$data] from client [FD:$fd]. fromId:$fromId");
         $server->send($fd, "I have been received your message.\n");
 
         // 群发收到的消息
@@ -76,8 +80,12 @@ class TcpServer extends AbstractExtendServer
         // }
     }
 
+    /**
+     * @param Server $server
+     * @param $fd
+     */
     public function onClose(Server $server, $fd)
     {
-        $this->log("The client [FD:$fd] connection closed.");
+        $this->log("The client [FD:$fd] connection closed. worker id is: {$server->worker_id}");
     }
 }

@@ -55,16 +55,16 @@ class HttpServer extends AbstractExtendServer
     /**
      * {@inheritDoc}
      */
-    public function __construct(array $config = [])
+    public function __construct(array $options = [])
     {
-        $this->config['options'] = $this->defaultOptions;
+        $this->options = $this->defaultOptions;
 
-        parent::__construct($config);
+        parent::__construct($options);
     }
 
     public function beforeStart()
     {
-        Show::mList($this->config['options']);
+        Show::mList($this->options);
     }
 
 }

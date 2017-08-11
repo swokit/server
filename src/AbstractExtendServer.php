@@ -13,6 +13,8 @@ use inhere\library\traits\OptionsTrait;
 /**
  * Interface AbstractExtendServer
  * @package inhere\server
+ *
+ * @method mixed log($msg, array $data = [], $type = 'info')
  */
 abstract class AbstractExtendServer implements InterfaceExtendServer
 {

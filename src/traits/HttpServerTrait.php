@@ -11,8 +11,6 @@ namespace inhere\server\extend;
 use inhere\console\utils\Show;
 use inhere\library\files\Directory;
 use inhere\library\helpers\PhpHelper;
-use inhere\library\traits\OptionsTrait;
-use inhere\server\BoxServer;
 use Swoole\Server as SwServer;
 use Swoole\Http\Response as SwResponse;
 use Swoole\Http\Request as SwRequest;
@@ -384,26 +382,6 @@ trait HttpServerTrait
     }
 
     /**
-     * @param \Throwable $e (\Exception \Error)
-     */
-    protected function handleException(\Throwable $e)
-    {
-        if ($this->isAjax()) {
-            $headers = ['Content-Type', 'application/json; charset=utf-8'];
-            $content = json_encode([
-                'code' => $e->getCode() ?: 500,
-                'msg'  => $e->getMessage(),
-                'data' => $e->getTrace()
-            ]);
-        } else {
-            $headers = ['Content-Type', 'text/html; charset=utf-8'];
-            $content = PhpHelper::exceptionToString($e, '<br>', $this->isDebug());
-        }
-
-        $this->respond($content, 200, $headers);
-    }
-
-    /**
      * handle Static Access 处理静态资源请求
      *
      * @param SwRequest $request
@@ -490,6 +468,47 @@ trait HttpServerTrait
     }
 
     /**
+     * @param int $num
+     * @param string $str
+     * @param string $file
+     * @param int $line
+     * @internal  null|mixed $context
+     */
+    public function handleError($num, $str, $file, $line)
+    {
+        $this->handleException(new \ErrorException($str, 0, $num, $file, $line));
+    }
+
+    /**
+     * @param \Throwable $e (\Exception \Error)
+     */
+    public function handleException(\Throwable $e)
+    {
+        $type = $e instanceof \ErrorException ? 'Error' : 'Exception';
+
+        if ($this->isAjax()) {
+            $headers = ['Content-Type', 'application/json; charset=utf-8'];
+            $content = json_encode([
+                'code' => $e->getCode() ?: 500,
+                'msg'  => sprintf(
+                    '%s(%d): %s, File: %s(Line %d)',
+                    $type,
+                    $e->getCode(),
+                    $e->getMessage(),
+                    $e->getFile(),
+                    $e->getLine()
+                ),
+                'data' => $e->getTrace()
+            ]);
+        } else {
+            $headers = ['Content-Type', 'text/html; charset=utf-8'];
+            $content = PhpHelper::exceptionToString($e, false, $this->isDebug());
+        }
+
+        $this->respond($content, 200, $headers);
+    }
+
+    /**
      * Fatal Error的捕获
      *
      */
@@ -533,7 +552,7 @@ trait HttpServerTrait
         }
 
         if (isset($_SERVER['REQUEST_URI'])) {
-            $log .= '[URI' . $_SERVER['REQUEST_URI'] . ']';
+            $log .= '[URI:' . $_SERVER['REQUEST_URI'] . ']';
         }
 
         if ($this->response) {
