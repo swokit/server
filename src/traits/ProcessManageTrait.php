@@ -20,6 +20,7 @@ use Swoole\Server;
  * @package inhere\server\traits
  *
  * @property Server $server
+ * @property Input $input
  */
 trait ProcessManageTrait
 {
@@ -38,13 +39,30 @@ trait ProcessManageTrait
 
         $method = $command;
 
-        if (method_exists($this, $method)) {
-            return $this->$method();
+        switch ($command) {
+            case 'start':
+                $yes = $input->getSameOpt(['d', 'daemon']);
+                $this->start($yes);
+                break;
+            case 'restart':
+                $yes = $input->getSameOpt(['d', 'daemon']);
+                $this->restart($yes);
+                break;
+            case 'reload':
+                $yes = $input->getSameOpt(['t', 'task']);
+                $this->reload($yes);
+                break;
+            default:
+                if (method_exists($this, $method)) {
+                    $this->$method();
+                } else {
+                    Show::error("Command: $command is not exists!");
+                    $this->showHelp($input->getScript(), 0);
+                }
+                break;
         }
 
-        Show::error("Command: $command is not exists!");
-
-        return $this->showHelp($input->getScript(), 0);
+        return 0;
     }
 
     /**
@@ -121,14 +139,15 @@ trait ProcessManageTrait
 
     /**
      * Do restart server
+     * @param null|bool $daemon
      */
-    public function restart()
+    public function restart($daemon = null)
     {
         if ($this->getPidFromFile(true)) {
             $this->stop(false);
         }
 
-        return $this->start();
+        $this->start($daemon);
     }
 
     /**
@@ -171,6 +190,21 @@ trait ProcessManageTrait
 
         // stop success
         return Show::write(" <success>Stopped</success>\nThe swoole server({$this->name}) process stop success", $quit);
+    }
+
+    public function help()
+    {
+        $this->showHelp($this->input->getScript());
+    }
+
+    public function info()
+    {
+        $this->showInformation();
+    }
+
+    public function status()
+    {
+        $this->showRuntimeStatus();
     }
 
     /**
@@ -282,7 +316,7 @@ trait ProcessManageTrait
                 'help' => 'Display this help message',
             ],
             'options' => [
-                '--task' => 'Only reload task worker, when reload server',
+                '-t, --task' => 'Only reload task worker, when reload server',
                 '-d, --daemon' => 'Run the server on daemonize(on start/restart).',
                 '-n, --worker-number' => 'started worker number',
                 '-h, --help' => 'Display this help message',

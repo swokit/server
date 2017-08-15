@@ -298,7 +298,14 @@ class BoxServer implements InterfaceServer
         $this->startBaseService();
 
         // display some messages
-        $this->showInformation();
+        // $this->showInformation();
+
+        // output a message before start
+        if ($this->daemon) {
+            Show::write("You can use <info>stop</info> command to stop server.\n");
+        } else {
+            Show::write("Press <info>Ctrl-C</info> to quit.\n");
+        }
 
         // do something for before create main server
         $this->beforeCreateServer();
@@ -363,13 +370,6 @@ class BoxServer implements InterfaceServer
         // 'Server Information'
         Show::mList($panelData);
         // Show::panel($panelData, 'Server Information');
-
-        // output a message before start
-        if ($this->daemon) {
-            Show::write("You can use <info>stop</info> command to stop server.\n");
-        } else {
-            Show::write("Press <info>Ctrl-C</info> to quit.\n");
-        }
     }
 
     /**
