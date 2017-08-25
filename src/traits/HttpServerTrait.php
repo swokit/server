@@ -6,7 +6,7 @@
  * Time: 16:04
  */
 
-namespace inhere\server\extend;
+namespace inhere\server\traits;
 
 use inhere\console\utils\Show;
 use inhere\library\files\Directory;

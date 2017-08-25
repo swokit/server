@@ -9,8 +9,8 @@
 namespace inhere\server\extend;
 
 use inhere\console\utils\Show;
-use inhere\library\traits\OptionsTrait;
 use inhere\server\AbstractExtendServer;
+use inhere\server\traits\HttpServerTrait;
 
 /*
 

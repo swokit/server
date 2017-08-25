@@ -53,7 +53,7 @@ class WebSocketServer extends HttpServer
     /**
      * @var array
      */
-    public $connections = [];
+    protected $connections = [];
 
     /**
      * {@inheritDoc}
@@ -96,7 +96,7 @@ class WebSocketServer extends HttpServer
      * @param  Server $server
      * @param  Request $request
      */
-    public function onOpen(Server $server, Request $request)
+    public function onOpen($server, Request $request)
     {
         $this->rid = base_convert(str_replace('.', '', microtime(1)), 10, 16) . "0{$request->fd}";
 
@@ -111,7 +111,7 @@ class WebSocketServer extends HttpServer
      * @param  Server $server
      * @param  Frame $frame
      */
-    public function onMessage(Server $server, Frame $frame)
+    public function onMessage($server, Frame $frame)
     {
         $this->log("onMessage: Client [fd:{$frame->fd}] send message: {$frame->data}");
 
@@ -138,7 +138,7 @@ class WebSocketServer extends HttpServer
      * @param  SwServer $server
      * @param  int $fd
      */
-    public function onClose(SwServer $server, $fd)
+    public function onClose($server, $fd)
     {
         /*
         返回数据：
@@ -170,10 +170,10 @@ class WebSocketServer extends HttpServer
      * @param Server $server
      * @param array $data
      */
-    public function broadcast(Server $server, $data)
-    {
-        foreach ($server->connections as $fd) {
-            $server->push($fd, json_encode($data));
-        }
-    }
+//    public function broadcast(Server $server, $data)
+//    {
+//        foreach ($server->connections as $fd) {
+//            $server->push($fd, json_encode($data));
+//        }
+//    }
 }

@@ -11,6 +11,8 @@ namespace inhere\server;
 /**
  * Interface InterfaceServer
  * @package inhere\server
+ *
+ * @property \Swoole\Server|\Swoole\Websocket\Server $server
  */
 interface InterfaceServer
 {

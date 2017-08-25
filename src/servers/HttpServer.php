@@ -9,8 +9,9 @@
 namespace inhere\server\servers;
 
 use inhere\console\utils\Show;
+use inhere\library\traits\OptionsTrait;
 use inhere\server\BoxServer;
-use inhere\server\extend\HttpServerTrait;
+use inhere\server\traits\HttpServerTrait;
 
 /*
 
@@ -51,13 +52,18 @@ http config:
 class HttpServer extends BoxServer
 {
     use HttpServerTrait;
+    use OptionsTrait;
 
     /**
      * {@inheritDoc}
      */
-    public function __construct(array $config = [])
+    public function __construct(array $config = [], array $options = [])
     {
-        $this->config['options'] = $this->defaultOptions;
+        $this->options = $this->defaultOptions;
+
+        if ($options) {
+            $this->setOptions($options);
+        }
 
         parent::__construct($config);
     }

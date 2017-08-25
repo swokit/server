@@ -12,7 +12,7 @@ use inhere\console\io\Input;
 use inhere\console\utils\Show;
 
 use inhere\library\traits\ConfigTrait;
-use inhere\library\utils\LiteLogger;
+use inhere\library\log\FileLogger;
 
 use inhere\server\helpers\ServerHelper;
 use inhere\server\traits\ProcessManageTrait;
@@ -323,7 +323,7 @@ class BoxServer implements InterfaceServer
     {
         // create log service instance
         if ($logService = $this->getValue('log_service')) {
-            LiteLogger::make($logService);
+            FileLogger::make($logService);
         }
     }
 
@@ -368,7 +368,9 @@ class BoxServer implements InterfaceServer
 
 
         // 'Server Information'
-        Show::mList($panelData);
+        Show::mList($panelData, [
+            'ucfirst' => false,
+        ]);
         // Show::panel($panelData, 'Server Information');
     }
 
@@ -471,12 +473,12 @@ class BoxServer implements InterfaceServer
     {
         $name = $name ?: $this->getValue('log_service.name');
 
-        return $name && LiteLogger::has($name);
+        return $name && FileLogger::has($name);
     }
 
     /**
      * get Logger service
-     * @return LiteLogger
+     * @return FileLogger
      * @throws \RuntimeException
      */
     public function getLogger()
@@ -484,7 +486,7 @@ class BoxServer implements InterfaceServer
         $name = $this->getValue('log_service.name');
 
         if ($this->hasLogger($name)) {
-            return LiteLogger::get($name);
+            return FileLogger::get($name);
         }
 
         throw new \RuntimeException('You don\'t config log service!');
@@ -570,6 +572,68 @@ class BoxServer implements InterfaceServer
         if (!$this->getValue('swoole.ssl_cert_file') || !$this->getValue('swoole.ssl_key_file')) {
             Show::error("If you want use SSL(https), must config the 'swoole.ssl_cert_file' and 'swoole.ssl_key_file'", 1);
         }
+    }
+
+    /**
+     * 获取对端socket的IP地址和端口
+     * @param int $cid
+     * @return array
+     */
+    public function getPeerName($cid)
+    {
+        $data = $this->getClientInfo($cid);
+
+        return [
+            'ip' => $data['remote_ip'] ?? '',
+            'port' => $data['remote_port'] ?? 0,
+        ];
+    }
+
+    /**
+     * @param int $cid
+     * @return array
+     * [
+     *  from_id => int
+     *  server_fd => int
+     *  server_port => int
+     *  remote_port => int
+     *  remote_ip => string
+     *  connect_time => int
+     *  last_time => int
+     * ]
+     */
+    public function getClientInfo(int $cid)
+    {
+        // @link https://wiki.swoole.com/wiki/page/p-connection_info.html
+        return $this->server->getClientInfo($cid);
+    }
+
+    /**
+     * @param null|resource $socket
+     * @return int
+     */
+    public function getErrorNo($socket = null)
+    {
+        return $this->server->getLastError();
+    }
+
+    /**
+     * @param null|resource $socket
+     * @return string
+     */
+    public function getErrorMsg($socket = null)
+    {
+        $err = error_get_last();
+
+        return $err['message'] ?? '';
+    }
+
+    /**
+     * @return resource
+     */
+    public function getSocket(): resource
+    {
+        return $this->server->getSocket();
     }
 
 //////////////////////////////////////////////////////////////////////

@@ -119,19 +119,20 @@ trait SomeSwooleEventTrait
 
     /**
      * onConnect
-     * @param  SwServer $server
-     * @param  int $fd 客户端的唯一标识符. 一个自增数字，范围是 1 ～ 1600万
+     * @param SwServer $server
+     * @param int $fd 客户端的唯一标识符. 一个自增数字，范围是 1 ～ 1600万
+     * @param int $fromId
      */
-    public function onConnect(SwServer $server, $fd)
+    public function onConnect($server, $fd, $fromId)
     {
-        $this->log("onConnect: Has a new client [fd:$fd] connection to the main server.(workerId: {$server->worker_id})");
+        $this->log("onConnect: Has a new client [fd:$fd] connection to the main server.(fromId: $fromId,workerId: {$server->worker_id})");
     }
 
     /**
      * @param SwServer $server
      * @param $fd
      */
-    public function onClose(SwServer $server, $fd)
+    public function onClose($server, $fd)
     {
         $this->log("onConnect: The client [fd:$fd] connection closed on the main server.(workerId: {$server->worker_id})");
     }
