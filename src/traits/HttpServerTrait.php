@@ -60,6 +60,11 @@ trait HttpServerTrait
     public $rid;
 
     /**
+     * @var array
+     */
+    private $requests = [];
+
+    /**
      * @var SwRequest
      */
     public $request;
@@ -332,10 +337,10 @@ trait HttpServerTrait
             $serverData[$_key] = $value;
         }
 
-        $_GET = $request->get ?? [];
-        $_POST = $request->post ?? [];
-        $_FILES = $request->files ?? [];
-        $_COOKIE = $request->cookie ?? [];
+        $_GET = $request->get ?: [];
+        $_POST = $request->post ?: [];
+        $_FILES = $request->files ?: [];
+        $_COOKIE = $request->cookie ?: [];
         $_SERVER = $serverData;
         $_REQUEST = array_merge($_GET, $_POST, $_COOKIE);
 

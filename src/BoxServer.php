@@ -384,20 +384,6 @@ class BoxServer implements InterfaceServer
 
 
 //////////////////////////////////////////////////////////////////////
-/// swoole server method
-//////////////////////////////////////////////////////////////////////
-
-    /**
-     * @param $clientId
-     * @param $data
-     * @return bool|mixed
-     */
-    public function send($clientId, $data)
-    {
-        return $this->server->send($clientId, $data);
-    }
-
-//////////////////////////////////////////////////////////////////////
 /// getter/setter method
 //////////////////////////////////////////////////////////////////////
 
@@ -593,13 +579,16 @@ class BoxServer implements InterfaceServer
      * @param int $cid
      * @return array
      * [
+     *  // 大于0 是webSocket 等于0 是 http/...
+     *  websocket_status => int [可选项] WebSocket连接状态，当服务器是Swoole\WebSocket\Server时会额外增加此项信息
      *  from_id => int
-     *  server_fd => int
-     *  server_port => int
-     *  remote_port => int
-     *  remote_ip => string
-     *  connect_time => int
-     *  last_time => int
+     *  server_fd => int 来自哪个server socket
+     *  server_port => int 来自哪个Server端口
+     *  remote_port => int 客户端连接的端口
+     *  remote_ip => string 客户端连接的ip
+     *  connect_time => int 连接到Server的时间，单位秒
+     *  last_time => int  最后一次发送数据的时间，单位秒
+     *  close_errno => int 连接关闭的错误码，如果连接异常关闭，close_errno的值是非零
      * ]
      */
     public function getClientInfo(int $cid)
@@ -657,7 +646,7 @@ class BoxServer implements InterfaceServer
         // if close debug, don't output debug log.
         if (!$this->daemon) {
             list($ts, $ms) = explode('.', sprintf('%f', microtime(true)));
-            $ms = str_pad($ms, 6, 0);
+            $ms = str_pad($ms, 4, 0);
             $time = date('Y-m-d H:i:s', $ts);
             $json = $data ? json_encode($data) : '';
 
