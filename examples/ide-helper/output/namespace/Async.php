@@ -2,7 +2,7 @@
 namespace Swoole;
 
 /**
- * @since 1.9.5
+ * @since 2.0.8
  */
 class Async
 {
@@ -48,6 +48,12 @@ class Async
      * @return mixed
      */
     public static function dnsLookup($domain_name, $content){}
+
+    /**
+     * @param $domain_name[required]
+     * @return mixed
+     */
+    public static function dnsLookupCoro($domain_name){}
 
     /**
      * @param $settings[required]

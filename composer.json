@@ -15,7 +15,6 @@
   "require": {
     "php": ">=7.0.0",
     "ext-swoole": "*",
-    "amphp/amp": "^2.0.1",
     "inhere/console": "dev-master",
     "inhere/library": "dev-master"
   },

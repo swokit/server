@@ -2,10 +2,15 @@
 namespace Swoole;
 
 /**
- * @since 1.9.5
+ * @since 2.0.8
  */
 class Lock
 {
+    const FILELOCK = 2;
+    const MUTEX = 3;
+    const SEM = 4;
+    const RWLOCK = 1;
+    const SPINLOCK = 5;
 
 
     /**
@@ -24,6 +29,12 @@ class Lock
      * @return mixed
      */
     public function lock(){}
+
+    /**
+     * @param $timeout[optional]
+     * @return mixed
+     */
+    public function lockwait($timeout=null){}
 
     /**
      * @return mixed

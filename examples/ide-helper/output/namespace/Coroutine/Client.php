@@ -1,5 +1,5 @@
 <?php
-namespace Swoole;
+namespace Swoole\Coroutine;
 
 /**
  * @since 2.0.8
@@ -14,10 +14,9 @@ class Client
 
     /**
      * @param $type[required]
-     * @param $async[optional]
      * @return mixed
      */
-    public function __construct($type, $async=null){}
+    public function __construct($type){}
 
     /**
      * @return mixed
@@ -34,17 +33,14 @@ class Client
      * @param $host[required]
      * @param $port[optional]
      * @param $timeout[optional]
-     * @param $sock_flag[optional]
      * @return mixed
      */
-    public function connect($host, $port=null, $timeout=null, $sock_flag=null){}
+    public function connect($host, $port=null, $timeout=null){}
 
     /**
-     * @param $size[optional]
-     * @param $flag[optional]
      * @return mixed
      */
-    public function recv($size=null, $flag=null){}
+    public function recv(){}
 
     /**
      * @param $data[required]
@@ -52,12 +48,6 @@ class Client
      * @return mixed
      */
     public function send($data, $flag=null){}
-
-    /**
-     * @param $dst_socket[required]
-     * @return mixed
-     */
-    public function pipe($dst_socket){}
 
     /**
      * @param $filename[required]
@@ -78,26 +68,6 @@ class Client
     /**
      * @return mixed
      */
-    public function sleep(){}
-
-    /**
-     * @return mixed
-     */
-    public function wakeup(){}
-
-    /**
-     * @return mixed
-     */
-    public function pause(){}
-
-    /**
-     * @return mixed
-     */
-    public function resume(){}
-
-    /**
-     * @return mixed
-     */
     public function isConnected(){}
 
     /**
@@ -111,17 +81,9 @@ class Client
     public function getpeername(){}
 
     /**
-     * @param $force[optional]
      * @return mixed
      */
-    public function close($force=null){}
-
-    /**
-     * @param $event_name[required]
-     * @param $callback[required]
-     * @return mixed
-     */
-    public function on($event_name, $callback){}
+    public function close(){}
 
 
 }

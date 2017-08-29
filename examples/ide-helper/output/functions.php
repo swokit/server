@@ -121,6 +121,12 @@ function swoole_async_writefile($filename, $content, $callback=null, $flags=null
 function swoole_async_dns_lookup($domain_name, $content){}
 
 /**
+ * @param $domain_name[required]
+ * @return mixed
+ */
+function swoole_async_dns_lookup_coro($domain_name){}
+
+/**
  * @param $read_array[required]
  * @param $write_array[required]
  * @param $error_array[required]
@@ -153,6 +159,4 @@ function swoole_get_local_ip(){}
 function swoole_strerror($errno){}
 
 function swoole_errno(){}
-
-function swoole_load_module(){}
 

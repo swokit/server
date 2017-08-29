@@ -2,7 +2,7 @@
 namespace Swoole\Http;
 
 /**
- * @since 1.9.5
+ * @since 2.0.8
  */
 class Client
 {
@@ -57,9 +57,10 @@ class Client
      * @param $type[optional]
      * @param $filename[optional]
      * @param $offset[optional]
+     * @param $length[optional]
      * @return mixed
      */
-    public function addFile($path, $name, $type=null, $filename=null, $offset=null){}
+    public function addFile($path, $name, $type=null, $filename=null, $offset=null, $length=null){}
 
     /**
      * @param $path[required]

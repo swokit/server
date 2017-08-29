@@ -11,6 +11,7 @@ namespace inhere\server\traits;
 use inhere\console\utils\Show;
 use inhere\library\files\Directory;
 use inhere\library\helpers\PhpHelper;
+use Swoole\Coroutine;
 use Swoole\Server as SwServer;
 use Swoole\Http\Response as SwResponse;
 use Swoole\Http\Request as SwRequest;
@@ -369,14 +370,6 @@ trait HttpServerTrait
     /**
      * @return bool
      */
-    public function isWebSocket()
-    {
-        return isset($this->request->header['upgrade']) && strtolower($this->request->header['upgrade']) === 'websocket';
-    }
-
-    /**
-     * @return bool
-     */
     public function isAjax()
     {
         if (isset($this->request->header['x-requested-with'])) {
@@ -537,7 +530,7 @@ trait HttpServerTrait
         $file = $error['file'];
         $line = $error['line'];
         $log = "\nException：$message\nFile:$file($line)\nStack trace:\n";
-        $trace = debug_backtrace(1);
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 10);
 
         foreach ($trace as $i => $t) {
             if (!isset($t['file'])) {
@@ -567,6 +560,40 @@ trait HttpServerTrait
     }
 
     /**
+     * @param int|string $rid
+     * @return bool
+     */
+    public function hasRequest($rid)
+    {
+        return isset($this->requests[$rid]);
+    }
+
+    /**
+     * @param int|string $rid
+     * @param mixed $request
+     * @param bool $override
+     */
+    public function setRequest($rid, $request, $override = false)
+    {
+        if (!isset($this->requests[$rid])) {
+            $this->requests[$rid] = $request;
+        } elseif ($override) {
+            $this->requests[$rid] = $request;
+        }
+    }
+
+    /**
+     * @param null|int|string $rid
+     * @return mixed
+     */
+    public function getRequest($rid = null)
+    {
+        $rid = $rid ?: Coroutine::getuid();
+
+        return $this->requests[$rid] ?? null;
+    }
+
+    /**
      * @return string
      */
     public function getRequestId()
@@ -588,5 +615,21 @@ trait HttpServerTrait
     public function getDefaultOptions(): array
     {
         return $this->defaultOptions;
+    }
+
+    /**
+     * @return array
+     */
+    public function getRequests(): array
+    {
+        return $this->requests;
+    }
+
+    /**
+     * @param array $requests
+     */
+    public function setRequests(array $requests)
+    {
+        $this->requests = $requests;
     }
 }

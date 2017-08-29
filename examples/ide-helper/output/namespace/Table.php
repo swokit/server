@@ -2,7 +2,7 @@
 namespace Swoole;
 
 /**
- * @since 1.9.5
+ * @since 2.0.8
  */
 class Table
 {
@@ -44,9 +44,10 @@ class Table
 
     /**
      * @param $key[required]
+     * @param $field[optional]
      * @return mixed
      */
-    public function get($key){}
+    public function get($key, $field=null){}
 
     /**
      * @return mixed
@@ -61,9 +62,10 @@ class Table
 
     /**
      * @param $key[required]
+     * @param $field[optional]
      * @return mixed
      */
-    public function exist($key){}
+    public function exist($key, $field=null){}
 
     /**
      * @param $key[required]

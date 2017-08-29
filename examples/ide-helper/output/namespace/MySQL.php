@@ -2,10 +2,16 @@
 namespace Swoole;
 
 /**
- * @since 1.9.5
+ * @since 2.0.8
  */
-class Mysql
+class MySQL
 {
+    const STATE_QUERY = 0;
+    const STATE_READ_START = 1;
+    const STATE_READ_FIELD  = 2;
+    const STATE_READ_ROW = 3;
+    const STATE_READ_END = 4;
+    const STATE_CLOSED = 5;
 
 
     /**
@@ -26,6 +32,24 @@ class Mysql
     public function connect($server_config, $callback){}
 
     /**
+     * @param $callback[required]
+     * @return mixed
+     */
+    public function begin($callback){}
+
+    /**
+     * @param $callback[required]
+     * @return mixed
+     */
+    public function commit($callback){}
+
+    /**
+     * @param $callback[required]
+     * @return mixed
+     */
+    public function rollback($callback){}
+
+    /**
      * @param $sql[required]
      * @param $callback[required]
      * @return mixed
@@ -36,6 +60,11 @@ class Mysql
      * @return mixed
      */
     public function close(){}
+
+    /**
+     * @return mixed
+     */
+    public function getState(){}
 
     /**
      * @param $event_name[required]

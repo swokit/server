@@ -2,11 +2,16 @@
 namespace Swoole\Http;
 
 /**
- * @since 1.9.5
+ * @since 2.0.8
  */
 class Response
 {
 
+
+    /**
+     * @return mixed
+     */
+    public function initHeader(){}
 
     /**
      * @param $name[required]
@@ -67,9 +72,10 @@ class Response
     /**
      * @param $filename[required]
      * @param $offset[optional]
+     * @param $length[optional]
      * @return mixed
      */
-    public function sendfile($filename, $offset=null){}
+    public function sendfile($filename, $offset=null, $length=null){}
 
     /**
      * @return mixed

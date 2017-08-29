@@ -2,7 +2,7 @@
 namespace Swoole;
 
 /**
- * @since 1.9.5
+ * @since 2.0.8
  */
 class Atomic
 {
@@ -36,6 +36,18 @@ class Atomic
      * @return mixed
      */
     public function set($value){}
+
+    /**
+     * @param $timeout[optional]
+     * @return mixed
+     */
+    public function wait($timeout=null){}
+
+    /**
+     * @param $count[optional]
+     * @return mixed
+     */
+    public function wakeup($count=null){}
 
     /**
      * @param $cmp_value[required]

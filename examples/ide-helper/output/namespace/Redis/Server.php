@@ -2,9 +2,9 @@
 namespace Swoole\Redis;
 
 /**
- * @since 1.9.5
+ * @since 2.0.8
  */
-class Server extends \swoole_server
+class Server extends \Swoole\Server
 {
     const NIL = 1;
     const ERROR = 0;
@@ -44,6 +44,11 @@ class Server extends \swoole_server
      * @return mixed
      */
     public function __construct($host, $port=null, $mode=null, $sock_type=null){}
+
+    /**
+     * @return mixed
+     */
+    public function __destruct(){}
 
     /**
      * @param $host[required]
@@ -115,9 +120,10 @@ class Server extends \swoole_server
      * @param $conn_fd[required]
      * @param $filename[required]
      * @param $offset[optional]
+     * @param $length[optional]
      * @return mixed
      */
-    public function sendfile($conn_fd, $filename, $offset=null){}
+    public function sendfile($conn_fd, $filename, $offset=null, $length=null){}
 
     /**
      * @param $fd[required]

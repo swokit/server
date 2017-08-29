@@ -35,6 +35,21 @@ class swoole_client extends Swoole\Client
 
 }
 
+class swoole_client_coro extends Swoole\Client\Coro
+{
+
+}
+
+class swoole_http_client_coro extends Swoole\Http\Client\Coro
+{
+
+}
+
+class swoole_coroutine extends Swoole\Coroutine
+{
+
+}
+
 class swoole_http_client extends Swoole\Http\Client
 {
 
@@ -100,17 +115,17 @@ class swoole_mysql_exception extends Swoole\Mysql\Exception
 
 }
 
-class swoole_module extends Swoole\Module
-{
-
-}
-
 class swoole_mmap extends Swoole\Mmap
 {
 
 }
 
 class swoole_channel extends Swoole\Channel
+{
+
+}
+
+class swoole_serialize extends Swoole\Serialize
 {
 
 }

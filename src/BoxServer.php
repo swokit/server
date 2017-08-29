@@ -579,7 +579,7 @@ class BoxServer implements InterfaceServer
      * @param int $cid
      * @return array
      * [
-     *  // 大于0 是webSocket 等于0 是 http/...
+     *  // 大于0 是webSocket(=2) 等于0 是 http/...
      *  websocket_status => int [可选项] WebSocket连接状态，当服务器是Swoole\WebSocket\Server时会额外增加此项信息
      *  from_id => int
      *  server_fd => int 来自哪个server socket

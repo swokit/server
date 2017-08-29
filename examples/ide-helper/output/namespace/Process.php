@@ -2,8 +2,7 @@
 namespace Swoole;
 
 /**
- * @since 1.9.5
- *
+ * @since 2.0.8
  * @property int $pid
  */
 class Process

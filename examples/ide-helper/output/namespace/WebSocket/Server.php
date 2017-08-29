@@ -1,10 +1,10 @@
 <?php
-namespace Swoole\Websocket;
+namespace Swoole\WebSocket;
 
 /**
- * @since 1.9.5
+ * @since 2.0.8
  */
-class Server extends \swoole_http_server
+class Server extends \Swoole\Http\Server
 {
 
 
@@ -58,6 +58,11 @@ class Server extends \swoole_http_server
      * @return mixed
      */
     public function __construct($host, $port=null, $mode=null, $sock_type=null){}
+
+    /**
+     * @return mixed
+     */
+    public function __destruct(){}
 
     /**
      * @param $host[required]
@@ -116,9 +121,10 @@ class Server extends \swoole_http_server
      * @param $conn_fd[required]
      * @param $filename[required]
      * @param $offset[optional]
+     * @param $length[optional]
      * @return mixed
      */
-    public function sendfile($conn_fd, $filename, $offset=null){}
+    public function sendfile($conn_fd, $filename, $offset=null, $length=null){}
 
     /**
      * @param $fd[required]
@@ -281,10 +287,5 @@ class Server extends \swoole_http_server
      */
     public function bind($fd, $uid){}
 
-    /**
-     * @return resource
-     */
-    public function getSocket()
-    {
-    }
+
 }

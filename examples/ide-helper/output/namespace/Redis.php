@@ -2,16 +2,22 @@
 namespace Swoole;
 
 /**
- * @since 1.9.5
+ * @since 2.0.8
  */
 class Redis
 {
+    const STATE_CONNECT = 0;
+    const STATE_READY = 1;
+    const STATE_WAIT_RESULT = 2;
+    const STATE_SUBSCRIBE = 3;
+    const STATE_CLOSED = 4;
 
 
     /**
+     * @param $setting[optional]
      * @return mixed
      */
-    public function __construct(){}
+    public function __construct($setting=null){}
 
     /**
      * @return mixed
@@ -37,6 +43,11 @@ class Redis
      * @return mixed
      */
     public function close(){}
+
+    /**
+     * @return mixed
+     */
+    public function getState(){}
 
     /**
      * @param $command[required]

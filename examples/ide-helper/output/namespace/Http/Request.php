@@ -2,7 +2,7 @@
 namespace Swoole\Http;
 
 /**
- * @since 1.9.5
+ * @since 2.0.8
  *
  * @property array $get
  * @property array $post

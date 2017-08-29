@@ -2,7 +2,7 @@
 namespace Swoole\Server;
 
 /**
- * @since 1.9.5
+ * @since 2.0.8
  */
 class Port
 {
