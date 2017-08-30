@@ -2,26 +2,28 @@
 /**
  * Created by PhpStorm.
  * User: inhere
- * Date: 2017-02-20
- * Time: 15:20
+ * Date: 2017-08-30
+ * Time: 15:06
  */
 
-namespace inhere\server\portListeners;
+namespace inhere\server\rpc;
 
-use Swoole\Server as SwServer;
+use inhere\server\portListeners\InterfaceTcpListener;
+use inhere\server\portListeners\PortListener;
+use Swoole\Server;
 
 /**
- * Class TcpListener
- * @package inhere\server\portListeners
+ * Class RpcServer
+ * @package inhere\server\rpc
  */
-class TcpListener extends PortListener implements InterfaceTcpListener
+class RpcServer extends PortListener implements InterfaceTcpListener
 {
     // protected $type = 'tcp';
 
     /**
      * {@inheritDoc}
      */
-    public function onConnect(SwServer $server, $fd)
+    public function onConnect(Server $server, $fd)
     {
         $this->mgr->log("Has a new client [FD:$fd] connection.");
     }
@@ -29,15 +31,16 @@ class TcpListener extends PortListener implements InterfaceTcpListener
     /**
      * 接收到数据
      *     使用 `fd` 保存客户端IP，`from_id` 保存 `from_fd` 和 `port`
-     * @param  SwServer $server
+     * @param  Server $server
      * @param  int $fd
      * @param  int $fromId
      * @param  mixed $data
      */
-    public function onReceive(SwServer $server, $fd, $fromId, $data)
+    public function onReceive(Server $server, $fd, $fromId, $data)
     {
         $data = trim($data);
         $this->log("Receive data [$data] from client [FD:$fd].");
+
         $server->send($fd, "I have been received your message.\n");
 
         // $this->onTaskReceive($server, $fd, $fromId, $data);
@@ -49,7 +52,7 @@ class TcpListener extends PortListener implements InterfaceTcpListener
     /**
      * {@inheritDoc}
      */
-    public function onClose(SwServer $server, $fd)
+    public function onClose(Server $server, $fd)
     {
         $this->mgr->log("The client [FD:$fd] connection closed.");
     }

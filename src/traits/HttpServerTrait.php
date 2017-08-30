@@ -11,7 +11,6 @@ namespace inhere\server\traits;
 use inhere\console\utils\Show;
 use inhere\library\files\Directory;
 use inhere\library\helpers\PhpHelper;
-use Swoole\Coroutine;
 use Swoole\Server as SwServer;
 use Swoole\Http\Response as SwResponse;
 use Swoole\Http\Request as SwRequest;
@@ -62,18 +61,19 @@ trait HttpServerTrait
 
     /**
      * @var array
+     * [
+     *  rid => SwRequest
+     * ]
      */
     private $requests = [];
 
     /**
-     * @var SwRequest
+     * @var array
+     * [
+     *  rid => [ SwResponse, SwRequest ]
+     * ]
      */
-    public $request;
-
-    /**
-     * @var SwResponse
-     */
-    public $response;
+    private $contextMap = [];
 
     /**
      * handle dynamic request (for http server)
@@ -170,21 +170,19 @@ trait HttpServerTrait
      */
     protected function beforeRequest(SwRequest $request, SwResponse $response)
     {
-        $this->request = $request;
-        $this->response = $response;
-
-        $this->loadGlobalData($request);
+//        $this->loadGlobalData($request);
 
         // start session
         if ($this->getOption('start_session', false)) {
-            $this->startSession();
+            $this->startSession($response);
         }
     }
 
     /**
      * startSession
+     * @param SwResponse $response
      */
-    protected function startSession()
+    protected function startSession($response)
     {
         // session
         $opts = $this->getOption('session');
@@ -205,13 +203,27 @@ trait HttpServerTrait
         if (!$sid = $_COOKIE[$name] ?? '') {
             $_COOKIE[$name] = $sid = session_id();
 
-            $this->response->cookie(
+            $response->cookie(
                 $name, $sid, time() + $opts['cookie_lifetime'],
                 $opts['cookie_path'], $opts['cookie_domain'], $opts['cookie_secure'], $opts['cookie_httponly']
             );
         }
 
         $this->log("session name: {$name}, session id(cookie): {$_COOKIE[$name]}, session id: " . session_id());
+    }
+
+    /**
+     * @param SwRequest $request
+     * @return string
+     */
+    public function getRequestId(SwRequest $request)
+    {
+        return md5($request->server['request_time_float'] . $request->fd, true);
+    }
+
+    public function initRequestContext(SwRequest $request, SwResponse $response)
+    {
+        $this->setRequest($this->getRequestId($request), $request);
     }
 
     /**
@@ -223,9 +235,8 @@ trait HttpServerTrait
     public function onRequest(SwRequest $request, SwResponse $response)
     {
         // 捕获异常
-        register_shutdown_function(array($this, 'handleFatal'));
+        register_shutdown_function([$this, 'handleFatal']);
 
-        $this->rid = base_convert(str_replace('.', '', microtime(1)), 10, 16) . "0{$request->fd}";
         $uri = $request->server['request_uri'];
 
         // test: `curl 127.0.0.1:9501/ping`
@@ -238,66 +249,69 @@ trait HttpServerTrait
             return true;
         }
 
-        $status = 200;
-        $headers = [];
         $this->beforeRequest($request, $response);
+        $this->initRequestContext($request, $response);
 
         try {
             if (!$cb = $this->dynamicRequestHandler) {
                 $this->log("Please set the property 'dynamicRequestHandler' to handle dynamic request(if you need).", [], 'notice');
                 $content = 'No content to display';
+                $response->write($content);
             } else {
-                list($status, $headers, $content) = $cb($request, $response);
+                // call user's handler
+                $response = $cb($request, $response);
             }
 
-            $this->respond($content, $status, $headers);
+            $this->respond($response);
         } catch (\Throwable $e) {
-            $this->handleException($e);
+            $this->handleException($e, $request, $response);
         }
 
-        $this->afterResponse();
+        $this->afterRequest($request, $response);
 
         return true;
     }
 
     /**
-     * @param string $content
-     * @param int $status
-     * @param array $headers
+     * @param SwRequest $request
+     * @param SwResponse $response
+     */
+    public function afterRequest(SwRequest $request, SwResponse $response)
+    {
+        $this->delRequest($this->getRequestId($request));
+
+    }
+
+    /**
+     * @param SwResponse $response
+     */
+    public function beforeResponse(SwResponse $response)
+    {
+    }
+
+    /**
+     * @param SwResponse $response
      * @return mixed
      */
-    public function respond(string $content = '', int $status = 200, array $headers = [])
+    public function respond(SwResponse $response)
     {
-        // $this->beforeResponse($content);
-        $opts = $this->options['response'];
-
-        // http status
-        $this->response->status($status);
-
-        // headers
-        foreach ($headers as $name => $value) {
-            $this->response->header($name, $value);
-        }
+        $this->beforeResponse($response);
 
         // open gzip
-        if ($content && isset($opts['gzip']) && $opts['gzip']) {
-            $this->response->gzip(1);
-        }
+        // $response->gzip(1);
 
-        Show::write([
-            "Response Status: <info>$status</info>"
-        ]);
-        Show::aList($headers, 'Response Headers');
-        Show::aList($_SESSION ?: [],'server sessions');
+        $ret = $response->end();
 
-        return $this->response->end($content);
+        $this->afterResponse($ret);
+
+        return $ret;
     }
 
     /**
      * afterResponse
      * do some clear work
      */
-    protected function afterResponse()
+    protected function afterResponse($ret)
     {
         // commit session data.
         // if started session by `session_start()`, call `session_write_close()` is required.
@@ -306,74 +320,31 @@ trait HttpServerTrait
         }
 
         // reset supper global var.
-        $this->resetGlobalData();
+//        $this->resetGlobalData();
     }
 
     /**
+     * @param SwResponse $response
      * @param $url
      * @param int $mode
      * @return mixed
      */
-    public function redirect($url, $mode = 302)
+    public function redirect($response, $url, $mode = 302)
     {
-        $this->response->status($mode);
-        $this->response->header('Location', $url);
+        $response->status($mode);
+        $response->header('Location', $url);
 
-        return $this->respond();
+        return $this->respond($response);
     }
 
     /**
-     * 将原始请求信息转换到PHP超全局变量中
-     * @param SwRequest $request
-     */
-    protected function loadGlobalData(SwRequest $request)
-    {
-        $serverData = array_change_key_case($request->server, CASE_UPPER);
-
-        /**
-         * 将HTTP头信息赋值给$_SERVER超全局变量
-         */
-        foreach ((array)$request->header as $key => $value) {
-            $_key = 'HTTP_' . strtoupper(str_replace('-', '_', $key));
-            $serverData[$_key] = $value;
-        }
-
-        $_GET = $request->get ?: [];
-        $_POST = $request->post ?: [];
-        $_FILES = $request->files ?: [];
-        $_COOKIE = $request->cookie ?: [];
-        $_SERVER = $serverData;
-        $_REQUEST = array_merge($_GET, $_POST, $_COOKIE);
-
-        $uri = $request->server['request_uri'];
-        $method = $request->server['request_method'];
-
-        Show::title("[RID:{$this->rid}] $method $uri");
-        Show::multiList([
-            'request GET' => $_GET,
-            'request POST' => $_POST,
-            'request COOKIE' => $_COOKIE,
-            // 'request Headers' => $request->header ?: [],
-            // 'server Data' => $request->server ?: [],
-        ]);
-    }
-
-    /**
-     * reset Global
-     */
-    protected function resetGlobalData()
-    {
-        $this->response = $this->request = null;
-        $_REQUEST = $_SESSION = $_COOKIE = $_FILES = $_POST = $_SERVER = $_GET = [];
-    }
-
-    /**
+     * @param SwRequest $req
      * @return bool
      */
-    public function isAjax()
+    public function isAjax(SwRequest $req)
     {
-        if (isset($this->request->header['x-requested-with'])) {
-            return $this->request->header['x-requested-with'] === 'XMLHttpRequest';
+        if (isset($req->header['x-requested-with'])) {
+            return $req->header['x-requested-with'] === 'XMLHttpRequest';
         }
 
         return false;
@@ -474,18 +445,20 @@ trait HttpServerTrait
      */
     public function handleError($num, $str, $file, $line)
     {
-        $this->handleException(new \ErrorException($str, 0, $num, $file, $line));
+//        $this->handleException(new \ErrorException($str, 0, $num, $file, $line));
     }
 
     /**
      * @param \Throwable $e (\Exception \Error)
+     * @param SwRequest $req
+     * @param SwResponse $resp
      */
-    public function handleException(\Throwable $e)
+    public function handleException(\Throwable $e, $req, $resp)
     {
         $type = $e instanceof \ErrorException ? 'Error' : 'Exception';
 
-        if ($this->isAjax()) {
-            $headers = ['Content-Type', 'application/json; charset=utf-8'];
+        if ($this->isAjax($req)) {
+            $resp->header('Content-Type', 'application/json; charset=utf-8');
             $content = json_encode([
                 'code' => $e->getCode() ?: 500,
                 'msg'  => sprintf(
@@ -499,11 +472,12 @@ trait HttpServerTrait
                 'data' => $e->getTrace()
             ]);
         } else {
-            $headers = ['Content-Type', 'text/html; charset=utf-8'];
+            $resp->header('Content-Type', 'text/html; charset=utf-8');
             $content = PhpHelper::exceptionToString($e, false, $this->isDebug());
         }
 
-        $this->respond($content, 200, $headers);
+        $resp->write($content);
+        $this->respond($resp);
     }
 
     /**
@@ -553,10 +527,11 @@ trait HttpServerTrait
             $log .= '[URI:' . $_SERVER['REQUEST_URI'] . ']';
         }
 
-        if ($this->response) {
-            $this->response->status(500);
-            $this->response->end($log);
-        }
+        var_dump($log);
+//        if ($this->response) {
+//            $this->response->status(500);
+//            $this->response->end($log);
+//        }
     }
 
     /**
@@ -586,27 +561,28 @@ trait HttpServerTrait
      * @param null|int|string $rid
      * @return mixed
      */
-    public function getRequest($rid = null)
+    public function getRequest($rid)
     {
-        $rid = $rid ?: Coroutine::getuid();
-
         return $this->requests[$rid] ?? null;
     }
 
     /**
-     * @return string
+     * @param $rid
      */
-    public function getRequestId()
+    public function delRequest($rid)
     {
-        return $this->rid;
+        if (isset($this->requests[$rid])) {
+            unset($this->requests[$rid]);
+        }
     }
 
     /**
+     * @param SwRequest $request
      * @return string
      */
-    public function getRid()
+    public function getRid(SwRequest $request)
     {
-        return $this->rid;
+        return $this->getRequestId($request);
     }
 
     /**
