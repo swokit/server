@@ -66,7 +66,7 @@ class ServerHelper
     }
 
     /**
-     * @param $fd
+     * @param int $fd from `request->fd` OR `\Swoole\Coroutine::getuid()`
      * @return string
      */
     public static function genRequestId($fd)
