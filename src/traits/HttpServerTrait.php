@@ -11,6 +11,7 @@ namespace inhere\server\traits;
 use inhere\console\utils\Show;
 use inhere\library\files\Directory;
 use inhere\library\helpers\PhpHelper;
+use inhere\server\helpers\ServerHelper;
 use Swoole\Server as SwServer;
 use Swoole\Http\Response as SwResponse;
 use Swoole\Http\Request as SwRequest;
@@ -53,28 +54,6 @@ http config:
  */
 trait HttpServerTrait
 {
-    /**
-     * the request id
-     * @var string
-     */
-    public $rid;
-
-    /**
-     * @var array
-     * [
-     *  rid => SwRequest
-     * ]
-     */
-    private $requests = [];
-
-    /**
-     * @var array
-     * [
-     *  rid => [ SwResponse, SwRequest ]
-     * ]
-     */
-    private $contextMap = [];
-
     /**
      * handle dynamic request (for http server)
      * @var \Closure
@@ -212,18 +191,9 @@ trait HttpServerTrait
         $this->log("session name: {$name}, session id(cookie): {$_COOKIE[$name]}, session id: " . session_id());
     }
 
-    /**
-     * @param SwRequest $request
-     * @return string
-     */
-    public function getRequestId(SwRequest $request)
-    {
-        return md5($request->server['request_time_float'] . $request->fd, true);
-    }
-
     public function initRequestContext(SwRequest $request, SwResponse $response)
     {
-        $this->setRequest($this->getRequestId($request), $request);
+//        $this->setRequest($this->getRequestId($request), $request);
     }
 
     /**
@@ -278,8 +248,6 @@ trait HttpServerTrait
      */
     public function afterRequest(SwRequest $request, SwResponse $response)
     {
-        $this->delRequest($this->getRequestId($request));
-
     }
 
     /**
@@ -532,80 +500,5 @@ trait HttpServerTrait
 //            $this->response->status(500);
 //            $this->response->end($log);
 //        }
-    }
-
-    /**
-     * @param int|string $rid
-     * @return bool
-     */
-    public function hasRequest($rid)
-    {
-        return isset($this->requests[$rid]);
-    }
-
-    /**
-     * @param int|string $rid
-     * @param mixed $request
-     * @param bool $override
-     */
-    public function setRequest($rid, $request, $override = false)
-    {
-        if (!isset($this->requests[$rid])) {
-            $this->requests[$rid] = $request;
-        } elseif ($override) {
-            $this->requests[$rid] = $request;
-        }
-    }
-
-    /**
-     * @param null|int|string $rid
-     * @return mixed
-     */
-    public function getRequest($rid)
-    {
-        return $this->requests[$rid] ?? null;
-    }
-
-    /**
-     * @param $rid
-     */
-    public function delRequest($rid)
-    {
-        if (isset($this->requests[$rid])) {
-            unset($this->requests[$rid]);
-        }
-    }
-
-    /**
-     * @param SwRequest $request
-     * @return string
-     */
-    public function getRid(SwRequest $request)
-    {
-        return $this->getRequestId($request);
-    }
-
-    /**
-     * @return array
-     */
-    public function getDefaultOptions(): array
-    {
-        return $this->defaultOptions;
-    }
-
-    /**
-     * @return array
-     */
-    public function getRequests(): array
-    {
-        return $this->requests;
-    }
-
-    /**
-     * @param array $requests
-     */
-    public function setRequests(array $requests)
-    {
-        $this->requests = $requests;
     }
 }

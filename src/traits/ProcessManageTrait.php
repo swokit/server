@@ -12,6 +12,7 @@ use inhere\console\io\Input;
 use inhere\console\utils\Show;
 use inhere\server\helpers\AutoReloader;
 use inhere\server\helpers\ProcessHelper;
+use inhere\server\helpers\ServerHelper;
 use Swoole\Process;
 use Swoole\Server;
 
@@ -35,6 +36,10 @@ trait ProcessManageTrait
 
         if (!$command || $input->sameOpt(['h', 'help'])) {
             return $this->showHelp($input->getScript());
+        }
+
+        if (in_array($command, ['start', 'stop', 'restart', 'reload'], true)) {
+            ServerHelper::checkRuntimeEnv();
         }
 
         $method = $command;
@@ -202,6 +207,18 @@ trait ProcessManageTrait
         $this->showInformation();
     }
 
+    public function check()
+    {
+        Show::table([
+            ['Php version is gt 7', 'Yes'],
+            ['The Swoole is installed', 'Yes'],
+        ], 'check result', [
+            'tHead' => ['condition', 'result'],
+        ]);
+
+        // $this->showInformation();
+    }
+
     public function status()
     {
         $this->showRuntimeStatus();
@@ -300,20 +317,20 @@ trait ProcessManageTrait
 
         $version = static::VERSION;
         $upTime = static::UPDATE_TIME;
-        $supportCommands = ['start', 'reload', 'restart', 'stop', 'info', 'status', 'help'];
-        $commandString = implode('|', $supportCommands);
 
         Show::helpPanel([
             'description' => 'Swoole server manager tool, Version <comment>' . $version . '</comment> Update time ' . $upTime,
-            'usage' => "$scriptName {{$commandString}} [-d ...]",
+            'usage' => "$scriptName {start|reload|restart|stop|...} [-d ...]",
             'commands' => [
                 'start' => 'Start the server',
                 'stop' => 'Stop the server',
                 'reload' => 'Reload all workers of the started server',
                 'restart' => 'Stop the server, After start the server.',
+                'check' => 'Check current system information.',
                 'info' => 'Show the server information for current project',
                 'status' => 'Show the started server status information',
                 'help' => 'Display this help message',
+                'version' => 'Display this version message',
             ],
             'options' => [
                 '-t, --task' => 'Only reload task worker, when reload server',

@@ -35,7 +35,7 @@ trait SomeSwooleEventTrait
 
         ProcessHelper::setTitle(sprintf('swoole: master (%s IN %s)', $this->name, $this->getValue('root_path')));
 
-        $this->log("The master process success started. (PID:<notice>{$masterPid}</notice>, pid_file: $this->pidFile)");
+        $this->log("The <comment>master</comment> process success started. (PID:<notice>{$masterPid}</notice>, pid_file: $this->pidFile)");
     }
 
     /**
@@ -62,7 +62,7 @@ trait SomeSwooleEventTrait
         // file_put_contents($this->pidFile, ',' . $server->manager_pid, FILE_APPEND);
         ProcessHelper::setTitle("swoole: manager ({$this->name})");
 
-        $this->log("The manager process success started. (PID:{$server->manager_pid})");
+        $this->log("The <comment>manager</comment> process success started. (PID:{$server->manager_pid})");
     }
 
     /**
@@ -71,7 +71,7 @@ trait SomeSwooleEventTrait
      */
     public function onManagerStop(SwServer $server)
     {
-        $this->log("The swoole manager process stopped. (PID {$server->manager_pid})");
+        $this->log("The manager process stopped. (PID {$server->manager_pid})");
     }
 
     /**
@@ -85,7 +85,7 @@ trait SomeSwooleEventTrait
     {
         $taskMark = $server->taskworker ? 'task-worker' : 'event-worker';
 
-        $this->log("The #<primary>{$workerId}</primary> {$taskMark} process success started. (PID:{$server->worker_pid})");
+        $this->log("The #<cyan>{$workerId}</cyan> {$taskMark} process success started. (PID:{$server->worker_pid})");
 
         ProcessHelper::setTitle("swoole: {$taskMark} ({$this->name})");
 

@@ -14,7 +14,6 @@ use inhere\console\utils\Show;
 use inhere\library\traits\ConfigTrait;
 use inhere\library\log\FileLogger;
 
-use inhere\server\helpers\ServerHelper;
 use inhere\server\traits\ProcessManageTrait;
 use inhere\server\traits\ServerCreateTrait;
 use inhere\server\traits\SomeSwooleEventTrait;
@@ -215,7 +214,6 @@ class BoxServer implements InterfaceServer
      */
     public function __construct(array $config = [])
     {
-        ServerHelper::checkRuntimeEnv();
         self::$mgr = $this;
 
         $this->input = new Input;

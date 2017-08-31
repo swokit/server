@@ -98,8 +98,6 @@ class WebSocketServer extends HttpServer
      */
     public function onOpen($server, Request $request)
     {
-        $this->rid = base_convert(str_replace('.', '', microtime(1)), 10, 16) . "0{$request->fd}";
-
         $this->log("onOpen: Client [fd:{$request->fd}] open connection.");
 
         // var_dump($request->fd, $request->get, $request->server);

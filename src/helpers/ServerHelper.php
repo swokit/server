@@ -9,7 +9,10 @@
 namespace inhere\server\helpers;
 
 use inhere\library\helpers\PhpHelper;
+
 use Swoole\Websocket\Server as SwWSServer;
+use Swoole\Http\Request as SwRequest;
+use Swoole\Http\Response as SwResponse;
 
 /**
  * Class ServerHelper
@@ -62,5 +65,13 @@ class ServerHelper
         }
     }
 
-
+    /**
+     * @param $fd
+     * @return string
+     */
+    public static function genRequestId($fd)
+    {
+        // $request->server['request_time_float'] .
+        return md5($fd);
+    }
 }
