@@ -68,9 +68,12 @@ class HttpServer extends BoxServer
         parent::__construct($config);
     }
 
-    public function beforeStart()
+    public function info()
     {
-        Show::mList($this->config['options']);
+        Show::write('some options for the http server:');
+        Show::mList($this->options);
+
+        parent::info();
     }
 
 }

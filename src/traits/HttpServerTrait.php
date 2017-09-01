@@ -11,7 +11,6 @@ namespace inhere\server\traits;
 use inhere\console\utils\Show;
 use inhere\library\files\Directory;
 use inhere\library\helpers\PhpHelper;
-use inhere\server\helpers\ServerHelper;
 use Swoole\Server as SwServer;
 use Swoole\Http\Response as SwResponse;
 use Swoole\Http\Request as SwRequest;

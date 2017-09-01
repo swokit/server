@@ -25,6 +25,11 @@ use Swoole\Server;
  */
 trait ProcessManageTrait
 {
+    protected function beforeRun()
+    {
+        // something ...
+    }
+
     /**
      * run
      * @throws \RuntimeException
@@ -41,6 +46,8 @@ trait ProcessManageTrait
         if (in_array($command, ['start', 'stop', 'restart', 'reload'], true)) {
             ServerHelper::checkRuntimeEnv();
         }
+
+        $this->beforeRun();
 
         $method = $command;
 
@@ -111,7 +118,7 @@ trait ProcessManageTrait
     /**
      * before Server Start
      */
-    public function beforeServerStart()
+    protected function beforeServerStart()
     {
     }
 
