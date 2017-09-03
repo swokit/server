@@ -9,10 +9,7 @@
 namespace inhere\server\helpers;
 
 use inhere\library\helpers\PhpHelper;
-
 use Swoole\Websocket\Server as SwWSServer;
-use Swoole\Http\Request as SwRequest;
-use Swoole\Http\Response as SwResponse;
 
 /**
  * Class ServerHelper
@@ -51,27 +48,5 @@ class ServerHelper
         if (!extension_loaded('swoole')) {
             throw new \RuntimeException('Run the server, extension \'swoole\' is required!');
         }
-    }
-
-    /**
-     * send message to all client user
-     * @param SwWSServer $server
-     * @param array $data
-     */
-    public static function broadcast(SwWSServer $server, $data)
-    {
-        foreach ($server->connections as $fd) {
-            $server->push($fd, json_encode((array)$data));
-        }
-    }
-
-    /**
-     * @param int $fd from `request->fd` OR `\Swoole\Coroutine::getuid()`
-     * @return string
-     */
-    public static function genRequestId($fd)
-    {
-        // $request->server['request_time_float'] .
-        return md5($fd);
     }
 }
