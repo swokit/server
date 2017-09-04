@@ -343,6 +343,7 @@ trait ProcessManageTrait
                 '-t, --task' => 'Only reload task worker, when reload server',
                 '-d, --daemon' => 'Run the server on daemonize(on start/restart).',
                 '-n, --worker-number' => 'started worker number',
+                '--task-number' => 'started task worker number',
                 '-h, --help' => 'Display this help message',
             ],
             'examples' => [

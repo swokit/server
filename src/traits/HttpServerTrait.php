@@ -11,9 +11,10 @@ namespace inhere\server\traits;
 use inhere\console\utils\Show;
 use inhere\library\files\Directory;
 use inhere\library\helpers\PhpHelper;
-use Swoole\Server as SwServer;
-use Swoole\Http\Response as SwResponse;
-use Swoole\Http\Request as SwRequest;
+use inhere\server\helpers\StaticAccessHandler;
+use Swoole\Http\Server;
+use Swoole\Http\Response;
+use Swoole\Http\Request;
 
 /*
 
@@ -58,6 +59,12 @@ trait HttpServerTrait
      * @var \Closure
      */
     protected $dynamicRequestHandler;
+
+    /**
+     * handle static file access.
+     * @var StaticAccessHandler
+     */
+    protected $staticAccessHandler;
 
     /**
      * 静态文件类型
@@ -109,8 +116,8 @@ trait HttpServerTrait
         'document_root' => '', // enable_static_handler
         'assets' => [
             'ext' => [],
-            'map' => [
-                // 'url_match' => 'assets dir',
+            'dirMap' => [
+                // 'url prefix' => 'assets dir',
                 '/assets' => 'public/assets',
                 '/uploads' => 'public/uploads'
             ]
@@ -125,10 +132,10 @@ trait HttpServerTrait
 
     /**
      * onWorkerStart
-     * @param  SwServer $server
+     * @param  Server $server
      * @param  int $workerId
      */
-//    public function onWorkerStart(SwServer $server, $workerId)
+//    public function onWorkerStart(Server $server, $workerId)
 //    {
 //        $this->mgr->onWorkerStart($server, $workerId);
 //    }
@@ -143,65 +150,26 @@ trait HttpServerTrait
     }
 
     /**
-     * @param SwRequest $request
-     * @param SwResponse $response
+     * @param Request $request
+     * @param Response $response
      */
-    protected function beforeRequest(SwRequest $request, SwResponse $response)
+    protected function beforeRequest(Request $request, Response $response)
     {
 //        $this->loadGlobalData($request);
 
         // start session
-        if ($this->getOption('start_session', false)) {
-            $this->startSession($response);
-        }
-    }
-
-    /**
-     * startSession
-     * @param SwResponse $response
-     */
-    protected function startSession($response)
-    {
-        // session
-        $opts = $this->getOption('session');
-        $name = $opts['name'] = $opts['name'] ?: session_name();
-
-        if (($path = $opts['save_path']) && !is_dir($path)) {
-            Directory::mkdir($path, 0775);
-        }
-
-        // start session
-        session_name($name);
-        //register_shutdown_function('session_write_close');
-        session_start($opts);
-
-        Show::aList(session_get_cookie_params(), 'session cookie params');
-
-        // if not exists, set it.
-        if (!$sid = $_COOKIE[$name] ?? '') {
-            $_COOKIE[$name] = $sid = session_id();
-
-            $response->cookie(
-                $name, $sid, time() + $opts['cookie_lifetime'],
-                $opts['cookie_path'], $opts['cookie_domain'], $opts['cookie_secure'], $opts['cookie_httponly']
-            );
-        }
-
-        $this->log("session name: {$name}, session id(cookie): {$_COOKIE[$name]}, session id: " . session_id());
-    }
-
-    public function initRequestContext(SwRequest $request, SwResponse $response)
-    {
-//        $this->setRequest($this->getRequestId($request), $request);
+//        if ($this->getOption('start_session', false)) {
+            // $this->startSession($request, $response);
+//        }
     }
 
     /**
      * 处理http请求
-     * @param  SwRequest $request
-     * @param  SwResponse $response
+     * @param  Request $request
+     * @param  Response $response
      * @return bool|mixed
      */
-    public function onRequest(SwRequest $request, SwResponse $response)
+    public function onRequest(Request $request, Response $response)
     {
         // 捕获异常
         register_shutdown_function([$this, 'handleFatal']);
@@ -213,13 +181,18 @@ trait HttpServerTrait
             return $response->end('+PONG' . PHP_EOL);
         }
 
-        if ($this->getOption('enable_static') && $this->handleStaticAccess($request, $response, $uri)) {
+        $stHandler = $this->staticAccessHandler;
+
+        if ($stHandler && $stHandler($request, $response, $uri)) {
             $this->log("Access asset: $uri");
             return true;
         }
 
+        if ($error = $stHandler->getError()) {
+            $this->log($error, [], 'error');
+        }
+
         $this->beforeRequest($request, $response);
-        $this->initRequestContext($request, $response);
 
         try {
             if (!$cb = $this->dynamicRequestHandler) {
@@ -229,8 +202,15 @@ trait HttpServerTrait
             } else {
                 // call user's handler
                 $response = $cb($request, $response);
+                
+                // if not instanceof Response
+                if (!$response instanceof Response) {
+                    $content = $response ?: 'NO CONTENT TO DISPLAY';
+                    $response->write(is_string($content) ? $content : json_encode($content));
+                }
             }
 
+            // respond to client
             $this->respond($response);
         } catch (\Throwable $e) {
             $this->handleException($e, $request, $response);
@@ -242,25 +222,25 @@ trait HttpServerTrait
     }
 
     /**
-     * @param SwRequest $request
-     * @param SwResponse $response
+     * @param Request $request
+     * @param Response $response
      */
-    public function afterRequest(SwRequest $request, SwResponse $response)
+    public function afterRequest(Request $request, Response $response)
     {
     }
 
     /**
-     * @param SwResponse $response
+     * @param Response $response
      */
-    public function beforeResponse(SwResponse $response)
+    public function beforeResponse(Response $response)
     {
     }
 
     /**
-     * @param SwResponse $response
+     * @param Response $response
      * @return mixed
      */
-    public function respond(SwResponse $response)
+    public function respond(Response $response)
     {
         $this->beforeResponse($response);
 
@@ -282,16 +262,13 @@ trait HttpServerTrait
     {
         // commit session data.
         // if started session by `session_start()`, call `session_write_close()` is required.
-        if ($this->getOption('start_session', false)) {
-            session_write_close();
-        }
-
-        // reset supper global var.
-//        $this->resetGlobalData();
+//        if ($this->getOption('start_session', false)) {
+//            session_write_close();
+//        }
     }
 
     /**
-     * @param SwResponse $response
+     * @param Response $response
      * @param $url
      * @param int $mode
      * @return mixed
@@ -305,102 +282,16 @@ trait HttpServerTrait
     }
 
     /**
-     * @param SwRequest $req
+     * @param Request $req
      * @return bool
      */
-    public function isAjax(SwRequest $req)
+    public function isAjax(Request $req)
     {
         if (isset($req->header['x-requested-with'])) {
             return $req->header['x-requested-with'] === 'XMLHttpRequest';
         }
 
         return false;
-    }
-
-    /**
-     * handle Static Access 处理静态资源请求
-     *
-     * @param SwRequest $request
-     * @param SwResponse $response
-     * @param string $uri
-     * @return bool
-     */
-    protected function handleStaticAccess(SwRequest $request, SwResponse $response, $uri)
-    {
-        $uri = $uri ?: $request->server['request_uri'];
-
-        // 请求 /favicon.ico 过滤
-        if (
-            ($request->server['path_info'] === '/favicon.ico' || $uri === '/favicon.ico')  &&
-            $this->options['request']['filterFavicon']
-        ) {
-            return $response->end();
-        }
-
-        $setting = $this->getOption('assets');
-
-        // 没有资源处理配置 || 没有任何后缀 返回交给php继续处理
-        if (!$setting || false === strrpos($uri, '.')) {
-            return false;
-        }
-
-        $extAry = array_keys(static::$staticAssets);
-        $extReg = implode('|', $extAry);
-
-//         $this->log("begin match ext for the asset $uri, result: " . preg_match("/\.($extReg)/i", $uri, $matches), $exts);
-
-        // 资源后缀匹配失败 返回交给php继续处理
-        if (1 !== preg_match("/.($extReg)/i", $uri, $matches)) {
-            return false;
-        }
-
-        // asset ext name. e.g $matches = [ '.css', 'css' ];
-        $ext = $matches[1];
-        $map = $setting['map'] ?? [];
-
-        # 静态路径 'assets/css/site.css'
-        $arr = explode('/', ltrim($uri, '/'), 2);
-        $urlBegin = '/' . array_shift($arr);
-        $matched = false;
-        $assetDir = '';
-
-        foreach ($map as $urlMatch => $assetDir) {
-            // match success
-            if ($urlBegin === $urlMatch) {
-                $matched = true;
-                break;
-            }
-        }
-
-        // url匹配失败 返回交给php继续处理
-        if (!$matched) {
-            return false;
-        }
-
-        // if like 'css/site.css?135773232'
-        $path = strpos($arr[0], '?') ? explode('?', $arr[0], 2)[0] : $arr[0];
-        $file = $this->getValue('root_path') . "/$assetDir/$path";
-
-        // 必须要有内容类型
-        $response->header('Content-Type', static::$staticAssets[$ext]);
-
-        if (is_file($file)) {
-            // 设置缓存头信息
-            $time = 86400;
-            $response->header('Cache-Control', 'max-age=' . $time);
-            $response->header('Pragma', 'cache');
-            $response->header('Last-Modified', date('D, d M Y H:i:s \G\M\T', filemtime($file)));
-            $response->header('Expires', date('D, d M Y H:i:s \G\M\T', time() + $time));
-            // 直接发送文件 不支持gzip
-            $response->sendfile($file);
-        } else {
-            $this->log("Assets $uri file not exists: $file", [], 'warning');
-
-            $response->status(404);
-            $response->end("Assets not found: $uri\n");
-        }
-
-        return true;
     }
 
     /**
@@ -417,8 +308,8 @@ trait HttpServerTrait
 
     /**
      * @param \Throwable $e (\Exception \Error)
-     * @param SwRequest $req
-     * @param SwResponse $resp
+     * @param Request $req
+     * @param Response $resp
      */
     public function handleException(\Throwable $e, $req, $resp)
     {
@@ -494,7 +385,7 @@ trait HttpServerTrait
             $log .= '[URI:' . $_SERVER['REQUEST_URI'] . ']';
         }
 
-        var_dump($log);
+        echo PhpHelper::dumpVars($log);
 //        if ($this->response) {
 //            $this->response->status(500);
 //            $this->response->end($log);
