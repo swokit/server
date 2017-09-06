@@ -8,8 +8,6 @@
 
 namespace inhere\server\traits;
 
-use inhere\console\utils\Show;
-use inhere\library\files\Directory;
 use inhere\library\helpers\PhpHelper;
 use inhere\server\helpers\StaticAccessHandler;
 use Swoole\Http\Server;
@@ -65,30 +63,6 @@ trait HttpServerTrait
      * @var StaticAccessHandler
      */
     protected $staticAccessHandler;
-
-    /**
-     * 静态文件类型
-     *
-     * @var array
-     */
-    public static $staticAssets = [
-        'js' => 'application/x-javascript',
-        'css' => 'text/css',
-        'bmp' => 'image/bmp',
-        'png' => 'image/png',
-        'jpg' => 'image/jpeg',
-        'jpeg' => 'image/jpeg',
-        'gif' => 'image/gif',
-        'ico' => 'image/x-icon',
-        'json' => 'application/json',
-        'svg' => 'image/svg+xml',
-        'woff' => 'application/font-woff',
-        'woff2' => 'application/font-woff2',
-        'ttf' => 'application/x-font-ttf',
-        'eot' => 'application/vnd.ms-fontobject',
-        'htm' => 'text/html',
-        'html' => 'text/html',
-    ];
 
     /**
      * @var array
