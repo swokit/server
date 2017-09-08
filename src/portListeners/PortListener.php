@@ -50,6 +50,11 @@ abstract class PortListener implements InterfacePortListener
     private $port;
 
     /**
+     * @var \Closure
+     */
+    private $beforeCreateServerHandler;
+
+    /**
      * InterfaceServerHandler constructor.
      * @param array $options
      */
@@ -106,6 +111,14 @@ abstract class PortListener implements InterfacePortListener
     }
 
     /**
+     * @param \Closure $closure
+     */
+    public function beforeCreateServer(\Closure $closure)
+    {
+        $this->beforeCreateServerHandler = $closure;
+    }
+
+    /**
      * @param Server $server
      * @return Server\Port
      */
@@ -117,6 +130,10 @@ abstract class PortListener implements InterfacePortListener
         if (!in_array($type, $allowed, true)) {
             $str = implode(',', $allowed);
             Show::error("Tha attach listen server type only allow: $str. don't support [$type]", 1);
+        }
+
+        if ($cb = $this->beforeCreateServerHandler) {
+            $cb($this);
         }
 
         $socketType = $this->type === InterfaceServer::PROTOCOL_UDP ? SWOOLE_SOCK_UDP : SWOOLE_SOCK_TCP;

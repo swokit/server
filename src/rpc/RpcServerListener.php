@@ -16,9 +16,14 @@ use Swoole\Server;
  * Class RpcServer
  * @package inhere\server\rpc
  */
-class RpcServer extends PortListener implements InterfaceTcpListener
+abstract class RpcServerListener extends PortListener implements InterfaceTcpListener
 {
     // protected $type = 'tcp';
+
+    /**
+     * @var ParserInterface
+     */
+    protected $parser;
 
     /**
      * {@inheritDoc}
@@ -45,8 +50,7 @@ class RpcServer extends PortListener implements InterfaceTcpListener
 
         // $this->onTaskReceive($server, $fd, $fromId, $data);
 
-        // 群发收到的消息
-        // $this->reloadWorker->write($data);
+        $this->handleRpcRequest($server, $data);
     }
 
     /**
@@ -55,5 +59,23 @@ class RpcServer extends PortListener implements InterfaceTcpListener
     public function onClose(Server $server, $fd)
     {
         $this->mgr->log("The client [FD:$fd] connection closed.");
+    }
+
+    abstract protected function handleRpcRequest(Server $server, $data);
+
+    /**
+     * @return ParserInterface
+     */
+    public function getParser(): ParserInterface
+    {
+        return $this->parser;
+    }
+
+    /**
+     * @param ParserInterface $parser
+     */
+    public function setParser(ParserInterface $parser)
+    {
+        $this->parser = $parser;
     }
 }

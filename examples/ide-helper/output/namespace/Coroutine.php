@@ -19,14 +19,18 @@ class Coroutine
     public static function cli_wait(){}
 
     /**
+     * 挂起当前协程
+     * @param string $corouindId
      * @return mixed
      */
-    public static function suspend(){}
+    public static function suspend(string $corouindId){}
 
     /**
+     * 恢复某个协程，使其继续运行。
+     * @param string $coroutineId
      * @return mixed
      */
-    public static function resume(){}
+    public static function resume(string $coroutineId){}
 
     /**
      * @return mixed
