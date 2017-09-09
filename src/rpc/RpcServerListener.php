@@ -50,7 +50,7 @@ abstract class RpcServerListener extends PortListener implements InterfaceTcpLis
 
         // $this->onTaskReceive($server, $fd, $fromId, $data);
 
-        $this->handleRpcRequest($server, $data);
+        $this->handleRpcRequest($server, $data, $fd);
     }
 
     /**
@@ -61,7 +61,7 @@ abstract class RpcServerListener extends PortListener implements InterfaceTcpLis
         $this->mgr->log("The client [FD:$fd] connection closed.");
     }
 
-    abstract protected function handleRpcRequest(Server $server, $data);
+    abstract protected function handleRpcRequest(Server $server, $data, $fd);
 
     /**
      * @return ParserInterface

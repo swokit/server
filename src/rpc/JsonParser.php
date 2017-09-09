@@ -7,21 +7,39 @@
  */
 
 namespace inhere\server\rpc;
+use inhere\exceptions\DataParseException;
 
 /**
  * Class JsonParser
  * @package inhere\server\rpc
  */
-class JsonParser implements ParserInterface
+class JsonParser extends ParserAbstracter
 {
+    /**
+     * @var bool
+     */
+    private $toArray;
+
+    public function __construct($toArray = true)
+    {
+        $this->toArray = (bool)$toArray;
+    }
 
     /**
-     * @param string $data
+     * @param string $string
      * @return mixed
+     * @throws DataParseException
      */
-    public function decode($data)
+    public function decode($string)
     {
-        return json_decode($data);
+        $data = json_decode(trim($string), $this->toArray);
+
+        // parse error
+        if (json_last_error() > 0) {
+            throw new DataParseException('[Rpc] received data format is error! ERROR: ' . json_last_error_msg());
+        }
+
+        return $data;
     }
 
     /**

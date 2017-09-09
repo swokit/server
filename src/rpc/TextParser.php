@@ -12,7 +12,7 @@ namespace inhere\server\rpc;
  * Class TextParser
  * @package inhere\server\rpc
  */
-class TextParser implements ParserInterface
+class TextParser extends ParserAbstracter
 {
     /**
      * @param string $data
@@ -20,7 +20,7 @@ class TextParser implements ParserInterface
      */
     public function decode($data)
     {
-        return trim($data);
+        return $this->validate(trim($data));
     }
 
     /**
