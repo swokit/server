@@ -25,8 +25,11 @@ abstract class ParserAbstracter implements ParserInterface
         // 'user/info' info - the service class method name
         's' => '',
         'p' => null, // mixed(the request params),
-        't' => 0, // int(the request time)
         'e' => null, // mixed(the extra data)
+        'r' => [
+            't' => 0, // int(the request time)
+            'id' => 0,
+        ],
     ];
 
     /**
