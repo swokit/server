@@ -6,11 +6,11 @@
  * Time: 上午9:06
  */
 
-namespace inhere\server\rpc;
+namespace Inhere\Server\Rpc;
 
 /**
  * Class Request
- * @package inhere\server\rpc
+ * @package Inhere\Server\Rpc
  */
 class Request
 {

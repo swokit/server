@@ -6,13 +6,13 @@
  * Time: 上午9:45
  */
 
-namespace inhere\server\rpc\inside;
+namespace Inhere\Server\Rpc\Inside;
 
-use inhere\server\rpc\ServiceInterface;
+use Inhere\Server\Rpc\ServiceInterface;
 
 /**
  * Class MonitorService
- * @package inhere\server\rpc\inside
+ * @package Inhere\Server\Rpc\Inside
  */
 class MonitorService implements ServiceInterface
 {

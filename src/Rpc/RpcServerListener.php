@@ -6,7 +6,7 @@
  * Time: 15:06
  */
 
-namespace inhere\server\rpc;
+namespace Inhere\Server\Rpc;
 
 use inhere\server\portListeners\InterfaceTcpListener;
 use inhere\server\portListeners\PortListener;
@@ -14,7 +14,7 @@ use Swoole\Server;
 
 /**
  * Class RpcServer
- * @package inhere\server\rpc
+ * @package Inhere\Server\Rpc
  */
 abstract class RpcServerListener extends PortListener implements InterfaceTcpListener
 {

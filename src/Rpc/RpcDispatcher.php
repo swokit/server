@@ -6,7 +6,7 @@
  * Time: 下午11:15
  */
 
-namespace inhere\server\rpc;
+namespace Inhere\Server\Rpc;
 
 use inhere\exceptions\RequestException;
 use inhere\library\traits\EventTrait;
@@ -14,7 +14,7 @@ use inhere\library\traits\OptionsTrait;
 
 /**
  * Class RpcDispatcher
- * @package inhere\server\rpc
+ * @package Inhere\Server\Rpc
  */
 class RpcDispatcher
 {

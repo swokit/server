@@ -6,11 +6,11 @@
  * Time: 下午11:17
  */
 
-namespace inhere\server\rpc;
+namespace Inhere\Server\Rpc;
 
 /**
  * Interface ServiceInterface
- * @package inhere\server\rpc
+ * @package Inhere\Server\Rpc
  */
 interface ServiceInterface
 {

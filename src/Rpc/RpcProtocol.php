@@ -6,11 +6,11 @@
  * Time: 上午10:43
  */
 
-namespace inhere\server\rpc;
+namespace Inhere\Server\Rpc;
 
 /**
  * Class RpcProtocol
- * @package inhere\server\rpc
+ * @package Inhere\Server\Rpc
  */
 class RpcProtocol
 {

@@ -6,11 +6,11 @@
  * Time: 下午11:09
  */
 
-namespace inhere\server\rpc;
+namespace Inhere\Server\Rpc;
 
 /**
  * Class RpcServerTrait
- * @package inhere\server\rpc
+ * @package Inhere\Server\Rpc
  */
 trait RpcServerTrait
 {

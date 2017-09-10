@@ -6,12 +6,12 @@
  * Time: 17:45
  */
 
-namespace inhere\server\rpc;
+namespace Inhere\Server\Rpc;
 use inhere\exceptions\DataParseException;
 
 /**
  * Class JsonParser
- * @package inhere\server\rpc
+ * @package Inhere\Server\Rpc
  */
 class JsonParser extends ParserAbstracter
 {

@@ -6,11 +6,11 @@
  * Time: 17:45
  */
 
-namespace inhere\server\rpc;
+namespace Inhere\Server\Rpc;
 
 /**
  * Class TextParser
- * @package inhere\server\rpc
+ * @package Inhere\Server\Rpc
  */
 class TextParser extends ParserAbstracter
 {

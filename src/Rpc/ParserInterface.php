@@ -6,11 +6,11 @@
  * Time: 17:40
  */
 
-namespace inhere\server\rpc;
+namespace Inhere\Server\Rpc;
 
 /**
  * Interface ParserInterface
- * @package inhere\server\rpc
+ * @package Inhere\Server\Rpc
  */
 interface ParserInterface
 {

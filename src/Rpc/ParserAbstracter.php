@@ -6,11 +6,11 @@
  * Time: 下午10:59
  */
 
-namespace inhere\server\rpc;
+namespace Inhere\Server\Rpc;
 
 /**
  * Class ParserAbstracter
- * @package inhere\server\rpc
+ * @package Inhere\Server\Rpc
  */
 abstract class ParserAbstracter implements ParserInterface
 {

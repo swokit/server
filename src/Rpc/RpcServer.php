@@ -6,13 +6,13 @@
  * Time: 下午11:09
  */
 
-namespace inhere\server\rpc;
+namespace Inhere\Server\Rpc;
 
 use inhere\server\servers\TcpServer;
 
 /**
  * Class RpcServer
- * @package inhere\server\rpc
+ * @package Inhere\Server\Rpc
  */
 class RpcServer extends TcpServer
 {
