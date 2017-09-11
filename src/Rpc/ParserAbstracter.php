@@ -33,6 +33,11 @@ abstract class ParserAbstracter implements ParserInterface
     ];
 
     /**
+     * @var string
+     */
+    protected $name = '';
+
+    /**
      * @param mixed $data
      * @return array
      */
@@ -48,11 +53,42 @@ abstract class ParserAbstracter implements ParserInterface
         return array_merge(self::$defaultMap, $data);
     }
 
+    public function buildRequest($service, $params, $meta)
+    {
+        return "Rpc-Service: $service\r\n" .
+            "Rpc-Params: $params\r\n" .
+            "Rpc-Meta: $meta\r\n\r\n";
+    }
+
+    public function buildResponse($service, $result, $meta)
+    {
+        return "Rpc-Service: $service\r\n" .
+            "Rpc-Result: $result\r\n" .
+            "Rpc-Meta: $meta\r\n\r\n";
+    }
+
+
     /**
      * @return array
      */
     public static function getDefaultMap()
     {
         return self::$defaultMap;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     */
+    public function setName(string $name)
+    {
+        $this->name = $name;
     }
 }

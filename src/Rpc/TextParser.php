@@ -15,6 +15,14 @@ namespace Inhere\Server\Rpc;
 class TextParser extends ParserAbstracter
 {
     /**
+     * TextParser constructor.
+     */
+    public function __construct()
+    {
+        $this->setName('json');
+    }
+
+    /**
      * @param string $data
      * @return mixed
      */

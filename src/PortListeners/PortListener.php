@@ -42,6 +42,7 @@ abstract class PortListener implements InterfacePortListener
         'events' => [
             'onConnect'
         ],
+        'setting' => [],
     ];
 
     /**
@@ -63,6 +64,13 @@ abstract class PortListener implements InterfacePortListener
         if ($options) {
             $this->setOptions($options);
         }
+
+        $this->init();
+    }
+
+    protected function init()
+    {
+        // something ... ...
     }
 
     /**
@@ -70,7 +78,7 @@ abstract class PortListener implements InterfacePortListener
      * @param Server $server
      * @return \Swoole\Server\Port
      */
-    public function init(InterfaceServer $mgr, Server $server)
+    public function attachTo(InterfaceServer $mgr, Server $server)
     {
         $this->mgr = $mgr;
         return $this->createPortServer($server);
@@ -139,7 +147,7 @@ abstract class PortListener implements InterfacePortListener
         $socketType = $this->type === InterfaceServer::PROTOCOL_UDP ? SWOOLE_SOCK_UDP : SWOOLE_SOCK_TCP;
 
         $this->port = $server->addlistener($this->options['host'], $this->options['port'], $socketType);
-        $this->port->set($this->mgr->getValue('swoole'));
+        $this->port->set($this->getOption('setting'));
 
         $this->registerServerEvents();
 

@@ -23,7 +23,7 @@ interface InterfacePortListener
      * @param Server $server
      * @return \Swoole\Server\Port
      */
-    public function init(InterfaceServer $mgr, Server $server);
+    public function attachTo(InterfaceServer $mgr, Server $server);
 
     /**
      * @param Server $server

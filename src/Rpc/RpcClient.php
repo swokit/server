@@ -37,9 +37,10 @@ class RpcClient
      * @var array
      */
     private $setting = [
-        'socket_buffer_size' => 1024*1024*2, //2M缓存区
-
+        'open_eof_check' => true,
+        'package_eof'    => "\r\n\r\n",
         'package_max_length' => 1024 * 1024 * 2,
+        'socket_buffer_size' => 1024 * 1024 * 2, //2M缓存区
     ];
 
     /**

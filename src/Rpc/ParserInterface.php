@@ -31,4 +31,9 @@ interface ParserInterface
      * @return string
      */
     public function encode($data);
+
+    /**
+     * @return string
+     */
+    public function getName(): string;
 }

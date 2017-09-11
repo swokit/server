@@ -14,18 +14,38 @@ namespace Inhere\Server\Rpc;
  */
 class RpcProtocol
 {
-    public function buildRequest($service, $params, $meta)
+    const KEY_SERVICE = 'Rpc-Service';
+    const KEY_META = 'Rpc-Meta';
+
+    const KEY_PARAMS = 'Rpc-Params';
+    const KEY_RESULT = 'Rpc-Result';
+
+    /**
+     * @param string $service
+     * @param string $params
+     * @param string $metas
+     * @return string
+     */
+    public function buildRequest($service, $metas, $params)
     {
-        return "RPC-Service: $service\r\n" .
-            "RPC-Params: $params\r\n" .
-            "RPC-Meta: $meta\r\n\r\n";
+        return sprintf(
+            "%s: %s\r\n%s: %s\r\n%s: %s\r\n\r\n",
+            self::KEY_SERVICE, $service, self::KEY_META, $metas, self::KEY_PARAMS, $params
+        );
     }
 
-    public function buildResponse($service, $result, $meta)
+    /**
+     * @param string $service
+     * @param string $meta
+     * @param string $result
+     * @return string
+     */
+    public function buildResponse($service, $meta, $result)
     {
-        return "RPC-Service: $service\r\n" .
-            "RPC-Result: $result\r\n" .
-            "RPC-Meta: $meta\r\n\r\n";
+        return sprintf(
+            "%s: %s\r\n%s: %s\r\n%s: %s\r\n\r\n",
+            self::KEY_SERVICE, $service, self::KEY_RESULT, $result, self::KEY_META, $meta
+        );
     }
 
     public function parseRequest($buffer)

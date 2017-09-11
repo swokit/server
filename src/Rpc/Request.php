@@ -36,28 +36,26 @@ class Request
 
     /**
      * @var array
-     */
-    private $extra;
-
-    /**
-     * @var array
+     * eg.
      * [
      *  'id' => 0,
      *  'time' => 0,
+     *  'floatTime' => 0.0,
      *  'contentType' => 'json', // 'json' 'serialize' 'text'
      *  'acceptType' => 'json', // 'json' 'serialize' 'text'
+     *   ... ...
+     *   logId, token, api-key, server-name, host
      * ]
      */
-    private $meta;
+    private $metas;
 
     /**
      * Request constructor.
      * @param string $service
      * @param array $params
      * @param array $meta
-     * @param array $extra
      */
-    public function __construct($service, array $params = [], array $meta = [], array $extra = [])
+    public function __construct($service, array $meta = [], array $params = [])
     {
         $this->service = $service;
 
@@ -65,12 +63,7 @@ class Request
         list($this->name, $this->method) = $this->parseServiceString($service);
 
         $this->params = $params;
-        $this->extra = $extra;
-        $this->meta = $meta;
-
-        if (isset($this->extra['time'])) {
-            $this->extra['time'] = time();
-        }
+        $this->metas = $meta;
     }
 
     public function __destruct()
@@ -81,7 +74,7 @@ class Request
     public function destroy()
     {
         $this->service = $this->name = $this->method = null;
-        $this->params = $this->extra = $this->meta = null;
+        $this->params = $this->extra = $this->metas = null;
     }
 
     /**
@@ -153,33 +146,17 @@ class Request
     /**
      * @return array
      */
-    public function getExtra(): ?array
+    public function getMetas(): array
     {
-        return $this->extra;
+        return $this->metas;
     }
 
     /**
-     * @param array $extra
+     * @param array $metas
      */
-    public function setExtra(array $extra)
+    public function setMetas(array $metas)
     {
-        $this->extra = $extra;
-    }
-
-    /**
-     * @return array
-     */
-    public function getMeta(): array
-    {
-        return $this->meta;
-    }
-
-    /**
-     * @param array $meta
-     */
-    public function setMeta(array $meta)
-    {
-        $this->meta = $meta;
+        $this->metas = $metas;
     }
 
     /**

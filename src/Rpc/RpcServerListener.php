@@ -26,6 +26,26 @@ abstract class RpcServerListener extends PortListener implements InterfaceTcpLis
     protected $parser;
 
     /**
+     * @var ParserInterface[]
+     * [
+     *  'text' => TextParser,
+     *  'json' => JsonParser,
+     *  'xml' => XmlParser,
+     * ]
+     */
+    private $parsers = [];
+
+    protected function init()
+    {
+        $this->options['setting'] = [
+            'open_eof_check' => true,
+            'package_eof'    => "\r\n\r\n",
+            'package_max_length' => 1024 * 1024 * 2,
+            'socket_buffer_size' => 1024 * 1024 * 2, //2M缓存区
+        ];
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function onConnect(Server $server, $fd)
@@ -64,11 +84,12 @@ abstract class RpcServerListener extends PortListener implements InterfaceTcpLis
     abstract protected function handleRpcRequest(Server $server, $data, $fd);
 
     /**
-     * @return ParserInterface
+     * @param $name
+     * @return ParserInterface|null
      */
-    public function getParser(): ParserInterface
+    public function getParser($name): ?ParserInterface
     {
-        return $this->parser;
+        return $this->parsers[$name] ?? null;
     }
 
     /**
@@ -76,6 +97,34 @@ abstract class RpcServerListener extends PortListener implements InterfaceTcpLis
      */
     public function setParser(ParserInterface $parser)
     {
-        $this->parser = $parser;
+        $this->parsers[$parser->getName()] = $parser;
+    }
+
+    /**
+     * @param ParserInterface $parser
+     */
+    public function addParser(ParserInterface $parser)
+    {
+        if (isset($this->parsers[$parser->getName()])) {
+            $this->parsers[$parser->getName()] = $parser;
+        }
+    }
+
+    /**
+     * @return ParserInterface[]
+     */
+    public function getParsers(): array
+    {
+        return $this->parsers;
+    }
+
+    /**
+     * @param ParserInterface[] $parsers
+     */
+    public function setParsers(array $parsers)
+    {
+        foreach ($parsers as $parser) {
+            $this->setParser($parser);
+        }
     }
 }

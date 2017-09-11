@@ -197,7 +197,7 @@ trait ServerCreateTrait
                  * @var InterfacePortListener $cb
                  * @var InterfaceServer $this
                  */
-                $port = $cb->init($this, $server);
+                $port = $cb->attachTo($this, $server);
             }
 
             if ($port) {
