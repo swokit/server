@@ -6,19 +6,19 @@
  * Time: 15:20
  */
 
-namespace inhere\server\traits;
+namespace Inhere\Server\Traits;
 
 use inhere\console\io\Input;
 use inhere\console\utils\Show;
-use inhere\server\helpers\AutoReloader;
-use inhere\server\helpers\ProcessHelper;
-use inhere\server\helpers\ServerHelper;
+use Inhere\Server\Helpers\AutoReloader;
+use Inhere\Server\Helpers\ProcessHelper;
+use Inhere\Server\Helpers\ServerHelper;
 use Swoole\Process;
 use Swoole\Server;
 
 /**
  * Class ProcessManageTrait
- * @package inhere\server\traits
+ * @package Inhere\Server\Traits
  *
  * @property Server $server
  * @property Input $input

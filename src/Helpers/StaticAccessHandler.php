@@ -6,14 +6,14 @@
  * Time: 9:29
  */
 
-namespace inhere\server\helpers;
+namespace Inhere\Server\Helpers;
 
 use Swoole\Http\Response;
 use Swoole\Http\Request;
 
 /**
  * Class StaticAccessHandler
- * @package inhere\server\helpers
+ * @package Inhere\Server\Helpers
  */
 class StaticAccessHandler
 {

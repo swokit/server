@@ -6,11 +6,11 @@
  * Time: 9:21
  */
 
-namespace inhere\server;
+namespace Inhere\Server;
 
 /**
  * Interface InterfaceServer
- * @package inhere\server
+ * @package Inhere\Server
  *
  * @property \Swoole\Server|\Swoole\Websocket\Server $server
  */

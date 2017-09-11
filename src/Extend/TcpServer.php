@@ -6,10 +6,10 @@
  * Time: 16:04
  */
 
-namespace inhere\server\servers;
+namespace Inhere\Server\Extend;
 
-use inhere\server\BoxServer;
-use Swoole\Server as SwServer;
+use Inhere\Server\AbstractExtendServer;
+use Swoole\Server;
 
 /*
 Tcp config:
@@ -24,34 +24,38 @@ Tcp config:
         'mode' => 'process',
 
         // use outside's event handler
-        'event_handler' => '', // e.g \inhere\server\handlers\TcpServerHandler::class
+        'event_handler' => '', // e.g \Inhere\Server\handlers\TcpServerHandler::class
         'event_list'   => [], // e.g [ 'onReceive', ]
     ],
 */
 
 /**
  * Class TcpServerHandler
- * @package inhere\server\servers
+ * @package Inhere\Server\handlers
  */
-class TcpServer extends BoxServer
+class TcpServer extends AbstractExtendServer
 {
-    public function onConnect(SwServer $server, $fd)
+    /**
+     * @param Server $server
+     * @param $fd
+     */
+    public function onConnect(Server $server, $fd)
     {
-        $this->log("Has a new client [FD:$fd] connection.");
+        $this->log("Has a new client [FD:$fd] connection. worker id is: {$server->worker_id}");
     }
 
     /**
      * 接收到数据
      *     使用 `fd` 保存客户端IP，`from_id` 保存 `from_fd` 和 `port`
-     * @param  SwServer $server
+     * @param  Server $server
      * @param  int $fd
      * @param  int $fromId
      * @param  mixed $data
      */
-    public function onReceive(SwServer $server, $fd, $fromId, $data)
+    public function onReceive(Server $server, $fd, $fromId, $data)
     {
         $data = trim($data);
-        $this->log("Receive data [$data] from client [FD:$fd].");
+        $this->log("Receive data [$data] from client [FD:$fd]. fromId:$fromId");
         $server->send($fd, "I have been received your message.\n");
 
         // 群发收到的消息
@@ -61,7 +65,7 @@ class TcpServer extends BoxServer
         // example 1 add task
         // $taskId = $server->task($data);
         // 需swoole-1.8.6或更高版本
-        // $server->task("task data", -1, function (SwServer $server, $task_id, $data) {
+        // $server->task("task data", -1, function (Server $server, $task_id, $data) {
         //     echo "Task Callback: ";
         //     var_dump($task_id, $data);
         // });
@@ -76,8 +80,12 @@ class TcpServer extends BoxServer
         // }
     }
 
-    public function onClose(SwServer $server, $fd)
+    /**
+     * @param Server $server
+     * @param $fd
+     */
+    public function onClose(Server $server, $fd)
     {
-        $this->log("The client [FD:$fd] connection closed.");
+        $this->log("The client [FD:$fd] connection closed. worker id is: {$server->worker_id}");
     }
 }

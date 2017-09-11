@@ -6,11 +6,11 @@
  * Time: 下午10:33
  */
 
-namespace inhere\server\helpers;
+namespace Inhere\Server\Helpers;
 
 /**
  * Class AsyncLogger
- * @package inhere\server\helpers
+ * @package Inhere\Server\Helpers
  */
 class AsyncLogger
 {

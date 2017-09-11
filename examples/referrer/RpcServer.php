@@ -6,11 +6,11 @@
  * Time: 9:53
  */
 
-namespace inhere\server\examples;
+namespace Inhere\Server\examples;
 
 /**
  * Class RpcServer
- * @package inhere\server\examples
+ * @package Inhere\Server\examples
  *
  * ```php
  * new RpcServer('127.0.0.1', 8888, './service');

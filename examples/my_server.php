@@ -11,7 +11,7 @@ define('PROJECT_PATH', dirname(__DIR__));
 // require dirname(__DIR__) . '/../../autoload.php';
 require __DIR__ . '/s-autoload.php';
 
-//use inhere\server\SuiteServer;
+//use Inhere\Server\SuiteServer;
 
 // you can move config to a independent file.
 // $config = require PROJECT_PATH . '/config/server.php';
@@ -35,7 +35,7 @@ $config = [
     'main_server' => [
         'type' => 'tcp', // http https tcp udp ws wss
         'port' => 9501,
-        'extend_server' => \inhere\server\extend\TcpServer::class,
+        'extend_server' => \Inhere\Server\Extend\TcpServer::class,
     ],
 
     // attach port server by config
@@ -45,7 +45,7 @@ $config = [
             'port' => '9761',
             'type' => 'udp',
             // must setting the handler class in config.
-            'listener' => \inhere\server\portListeners\UdpListener::class,
+            'listener' => \Inhere\Server\PortListeners\UdpListener::class,
         ]
     ],
 
@@ -59,10 +59,10 @@ $config = [
     ]
 ];
 
-// $mgr = new \inhere\server\extend\WebSocketServer($config);
-$mgr = new \inhere\server\BoxServer($config);
+// $mgr = new \Inhere\Server\Extend\WebSocketServer($config);
+$mgr = new \Inhere\Server\BoxServer($config);
 
-$mgr->attachListener('port2', new \inhere\server\portListeners\UdpListener([
+$mgr->attachListener('port2', new \Inhere\Server\PortListeners\UdpListener([
     'host' => '0.0.0.0',
     'port' => '9762',
 ]));

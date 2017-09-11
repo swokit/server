@@ -6,11 +6,11 @@
  * Time: 9:21
  */
 
-namespace inhere\server;
+namespace Inhere\Server;
 
 /**
  * Interface InterfaceExtendServer
- * @package inhere\server
+ * @package Inhere\Server
  */
 interface InterfaceExtendServer
 {

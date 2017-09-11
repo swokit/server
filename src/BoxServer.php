@@ -6,7 +6,7 @@
  * Time: 12:41
  */
 
-namespace inhere\server;
+namespace Inhere\Server;
 
 use inhere\console\io\Input;
 use inhere\console\utils\Show;
@@ -14,16 +14,16 @@ use inhere\console\utils\Show;
 use inhere\library\traits\ConfigTrait;
 use inhere\library\log\FileLogger;
 
-use inhere\server\traits\ProcessManageTrait;
-use inhere\server\traits\ServerCreateTrait;
-use inhere\server\traits\SomeSwooleEventTrait;
+use Inhere\Server\Traits\ProcessManageTrait;
+use Inhere\Server\Traits\ServerCreateTrait;
+use Inhere\Server\Traits\SomeSwooleEventTrait;
 
 use Swoole\Process;
 use Swoole\Server;
 
 /**
  * Class AServerManager
- * @package inhere\server
+ * @package Inhere\Server
  *
  * Running processes:
  *
@@ -128,7 +128,7 @@ class BoxServer implements InterfaceServer
             'extend_events' => [], // e.g [ 'onRequest', ]
 
             // use outside's extend event handler
-            'extend_server' => '', // e.g '\inhere\server\extend\HttpServerHandler'
+            'extend_server' => '', // e.g '\Inhere\Server\Extend\HttpServerHandler'
         ],
 
         // for attach servers
@@ -139,7 +139,7 @@ class BoxServer implements InterfaceServer
             //     'type' => 'tcp',
 
             // setting event handler
-            //     'event_handler' => '', // e.g '\inhere\server\listeners\TcpListenHandler'
+            //     'event_handler' => '', // e.g '\Inhere\Server\listeners\TcpListenHandler'
             //     'event_list'   => [], // e.g [ 'onReceive', ]
             // ],
 

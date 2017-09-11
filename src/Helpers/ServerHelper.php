@@ -6,14 +6,14 @@
  * Time: 15:11
  */
 
-namespace inhere\server\helpers;
+namespace Inhere\Server\Helpers;
 
 use inhere\library\helpers\PhpHelper;
 use Swoole\Websocket\Server as SwWSServer;
 
 /**
  * Class ServerHelper
- * @package inhere\server
+ * @package Inhere\Server
  */
 class ServerHelper
 {

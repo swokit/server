@@ -6,13 +6,13 @@
  * Time: 9:21
  */
 
-namespace inhere\server;
+namespace Inhere\Server;
 
 use inhere\library\traits\OptionsTrait;
 
 /**
  * Interface AbstractExtendServer
- * @package inhere\server
+ * @package Inhere\Server
  *
  * @method mixed log($msg, array $data = [], $type = 'info')
  */

@@ -6,13 +6,13 @@
  * Time: 下午7:02
  */
 
-namespace inhere\server\traits;
+namespace Inhere\Server\Traits;
 
 
 use inhere\console\utils\Show;
 use inhere\library\helpers\Arr;
-use inhere\server\InterfaceServer;
-use inhere\server\portListeners\InterfacePortListener;
+use Inhere\Server\InterfaceServer;
+use Inhere\Server\PortListeners\InterfacePortListener;
 use Swoole\Server;
 use Swoole\Http\Server as SWHttpServer;
 use Swoole\Websocket\Server as WSServer;
@@ -20,7 +20,7 @@ use Swoole\Server\Port;
 
 /**
  * Class ServerCreateTrait
- * @package inhere\server\traits
+ * @package Inhere\Server\Traits
  *
  * @property Server $server
  */

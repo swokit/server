@@ -6,13 +6,13 @@
  * Time: 14:16
  */
 
-namespace inhere\server\helpers;
+namespace Inhere\Server\Helpers;
 
 use inhere\library\helpers\PhpHelper;
 
 /**
  * Class ProcessHelper
- * @package inhere\server\helpers
+ * @package Inhere\Server\Helpers
  */
 final class ProcessHelper
 {

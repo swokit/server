@@ -20,7 +20,7 @@ return [
     'main_server' => [
         'type' => 'ws', // http https tcp udp ws wss
 
-        'event_handler' => \inhere\server\extend\WebSocketServer::class,
+        'event_handler' => \Inhere\Server\Extend\WebSocketServer::class,
         'event_list' => [ 'onRequest' ]
     ],
 
@@ -31,7 +31,7 @@ return [
             'port' => '9761',
             'type' => 'udp', //
             // must setting the handler class in config.
-            'event_handler' => \inhere\server\handlers\UdpListenHandler::class,
+            'event_handler' => \Inhere\Server\handlers\UdpListenHandler::class,
             'event_list' => 'onPacket',
         ]
     ],

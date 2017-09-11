@@ -1,6 +1,6 @@
 <?php
 
-namespace inhere\server;
+namespace Inhere\Server;
 
 /*
  * Sometime too hot the eye of heaven shines

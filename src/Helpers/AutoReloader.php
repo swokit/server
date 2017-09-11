@@ -6,7 +6,7 @@
  * Time: 17:50
  */
 
-namespace inhere\server\helpers;
+namespace Inhere\Server\Helpers;
 
 /*
 
@@ -33,7 +33,7 @@ use inhere\exceptions\NotFoundException;
 
 /**
  * Class AutoReloader
- * @package inhere\server
+ * @package Inhere\Server
  */
 class AutoReloader
 {

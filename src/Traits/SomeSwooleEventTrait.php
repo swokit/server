@@ -6,14 +6,14 @@
  * Time: 下午10:08
  */
 
-namespace inhere\server\traits;
+namespace Inhere\Server\Traits;
 
-use inhere\server\helpers\ProcessHelper;
+use Inhere\Server\Helpers\ProcessHelper;
 use Swoole\Server as SwServer;
 
 /**
  * Trait SomeSwooleEventTrait
- * @package inhere\server\traits
+ * @package Inhere\Server\Traits
  */
 trait SomeSwooleEventTrait
 {

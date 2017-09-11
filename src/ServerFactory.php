@@ -6,7 +6,7 @@
  * Time: 15:20
  */
 
-namespace inhere\server;
+namespace Inhere\Server;
 
 use inhere\console\io\Input;
 use inhere\console\io\Output;
@@ -15,7 +15,7 @@ use inhere\console\utils\Show;
 
 /**
  * Class ServerFactory
- * @package inhere\server
+ * @package Inhere\Server
  */
 class ServerFactory
 {

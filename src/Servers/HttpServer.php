@@ -6,12 +6,12 @@
  * Time: 16:04
  */
 
-namespace inhere\server\servers;
+namespace Inhere\Server\Servers;
 
 use inhere\console\utils\Show;
 use inhere\library\traits\OptionsTrait;
-use inhere\server\BoxServer;
-use inhere\server\traits\HttpServerTrait;
+use Inhere\Server\BoxServer;
+use Inhere\Server\Traits\HttpServerTrait;
 
 /*
 
@@ -30,7 +30,7 @@ http config:
     // SWOOLE_PROCESS 业务代码在Worker进程中执行 SWOOLE_BASE 业务代码在Reactor进程中直接执行
     'mode' => 'process', // 'process' 'base'
 
-    'event_handler' => \inhere\server\handlers\HttpServerHandler::class,
+    'event_handler' => \Inhere\Server\handlers\HttpServerHandler::class,
     'event_list' => [ '' ]
 ],
 'options' => [
@@ -46,7 +46,7 @@ http config:
 
 /**
  * Class HttpServerHandler
- * @package inhere\server\handlers
+ * @package Inhere\Server\handlers
  *
  */
 class HttpServer extends BoxServer

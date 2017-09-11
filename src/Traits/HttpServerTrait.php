@@ -6,10 +6,10 @@
  * Time: 16:04
  */
 
-namespace inhere\server\traits;
+namespace Inhere\Server\Traits;
 
 use inhere\library\helpers\PhpHelper;
-use inhere\server\helpers\StaticAccessHandler;
+use Inhere\Server\Helpers\StaticAccessHandler;
 use Swoole\Http\Server;
 use Swoole\Http\Response;
 use Swoole\Http\Request;
@@ -31,7 +31,7 @@ http config:
     // SWOOLE_PROCESS 业务代码在Worker进程中执行 SWOOLE_BASE 业务代码在Reactor进程中直接执行
     'mode' => 'process', // 'process' 'base'
 
-    'event_handler' => \inhere\server\handlers\HttpServerHandler::class,
+    'event_handler' => \Inhere\Server\handlers\HttpServerHandler::class,
     'event_list' => [ '' ]
 ],
 'options' => [
@@ -47,7 +47,7 @@ http config:
 
 /**
  * trait HttpServerTrait
- * @package inhere\server\traits
+ * @package Inhere\Server\Traits
  *
  */
 trait HttpServerTrait

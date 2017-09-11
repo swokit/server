@@ -6,11 +6,11 @@
  * Time: 9:56
  */
 
-namespace inhere\server\examples;
+namespace Inhere\Server\examples;
 
 /**
  * Class RpcClient
- * @package inhere\server\examples
+ * @package Inhere\Server\examples
  * ```
  * $cli = new RpcClient('http://127.0.0.1:8888/test');
  * echo $cli->hehe();

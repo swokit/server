@@ -6,11 +6,11 @@
  * Time: 16:04
  */
 
-namespace inhere\server\extend;
+namespace Inhere\Server\Extend;
 
 use inhere\console\utils\Show;
-use inhere\server\AbstractExtendServer;
-use inhere\server\traits\HttpServerTrait;
+use Inhere\Server\AbstractExtendServer;
+use Inhere\Server\Traits\HttpServerTrait;
 
 /*
 
@@ -29,7 +29,7 @@ http config:
     // SWOOLE_PROCESS 业务代码在Worker进程中执行 SWOOLE_BASE 业务代码在Reactor进程中直接执行
     'mode' => 'process', // 'process' 'base'
 
-    'event_handler' => \inhere\server\handlers\HttpServerHandler::class,
+    'event_handler' => \Inhere\Server\handlers\HttpServerHandler::class,
     'event_list' => [ '' ]
 ],
 'options' => [
@@ -45,7 +45,7 @@ http config:
 
 /**
  * Class HttpServerHandler
- * @package inhere\server\handlers
+ * @package Inhere\Server\handlers
  *
  */
 class HttpServer extends AbstractExtendServer

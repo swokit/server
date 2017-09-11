@@ -20,7 +20,7 @@
   },
   "autoload": {
     "psr-4": {
-      "inhere\\server\\" : "src/"
+      "Inhere\\Server\\" : "src/"
     }
   },
   "suggest": {
