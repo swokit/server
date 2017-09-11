@@ -176,7 +176,7 @@ trait HttpServerTrait
             } else {
                 // call user's handler
                 $response = $cb($request, $response);
-                
+
                 // if not instanceof Response
                 if (!$response instanceof Response) {
                     $content = $response ?: 'NO CONTENT TO DISPLAY';
@@ -229,8 +229,8 @@ trait HttpServerTrait
     }
 
     /**
-     * afterResponse
-     * do some clear work
+     * afterResponse. you can do some clear work
+     * @param $ret
      */
     protected function afterResponse($ret)
     {

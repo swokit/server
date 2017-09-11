@@ -15,5 +15,4 @@ namespace Inhere\Server;
 interface InterfaceExtendServer
 {
     public function setMgr(InterfaceServer $mgr);
-
 }

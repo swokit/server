@@ -83,11 +83,6 @@ class BoxServer implements InterfaceServer
     public $server;
 
     /**
-     * @var InterfaceExtendServer
-     */
-    protected $extServer;
-
-    /**
      * @var Process
      */
     public $reloadWorker;
@@ -172,7 +167,7 @@ class BoxServer implements InterfaceServer
     /**
      * @var array
      */
-    protected $swooleEventMap = [
+    protected static $swooleEventMap = [
         // 'event'  => 'callback',
         'start' => 'onMasterStart',
         'shutdown' => 'onMasterStop',
@@ -189,23 +184,6 @@ class BoxServer implements InterfaceServer
         // Task 任务相关 (若配置了 task_worker_num 则必须注册这两个事件)
         'task' => 'onTask',
         'finish' => 'onFinish',
-    ];
-
-    /**
-     * @var array
-     */
-    protected $swooleProtocolEvents = [
-        // TCP server callback
-        'tcp' => ['onConnect', 'onReceive', 'onClose'],
-
-        // UDP server callback
-        'udp' => ['onPacket', 'onClose'],
-
-        // HTTP server callback
-        'http' => ['onRequest'],
-
-        // Web Socket server callback
-        'ws' => ['onMessage', 'onOpen', 'onHandShake', 'onClose'],
     ];
 
     /**
@@ -293,7 +271,7 @@ class BoxServer implements InterfaceServer
         $this->bootstrapped = false;
 
         // prepare start server
-        $this->startBaseService();
+        $this->beforeBootstrap();
 
         // display some messages
         // $this->showInformation();
@@ -311,18 +289,30 @@ class BoxServer implements InterfaceServer
         // create swoole server instance
         $this->createMainServer();
 
-        // do something for after create main server
+        // do something for after create main server(eg add custom process)
         $this->afterCreateServer();
 
+        // attach registered listen port server to main server
+        $this->startListenServers($this->server);
+
         $this->bootstrapped = true;
+
+        // prepare start server
+        $this->afterBootstrap();
+
     }
 
-    protected function startBaseService()
+    protected function beforeBootstrap()
     {
         // create log service instance
         if ($logService = $this->getValue('log_service')) {
             FileLogger::make($logService);
         }
+    }
+
+    protected function afterBootstrap()
+    {
+        // do something ...
     }
 
     /**
@@ -437,15 +427,15 @@ class BoxServer implements InterfaceServer
             Show::error("You want add a not supported swoole event: $event. supported: \n $supported", -2);
         }
 
-        $this->swooleEventMap[$event] = $cb;
+        self::$swooleEventMap[$event] = $cb;
     }
 
     /**
      * @return array
      */
-    public function getSwooleEventMap()
+    public static function getSwooleEventMap()
     {
-        return $this->swooleEventMap;
+        return self::$swooleEventMap;
     }
 
     /**
@@ -509,34 +499,11 @@ class BoxServer implements InterfaceServer
     }
 
     /**
-     * @param null|string $protocol
-     * @return array
-     */
-    public function getSwooleProtocolEvents($protocol = null)
-    {
-        if (null === $protocol) {
-            return $this->swooleProtocolEvents;
-        }
-
-        return $this->swooleProtocolEvents[$protocol] ?? null;
-    }
-
-    /**
      * @return array
      */
     public static function getStatistics(): array
     {
         return self::$_statistics;
-    }
-
-    public function setExtServer(InterfaceExtendServer $extServer)
-    {
-        $this->extServer = $extServer;
-    }
-
-    public function getExtServer()
-    {
-        return $this->extServer;
     }
 
 //////////////////////////////////////////////////////////////////////
@@ -596,19 +563,17 @@ class BoxServer implements InterfaceServer
     }
 
     /**
-     * @param null|resource $socket
      * @return int
      */
-    public function getErrorNo($socket = null)
+    public function getErrorNo()
     {
         return $this->server->getLastError();
     }
 
     /**
-     * @param null|resource $socket
      * @return string
      */
-    public function getErrorMsg($socket = null)
+    public function getErrorMsg()
     {
         $err = error_get_last();
 

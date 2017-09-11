@@ -17,6 +17,11 @@ use Swoole\Server as SwServer;
  */
 trait SomeSwooleEventTrait
 {
+    /** @var int  */
+    private $workId = 0;
+
+    /** @var int  */
+    private $workPid = 0;
 
 //////////////////////////////////////////////////////////////////////
 /// swoole event handler
@@ -57,7 +62,7 @@ trait SomeSwooleEventTrait
      */
     public function onManagerStart(SwServer $server)
     {
-        $server->manager_pid;
+        // $server->manager_pid;
 
         // file_put_contents($this->pidFile, ',' . $server->manager_pid, FILE_APPEND);
         ProcessHelper::setTitle("swoole: manager ({$this->name})");
@@ -83,6 +88,9 @@ trait SomeSwooleEventTrait
      */
     public function onWorkerStart(SwServer $server, $workerId)
     {
+        $this->workId = $workerId;
+        $this->workPid = $server->worker_pid;
+
         $taskMark = $server->taskworker ? 'task-worker' : 'event-worker';
 
         $this->log("The #<cyan>{$workerId}</cyan> {$taskMark} process success started. (PID:{$server->worker_pid})");

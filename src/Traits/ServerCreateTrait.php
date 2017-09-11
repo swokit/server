@@ -8,9 +8,9 @@
 
 namespace Inhere\Server\Traits;
 
-
 use inhere\console\utils\Show;
 use inhere\library\helpers\Arr;
+use Inhere\Server\InterfaceExtendServer;
 use Inhere\Server\InterfaceServer;
 use Inhere\Server\PortListeners\InterfacePortListener;
 use Swoole\Server;
@@ -26,6 +26,11 @@ use Swoole\Server\Port;
  */
 trait ServerCreateTrait
 {
+    /**
+     * @var InterfaceExtendServer
+     */
+    protected $extServer;
+
     /**
      * attached listen port server callback(`Closure`)
      *
@@ -45,6 +50,23 @@ trait ServerCreateTrait
      * ]
      */
     public $attachedNames = [];
+
+    /**
+     * @var array
+     */
+    private static $swooleProtocolEvents = [
+        // TCP server callback
+        'tcp' => ['onConnect', 'onReceive', 'onClose'],
+
+        // UDP server callback
+        'udp' => ['onPacket', 'onClose'],
+
+        // HTTP server callback
+        'http' => ['onRequest'],
+
+        // Web Socket server callback
+        'ws' => ['onMessage', 'onOpen', 'onHandShake', 'onClose'],
+    ];
 
 //////////////////////////////////////////////////////////////////////
 /// create Main Server
@@ -70,19 +92,19 @@ trait ServerCreateTrait
         $mode = $opts['mode'] === self::MODE_BASE ? SWOOLE_BASE : SWOOLE_PROCESS;
         $type = strtolower($opts['type']);
 
-        $protocolEvents = $this->swooleProtocolEvents[self::PROTOCOL_HTTP];
+        $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_HTTP];
 
         // create swoole server
         // 使用SSL必须在编译swoole时加入--enable-openssl选项,并且配置证书文件
         switch ($type) {
             case self::PROTOCOL_TCP:
                 $server = new Server($host, $port, $mode, SWOOLE_SOCK_TCP);
-                $protocolEvents = $this->swooleProtocolEvents[self::PROTOCOL_TCP];
+                $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_TCP];
                 break;
 
             case self::PROTOCOL_UDP:
                 $server = new Server($host, $port, $mode, SWOOLE_SOCK_UDP);
-                $protocolEvents = $this->swooleProtocolEvents[self::PROTOCOL_TCP];
+                $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_TCP];
                 break;
 
             case self::PROTOCOL_HTTP:
@@ -96,13 +118,13 @@ trait ServerCreateTrait
 
             case self::PROTOCOL_WS:
                 $server = new WSServer($host, $port, $mode);
-                $protocolEvents = $this->swooleProtocolEvents[self::PROTOCOL_WS];
+                $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_WS];
                 break;
 
             case self::PROTOCOL_WSS:
                 $this->checkEnvWhenEnableSSL();
                 $server = new WSServer($host, $port, $mode, SWOOLE_SOCK_TCP | SWOOLE_SSL);
-                $protocolEvents = $this->swooleProtocolEvents[self::PROTOCOL_WS];
+                $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_WS];
                 break;
 
             default:
@@ -125,6 +147,7 @@ trait ServerCreateTrait
     protected function afterCreateServer()
     {
         if ($extServer = $this->config['main_server']['extend_server']) {
+            /** @var InterfaceServer $this */
             $this->extServer = new $extServer($this->config['options']);
             $this->extServer->setMgr($this);
         }
@@ -137,9 +160,6 @@ trait ServerCreateTrait
 
         // create Reload Worker
         $this->createHotReloader();
-
-        // attach registered listen port server to main server
-        $this->startListenServers($this->server);
     }
 
     /**
@@ -151,7 +171,7 @@ trait ServerCreateTrait
         // Show::aList($this->swooleEventMap, 'Registered swoole events to the main server: event -> handler');
 
         // register event to swoole
-        foreach ($this->swooleEventMap as $name => $cb) {
+        foreach (self::$swooleEventMap as $name => $cb) {
             // is a Closure callback, add by self::onSwoole()
             if (is_object($cb) && method_exists($cb, '__invoke')) {
                 $eventInfo[] = [$name, get_class($cb)];
@@ -257,6 +277,22 @@ trait ServerCreateTrait
     }
 
     /**
+     * @param InterfaceExtendServer $extServer
+     */
+    public function setExtServer(InterfaceExtendServer $extServer)
+    {
+        $this->extServer = $extServer;
+    }
+
+    /**
+     * @return InterfaceExtendServer
+     */
+    public function getExtServer()
+    {
+        return $this->extServer;
+    }
+
+    /**
      * @param $name
      * @return Port
      */
@@ -287,4 +323,16 @@ trait ServerCreateTrait
         return isset($this->attachedNames[$name]);
     }
 
+    /**
+     * @param null|string $protocol
+     * @return array
+     */
+    public function getSwooleProtocolEvents($protocol = null)
+    {
+        if (null === $protocol) {
+            return self::$swooleProtocolEvents;
+        }
+
+        return self::$swooleProtocolEvents[$protocol] ?? null;
+    }
 }
