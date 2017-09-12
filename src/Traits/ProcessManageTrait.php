@@ -325,6 +325,15 @@ trait ProcessManageTrait
         $version = static::VERSION;
         $upTime = static::UPDATE_TIME;
 
+        Show::write(<<<TAG
+<info>       _____
+      / ___/      _______
+      \__ \ | /| / / ___/
+     ___/ / |/ |/ (__  )
+    /____/|__/|__/____/ </info>powered by php
+    
+TAG
+);
         Show::helpPanel([
             'description' => 'Swoole server manager tool, Version <comment>' . $version . '</comment> Update time ' . $upTime,
             'usage' => "$scriptName {start|reload|restart|stop|...} [-d ...]",

@@ -55,6 +55,10 @@ interface InterfaceServer
         'message', 'open', 'handShake'
     ];
 
+    // some events
+    const ON_BOOTSTRAP = 'bootstrap';
+    const ON_BOOTSTRAPPED = 'bootstrapped';
+
 //    public static function run(array $config = [], $start = true);
 
 //    public function bootstrap($start = true);

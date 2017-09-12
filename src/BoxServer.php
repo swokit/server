@@ -12,6 +12,7 @@ use inhere\console\io\Input;
 use inhere\console\utils\Show;
 
 use inhere\library\traits\ConfigTrait;
+use inhere\library\traits\EventTrait;
 use inhere\library\log\FileLogger;
 
 use Inhere\Server\Traits\ProcessManageTrait;
@@ -33,6 +34,7 @@ use Swoole\Server;
 class BoxServer implements InterfaceServer
 {
     use ConfigTrait;
+    use EventTrait;
     use ProcessManageTrait;
     use ServerCreateTrait;
     use SomeSwooleEventTrait;
@@ -263,6 +265,20 @@ class BoxServer implements InterfaceServer
 /// start server logic
 //////////////////////////////////////////////////////////////////////
 
+    /** @var \Closure */
+    private $onBootstrapListener;
+
+    /** @var \Closure */
+    private $onBootstrappedListener;
+
+    protected function beforeBootstrap()
+    {
+        // create log service instance
+        if ($logService = $this->getValue('log_service')) {
+            FileLogger::make($logService);
+        }
+    }
+
     /**
      * bootstrap
      */
@@ -271,6 +287,7 @@ class BoxServer implements InterfaceServer
         $this->bootstrapped = false;
 
         // prepare start server
+        $this->fire(self::ON_BOOTSTRAP, [$this]);
         $this->beforeBootstrap();
 
         // display some messages
@@ -297,18 +314,12 @@ class BoxServer implements InterfaceServer
 
         $this->bootstrapped = true;
 
-        // prepare start server
+        // prepared for start server
+        $this->fire(self::ON_BOOTSTRAPPED, [$this]);
         $this->afterBootstrap();
 
     }
 
-    protected function beforeBootstrap()
-    {
-        // create log service instance
-        if ($logService = $this->getValue('log_service')) {
-            FileLogger::make($logService);
-        }
-    }
 
     protected function afterBootstrap()
     {
