@@ -24,6 +24,10 @@ use Swoole\Server;
  */
 trait ProcessManageTrait
 {
+    /*******************************************************************************
+     * server process
+     ******************************************************************************/
+
     protected function beforeRun()
     {
         // something ...
@@ -46,6 +50,7 @@ trait ProcessManageTrait
             ServerHelper::checkRuntimeEnv();
         }
 
+        $this->fire(self::ON_BEFORE_RUN, [$this]);
         $this->beforeRun();
 
         $method = $command;
@@ -108,10 +113,24 @@ trait ProcessManageTrait
 
         self::$_statistics['start_time'] = microtime(1);
 
+        // display some messages
+        $this->showStartStatus();
+
+        $this->fire(self::ON_SERVER_START, [$this]);
         $this->beforeServerStart();
 
         // 对于Server的配置即 $server->set() 中传入的参数设置，必须关闭/重启整个Server才可以重新加载
         $this->server->start();
+    }
+
+    protected function showStartStatus()
+    {
+        // output a message before start
+        if ($this->daemon) {
+            Show::write("You can use <info>stop</info> command to stop server.\n");
+        } else {
+            Show::write("Press <info>Ctrl-C</info> to quit.\n");
+        }
     }
 
     /**

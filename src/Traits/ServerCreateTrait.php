@@ -11,9 +11,11 @@ namespace Inhere\Server\Traits;
 use inhere\console\utils\Show;
 use inhere\library\helpers\Arr;
 use Inhere\Server\ExtendServerInterface;
+use Inhere\Server\Helpers\ProcessHelper;
 use Inhere\Server\PortListeners\PortListenerInterface;
 use Inhere\Server\ServerInterface;
-use Swoole\Http\Server as SWHttpServer;
+use Swoole\Http\Server as HttpServer;
+use Swoole\Process;
 use Swoole\Server;
 use Swoole\Server\Port;
 use Swoole\Websocket\Server as WSServer;
@@ -31,14 +33,25 @@ trait ServerCreateTrait
     protected $extServer;
 
     /**
-     * attached listen port server callback(`Closure`)
-     * [
-     *   'name' => \Closure,
-     *   'name1' => InterfacePortListener
-     * ]
-     * @var array
+     * custom user process
+     * @var Process[] [name => Process]
      */
-    public $attachedListeners = [];
+    private $processes = [];
+
+    /**
+     * @var array [name => true]
+     */
+    private $processNames = [];
+
+    /**
+     * @var array [name => \Closure]
+     */
+    private $processCallbacks = [];
+
+    /**
+     * @var Port[]
+     */
+    private $ports = [];
 
     /**
      * @var array
@@ -47,6 +60,16 @@ trait ServerCreateTrait
      * ]
      */
     public $attachedNames = [];
+
+    /**
+     * attached listen port server callback(`Closure`)
+     * [
+     *   'name' => \Closure,
+     *   'name1' => InterfacePortListener
+     * ]
+     * @var array
+     */
+    public $attachedListeners = [];
 
     /**
      * @var array
@@ -77,9 +100,10 @@ trait ServerCreateTrait
     }
 
     /**
+     * create Main Server
      * @inheritdoc
      */
-    protected function createMainServer()
+    protected function createServer()
     {
         $server = null;
         $opts = $this->config['main_server'];
@@ -90,6 +114,7 @@ trait ServerCreateTrait
         $type = strtolower($opts['type']);
 
         $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_HTTP];
+        $this->beforeCreateServer();
 
         // create swoole server
         // 使用SSL必须在编译swoole时加入--enable-openssl选项,并且配置证书文件
@@ -105,12 +130,12 @@ trait ServerCreateTrait
                 break;
 
             case self::PROTOCOL_HTTP:
-                $server = new SWHttpServer($host, $port, $mode);
+                $server = new HttpServer($host, $port, $mode);
                 break;
 
             case self::PROTOCOL_HTTPS:
                 $this->checkEnvWhenEnableSSL();
-                $server = new SWHttpServer($host, $port, $mode, SWOOLE_SOCK_TCP | SWOOLE_SSL);
+                $server = new HttpServer($host, $port, $mode, SWOOLE_SOCK_TCP | SWOOLE_SSL);
                 break;
 
             case self::PROTOCOL_WS:
@@ -130,11 +155,23 @@ trait ServerCreateTrait
                 break;
         }
 
-        $this->log("Create the main swoole server. on <cyan>$type://{$host}:{$port}</cyan>");
-
-        $this->setSwooleEvents($protocolEvents);
-
         $this->server = $server;
+
+        $this->log("The main server was created successfully. On <cyan>$type://{$host}:{$port}</cyan>");
+        $this->setSwooleEvents($protocolEvents);
+        $this->afterCreateServer();
+    }
+
+    /**
+     * attach Extend Server
+     */
+    protected function attachExtendServer()
+    {
+        if ($extServerClass = $this->config['main_server']['extend_server']) {
+            /** @var ServerInterface $this */
+            $this->extServer = new $extServerClass($this->config['options']);
+            $this->extServer->setMgr($this);
+        }
     }
 
     /**
@@ -143,18 +180,6 @@ trait ServerCreateTrait
      */
     protected function afterCreateServer()
     {
-        if ($extServer = $this->config['main_server']['extend_server']) {
-            /** @var ServerInterface $this */
-            $this->extServer = new $extServer($this->config['options']);
-            $this->extServer->setMgr($this);
-        }
-
-        // register swoole events handler
-        $this->registerServerEvents();
-
-        // setting swoole config
-        $this->server->set($this->config['swoole']);
-
         // create Reload Worker
         $this->createHotReloader();
     }
@@ -194,18 +219,95 @@ trait ServerCreateTrait
         ]);
     }
 
-//////////////////////////////////////////////////////////////////////
-/// attach listen port server
-//////////////////////////////////////////////////////////////////////
+    /*******************************************************************************
+     * custom user process
+     ******************************************************************************/
 
     /**
-     * start Listen Port Servers
+     * attach user's custom process
+     */
+    protected function attachUserProcesses()
+    {
+        foreach ($this->processCallbacks as $name => $callback) {
+            $this->createProcess($name, $callback);
+        }
+    }
+
+    /**
+     * @param string $name
+     * @return null|Process
+     */
+    public function getProcess(string $name)
+    {
+        return $this->processes[$name] ?? null;
+    }
+
+    /**
+     * @return Process[]
+     */
+    public function getProcesses(): array
+    {
+        return $this->processes;
+    }
+
+    /**
+     * @param array $processes
+     */
+    public function addProcesses(array $processes)
+    {
+        foreach ($processes as $name => $callback) {
+            $this->addProcess($name, $callback);
+        }
+    }
+
+    /**
+     * @param string $name
+     * @param \Closure $callback
+     */
+    public function addProcess(string $name, \Closure $callback)
+    {
+        $this->processNames[$name] = true;
+        $this->processCallbacks[$name] = $callback;
+    }
+
+    /**
+     * @param string $name
+     * @param \Closure $callback
+     */
+    public function createProcess(string $name, \Closure $callback)
+    {
+        $this->fire(self::ON_PROCESS_CREATE, [$this, $name]);
+
+        $process = new Process(function (Process $p) use($callback, $name) {
+            ProcessHelper::setTitle("swoole: {$name} ({$this->name})");
+
+            $this->fire(self::ON_PROCESS_STARTED, [$this, $name]);
+            $callback($p, $this);
+
+            // 群发收到的消息
+            // $p->write('message');
+        });
+
+        // addProcess 添加的用户进程中无法使用task投递任务，
+        // 请使用 $server->sendMessage() 接口与工作进程通信
+        $this->server->addProcess($process);
+        $this->fire(self::ON_PROCESS_CREATED, [$this, $name]);
+    }
+
+    /*******************************************************************************
+     * attach listen port server
+     ******************************************************************************/
+
+    /**
+     * create Listen Port Servers
      * @param Server $server
      */
-    protected function startListenServers(Server $server)
+    protected function createListenServers(Server $server)
     {
+        $this->fire(self::ON_PORT_CREATE, [$this]);
+
         foreach ($this->attachedListeners as $name => $cb) {
-            $msg = "Attach the listen server <info>$name</info> to the main server";
+            $info = '';
 
             if ($cb instanceof \Closure) {
                 $port = $cb($server, $this);
@@ -219,11 +321,13 @@ trait ServerCreateTrait
 
             if ($port) {
                 $type = $port->type === SWOOLE_SOCK_TCP ? 'tcp' : 'udp';
-                $msg .= "(<cyan>$type://{$port->host}:{$port->port}</cyan>)";
+                $info = "(<cyan>$type://{$port->host}:{$port->port}</cyan>)";
             }
 
-            $this->log($msg);
+            $this->log("Attach the listen server <info>$name</info>$info to the main server");
         }
+
+        $this->fire(self::ON_PORT_CREATED, [$this]);
     }
 
     /**

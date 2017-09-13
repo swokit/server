@@ -98,6 +98,7 @@ trait SomeSwooleEventTrait
         ProcessHelper::setTitle("swoole: {$taskMark} ({$this->name})");
 
         // ServerHelper::setUserAndGroup();
+        $this->fire(self::ON_WORKER_STARTED, [$this, $workerId]);
 
         // 此数组中的文件表示进程启动前就加载了，所以无法reload
         // Show::write('进程启动前就加载了，无法reload的文件：');
@@ -110,6 +111,8 @@ trait SomeSwooleEventTrait
      */
     public function onWorkerStop(SwServer $server, $workerId)
     {
+        $this->fire(self::ON_WORKER_STOPPED, [$this, $workerId]);
+
         $this->log("The swoole #<info>$workerId</info> worker process stopped. (PID:{$server->worker_pid})");
     }
 

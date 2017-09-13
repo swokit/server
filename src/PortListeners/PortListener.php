@@ -51,10 +51,10 @@ abstract class PortListener implements PortListenerInterface
     private $port;
 
     /** @var \Closure */
-    private $onBeforeCreatePort;
+    private $onBeforeCreate;
 
     /** @var \Closure */
-    private $onAfterCreatePort;
+    private $onAfterCreate;
 
     /**
      * ServerInterfaceHandler constructor.
@@ -123,17 +123,17 @@ abstract class PortListener implements PortListenerInterface
     /**
      * @param \Closure $closure
      */
-    public function beforeCreatePort(\Closure $closure)
+    public function beforeCreate(\Closure $closure)
     {
-        $this->onBeforeCreatePort = $closure;
+        $this->onBeforeCreate = $closure;
     }
 
     /**
      * @param \Closure $closure
      */
-    public function afterCreatePort(\Closure $closure)
+    public function afterCreate(\Closure $closure)
     {
-        $this->onAfterCreatePort = $closure;
+        $this->onAfterCreate = $closure;
     }
 
     /**
@@ -150,7 +150,7 @@ abstract class PortListener implements PortListenerInterface
             Show::error("Tha attach listen server type only allow: $str. don't support [$type]", 1);
         }
 
-        if ($cb = $this->onBeforeCreatePort) {
+        if ($cb = $this->onBeforeCreate) {
             $cb($this);
         }
 
@@ -161,7 +161,7 @@ abstract class PortListener implements PortListenerInterface
 
         $this->registerPortEvents();
 
-        if ($cb = $this->onBeforeCreatePort) {
+        if ($cb = $this->onBeforeCreate) {
             $cb($this);
         }
 

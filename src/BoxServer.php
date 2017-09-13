@@ -269,9 +269,9 @@ class BoxServer implements ServerInterface
     }
 
     /**
-     * bootstrap
+     * bootstrap start
      */
-    public function bootstrap()
+    protected function bootstrap()
     {
         $this->bootstrapped = false;
 
@@ -279,36 +279,36 @@ class BoxServer implements ServerInterface
         $this->fire(self::ON_BOOTSTRAP, [$this]);
         $this->beforeBootstrap();
 
-        // display some messages
-        // $this->showInformation();
-
-        // output a message before start
-        if ($this->daemon) {
-            Show::write("You can use <info>stop</info> command to stop server.\n");
-        } else {
-            Show::write("Press <info>Ctrl-C</info> to quit.\n");
-        }
-
         // do something for before create main server
-        $this->beforeCreateServer();
+        $this->fire(self::ON_SERVER_CREATE, [$this]);
 
         // create swoole server instance
-        $this->createMainServer();
+        $this->createServer();
 
         // do something for after create main server(eg add custom process)
-        $this->afterCreateServer();
+        $this->fire(self::ON_SERVER_CREATED, [$this]);
+
+        // attach Extend Server
+        $this->attachExtendServer();
+
+        // setting swoole config
+        $this->server->set($this->config['swoole']);
+
+        // register swoole events handler
+        $this->registerServerEvents();
+
+        // attach user's custom process
+        $this->attachUserProcesses();
 
         // attach registered listen port server to main server
-        $this->startListenServers($this->server);
-
-        $this->bootstrapped = true;
+        $this->createListenServers($this->server);
 
         // prepared for start server
         $this->fire(self::ON_BOOTSTRAPPED, [$this]);
         $this->afterBootstrap();
 
+        $this->bootstrapped = true;
     }
-
 
     protected function afterBootstrap()
     {
