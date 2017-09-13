@@ -14,7 +14,7 @@ use Swoole\Server as SwServer;
  * Class TcpListener
  * @package Inhere\Server\PortListeners
  */
-class TcpListener extends PortListener implements InterfaceTcpListener
+class TcpListener extends PortListener implements TcpListenerInterface
 {
     // protected $type = 'tcp';
 

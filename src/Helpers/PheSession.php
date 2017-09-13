@@ -10,8 +10,8 @@ namespace Inhere\Server\Helpers;
 
 use inhere\library\files\Directory;
 use inhere\library\traits\LiteOptionsTrait;
-use Swoole\Http\Response;
 use Swoole\Http\Request;
+use Swoole\Http\Response;
 
 /**
  * Class PhpSession

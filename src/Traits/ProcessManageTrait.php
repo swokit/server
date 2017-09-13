@@ -19,7 +19,6 @@ use Swoole\Server;
 /**
  * Class ProcessManageTrait
  * @package Inhere\Server\Traits
- *
  * @property Server $server
  * @property Input $input
  */
@@ -333,7 +332,7 @@ trait ProcessManageTrait
     /____/|__/|__/____/ </info>powered by php
     
 TAG
-);
+        );
         Show::helpPanel([
             'description' => 'Swoole server manager tool, Version <comment>' . $version . '</comment> Update time ' . $upTime,
             'usage' => "$scriptName {start|reload|restart|stop|...} [-d ...]",

@@ -11,10 +11,10 @@ namespace Inhere\Server\PortListeners;
 use Swoole\Server as SwServer;
 
 /**
- * Class InterfaceUdpListener
+ * Class UdpListenerInterface
  * @package Inhere\Server\PortListeners
  */
-interface InterfaceUdpListener //extends InterfacePortListener
+interface UdpListenerInterface //extends InterfacePortListener
 {
     /**
      * 接收到UDP数据包时回调此函数，发生在worker进程中

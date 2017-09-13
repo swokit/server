@@ -47,7 +47,6 @@ http config:
 /**
  * Class HttpServerHandler
  * @package Inhere\Server\handlers
- *
  */
 class HttpServer extends BoxServer
 {

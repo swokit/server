@@ -10,35 +10,32 @@ namespace Inhere\Server\Traits;
 
 use inhere\console\utils\Show;
 use inhere\library\helpers\Arr;
-use Inhere\Server\InterfaceExtendServer;
-use Inhere\Server\InterfaceServer;
-use Inhere\Server\PortListeners\InterfacePortListener;
-use Swoole\Server;
+use Inhere\Server\ExtendServerInterface;
+use Inhere\Server\PortListeners\PortListenerInterface;
+use Inhere\Server\ServerInterface;
 use Swoole\Http\Server as SWHttpServer;
-use Swoole\Websocket\Server as WSServer;
+use Swoole\Server;
 use Swoole\Server\Port;
+use Swoole\Websocket\Server as WSServer;
 
 /**
  * Class ServerCreateTrait
  * @package Inhere\Server\Traits
- *
  * @property Server $server
  */
 trait ServerCreateTrait
 {
     /**
-     * @var InterfaceExtendServer
+     * @var ExtendServerInterface
      */
     protected $extServer;
 
     /**
      * attached listen port server callback(`Closure`)
-     *
      * [
      *   'name' => \Closure,
      *   'name1' => InterfacePortListener
      * ]
-     *
      * @var array
      */
     public $attachedListeners = [];
@@ -147,7 +144,7 @@ trait ServerCreateTrait
     protected function afterCreateServer()
     {
         if ($extServer = $this->config['main_server']['extend_server']) {
-            /** @var InterfaceServer $this */
+            /** @var ServerInterface $this */
             $this->extServer = new $extServer($this->config['options']);
             $this->extServer->setMgr($this);
         }
@@ -177,11 +174,11 @@ trait ServerCreateTrait
                 $eventInfo[] = [$name, get_class($cb)];
                 $this->server->on($name, $cb);
 
-            // if use Custom Outside Handler
+                // if use Custom Outside Handler
             } elseif ($this->extServer && method_exists($this->extServer, $cb)) {
                 $eventInfo[] = [$name, get_class($this->extServer) . "->$cb"];
                 $this->server->on($name, [$this->extServer, $cb]);
-            // if use Custom Outside Handler
+                // if use Custom Outside Handler
             } elseif (method_exists($this, $cb)) {
                 $eventInfo[] = [$name, static::class . "->$cb"];
                 $this->server->on($name, [$this, $cb]);
@@ -214,8 +211,8 @@ trait ServerCreateTrait
                 $port = $cb($server, $this);
             } else {
                 /**
-                 * @var InterfacePortListener $cb
-                 * @var InterfaceServer $this
+                 * @var PortListenerInterface $cb
+                 * @var ServerInterface $this
                  */
                 $port = $cb->attachTo($this, $server);
             }
@@ -232,7 +229,7 @@ trait ServerCreateTrait
     /**
      * attach add listen port to main server.
      * @param $name
-     * @param \Closure|array|InterfacePortListener $config
+     * @param \Closure|array|PortListenerInterface $config
      */
     public function attachListener($name, $config)
     {
@@ -242,7 +239,7 @@ trait ServerCreateTrait
     /**
      * attach add listen port to main server.
      * @param $name
-     * @param \Closure|array|InterfacePortListener $config
+     * @param \Closure|array|PortListenerInterface $config
      */
     public function attachPortListener($name, $config)
     {
@@ -256,16 +253,16 @@ trait ServerCreateTrait
             $class = Arr::remove($config, 'listener');
             $cb = new $class($config);
 
-            if (!$cb instanceof InterfacePortListener) {
+            if (!$cb instanceof PortListenerInterface) {
                 throw new \InvalidArgumentException(
-                    'The event handler must implement of ' . InterfacePortListener::class
+                    'The event handler must implement of ' . PortListenerInterface::class
                 );
             }
 
         } elseif ($config instanceof \Closure) {
             $cb = $config;
 
-        }  elseif ($config instanceof InterfacePortListener) {
+        } elseif ($config instanceof PortListenerInterface) {
             $cb = $config;
 
         } else {
@@ -277,15 +274,15 @@ trait ServerCreateTrait
     }
 
     /**
-     * @param InterfaceExtendServer $extServer
+     * @param ExtendServerInterface $extServer
      */
-    public function setExtServer(InterfaceExtendServer $extServer)
+    public function setExtServer(ExtendServerInterface $extServer)
     {
         $this->extServer = $extServer;
     }
 
     /**
-     * @return InterfaceExtendServer
+     * @return ExtendServerInterface
      */
     public function getExtServer()
     {

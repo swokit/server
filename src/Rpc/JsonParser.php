@@ -7,6 +7,7 @@
  */
 
 namespace Inhere\Server\Rpc;
+
 use inhere\exceptions\DataParseException;
 
 /**

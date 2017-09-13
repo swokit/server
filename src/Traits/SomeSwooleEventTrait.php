@@ -17,10 +17,10 @@ use Swoole\Server as SwServer;
  */
 trait SomeSwooleEventTrait
 {
-    /** @var int  */
+    /** @var int */
     private $workId = 0;
 
-    /** @var int  */
+    /** @var int */
     private $workPid = 0;
 
 //////////////////////////////////////////////////////////////////////

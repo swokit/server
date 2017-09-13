@@ -10,28 +10,23 @@ namespace Inhere\Server;
 
 use inhere\console\io\Input;
 use inhere\console\utils\Show;
-
+use inhere\library\log\FileLogger;
 use inhere\library\traits\ConfigTrait;
 use inhere\library\traits\EventTrait;
-use inhere\library\log\FileLogger;
-
 use Inhere\Server\Traits\ProcessManageTrait;
 use Inhere\Server\Traits\ServerCreateTrait;
 use Inhere\Server\Traits\SomeSwooleEventTrait;
-
 use Swoole\Process;
 use Swoole\Server;
 
 /**
  * Class AServerManager
  * @package Inhere\Server
- *
  * Running processes:
- *
  * ```
  * ```
  */
-class BoxServer implements InterfaceServer
+class BoxServer implements ServerInterface
 {
     use ConfigTrait;
     use EventTrait;
@@ -264,12 +259,6 @@ class BoxServer implements InterfaceServer
 //////////////////////////////////////////////////////////////////////
 /// start server logic
 //////////////////////////////////////////////////////////////////////
-
-    /** @var \Closure */
-    private $onBootstrapListener;
-
-    /** @var \Closure */
-    private $onBootstrappedListener;
 
     protected function beforeBootstrap()
     {

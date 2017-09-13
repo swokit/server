@@ -8,8 +8,8 @@
 
 namespace Inhere\Server\Helpers;
 
-use Swoole\Http\Response;
 use Swoole\Http\Request;
+use Swoole\Http\Response;
 
 /**
  * Class StaticAccessHandler
@@ -20,7 +20,6 @@ class StaticAccessHandler
 
     /**
      * 静态文件类型
-     *
      * @var array
      */
     public static $mimeTypes = [
@@ -105,7 +104,6 @@ class StaticAccessHandler
 
     /**
      * handle Static Access 处理静态资源请求
-     *
      * @param Request $request
      * @param Response $response
      * @param string $uri
@@ -160,7 +158,7 @@ class StaticAccessHandler
         $urlOther = $arr[1];
 
         // $assetDir is absolute path ?
-        $this->file = $assetDir{0} === '/' ? "$assetDir/$urlOther" :"$basePath/$assetDir/$urlOther";
+        $this->file = $assetDir{0} === '/' ? "$assetDir/$urlOther" : "$basePath/$assetDir/$urlOther";
 
         if (is_file($this->file)) {
             // 必须要有内容类型

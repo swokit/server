@@ -13,15 +13,14 @@ use inhere\library\traits\OptionsTrait;
 /**
  * Interface AbstractExtendServer
  * @package Inhere\Server
- *
  * @method mixed log($msg, array $data = [], $type = 'info')
  */
-abstract class AbstractExtendServer implements InterfaceExtendServer
+abstract class AbstractExtendServer implements ExtendServerInterface
 {
     use OptionsTrait;
 
     /**
-     * @var InterfaceServer
+     * @var ServerInterface
      */
     protected $mgr;
 
@@ -38,7 +37,7 @@ abstract class AbstractExtendServer implements InterfaceExtendServer
         $this->init();
     }
 
-    public function setMgr(InterfaceServer $mgr)
+    public function setMgr(ServerInterface $mgr)
     {
         $this->mgr = $mgr;
     }

@@ -9,7 +9,6 @@
 namespace Inhere\Server\Helpers;
 
 use inhere\library\helpers\PhpHelper;
-use Swoole\Websocket\Server as SwWSServer;
 
 /**
  * Class ServerHelper

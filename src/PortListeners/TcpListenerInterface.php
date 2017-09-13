@@ -11,10 +11,10 @@ namespace Inhere\Server\PortListeners;
 use Swoole\Server as SwServer;
 
 /**
- * Class InterfaceTcpListener
+ * Class TcpListenerInterface
  * @package Inhere\Server\PortListeners
  */
-interface InterfaceTcpListener //extends InterfacePortListener
+interface TcpListenerInterface //extends InterfacePortListener
 {
     /**
      * onConnect

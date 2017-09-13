@@ -8,22 +8,21 @@
 
 namespace Inhere\Server\PortListeners;
 
-use Inhere\Server\InterfaceServer;
+use Inhere\Server\ServerInterface;
 use Swoole\Server;
 
 /**
- * Class InterfacePortListener
+ * Class PortListenerInterface
  * @package Inhere\Server\PortListeners
  */
-interface InterfacePortListener
+interface PortListenerInterface
 {
-
     /**
-     * @param InterfaceServer $mgr
+     * @param ServerInterface $mgr
      * @param Server $server
      * @return \Swoole\Server\Port
      */
-    public function attachTo(InterfaceServer $mgr, Server $server);
+    public function attachTo(ServerInterface $mgr, Server $server);
 
     /**
      * @param Server $server
@@ -32,9 +31,9 @@ interface InterfacePortListener
     public function createPortServer(Server $server);
 
     /**
-     * @param InterfaceServer $mgr
+     * @param ServerInterface $mgr
      */
-    public function setMgr(InterfaceServer $mgr);
+    public function setMgr(ServerInterface $mgr);
 
     /**
      * @param null $key

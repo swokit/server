@@ -10,9 +10,9 @@ namespace Inhere\Server\Traits;
 
 use inhere\library\helpers\PhpHelper;
 use Inhere\Server\Helpers\StaticAccessHandler;
-use Swoole\Http\Server;
-use Swoole\Http\Response;
 use Swoole\Http\Request;
+use Swoole\Http\Response;
+use Swoole\Http\Server;
 
 /*
 
@@ -48,7 +48,6 @@ http config:
 /**
  * trait HttpServerTrait
  * @package Inhere\Server\Traits
- *
  */
 trait HttpServerTrait
 {
@@ -133,7 +132,7 @@ trait HttpServerTrait
 
         // start session
 //        if ($this->getOption('start_session', false)) {
-            // $this->startSession($request, $response);
+        // $this->startSession($request, $response);
 //        }
     }
 
@@ -159,6 +158,7 @@ trait HttpServerTrait
 
         if ($stHandler && $stHandler($request, $response, $uri)) {
             $this->log("Access asset: $uri");
+
             return true;
         }
 
@@ -293,7 +293,7 @@ trait HttpServerTrait
             $resp->header('Content-Type', 'application/json; charset=utf-8');
             $content = json_encode([
                 'code' => $e->getCode() ?: 500,
-                'msg'  => sprintf(
+                'msg' => sprintf(
                     '%s(%d): %s, File: %s(Line %d)',
                     $type,
                     $e->getCode(),
@@ -314,7 +314,6 @@ trait HttpServerTrait
 
     /**
      * Fatal Error的捕获
-     *
      */
     public function handleFatal()
     {

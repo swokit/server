@@ -10,19 +10,19 @@ namespace Inhere\Server\PortListeners;
 
 use inhere\console\utils\Show;
 use inhere\library\traits\OptionsTrait;
-use Inhere\Server\InterfaceServer;
+use Inhere\Server\ServerInterface;
 use Swoole\Server;
 
 /**
  * Class BaseListener
  * @package Inhere\Server\PortListeners
  */
-abstract class PortListener implements InterfacePortListener
+abstract class PortListener implements PortListenerInterface
 {
     use OptionsTrait;
 
     /**
-     * @var InterfaceServer
+     * @var ServerInterface
      */
     protected $mgr;
 
@@ -50,13 +50,14 @@ abstract class PortListener implements InterfacePortListener
      */
     private $port;
 
-    /**
-     * @var \Closure
-     */
-    private $beforeCreateServerHandler;
+    /** @var \Closure */
+    private $onBeforeCreatePort;
+
+    /** @var \Closure */
+    private $onAfterCreatePort;
 
     /**
-     * InterfaceServerHandler constructor.
+     * ServerInterfaceHandler constructor.
      * @param array $options
      */
     public function __construct(array $options = [])
@@ -74,20 +75,21 @@ abstract class PortListener implements InterfacePortListener
     }
 
     /**
-     * @param InterfaceServer $mgr
+     * @param ServerInterface $mgr
      * @param Server $server
      * @return \Swoole\Server\Port
      */
-    public function attachTo(InterfaceServer $mgr, Server $server)
+    public function attachTo(ServerInterface $mgr, Server $server)
     {
         $this->mgr = $mgr;
+
         return $this->createPortServer($server);
     }
 
     /**
-     * @param InterfaceServer $mgr
+     * @param ServerInterface $mgr
      */
-    public function setMgr(InterfaceServer $mgr)
+    public function setMgr(ServerInterface $mgr)
     {
         $this->mgr = $mgr;
     }
@@ -108,7 +110,7 @@ abstract class PortListener implements InterfacePortListener
 
     /**
      * output log message
-     * @see InterfaceServer::log()
+     * @see ServerInterface::log()
      * @param  string $msg
      * @param  array $data
      * @param string $type
@@ -121,9 +123,17 @@ abstract class PortListener implements InterfacePortListener
     /**
      * @param \Closure $closure
      */
-    public function beforeCreateServer(\Closure $closure)
+    public function beforeCreatePort(\Closure $closure)
     {
-        $this->beforeCreateServerHandler = $closure;
+        $this->onBeforeCreatePort = $closure;
+    }
+
+    /**
+     * @param \Closure $closure
+     */
+    public function afterCreatePort(\Closure $closure)
+    {
+        $this->onAfterCreatePort = $closure;
     }
 
     /**
@@ -133,23 +143,27 @@ abstract class PortListener implements InterfacePortListener
     public function createPortServer(Server $server)
     {
         $type = $this->type;
-        $allowed = [InterfaceServer::PROTOCOL_TCP, InterfaceServer::PROTOCOL_UDP];
+        $allowed = [ServerInterface::PROTOCOL_TCP, ServerInterface::PROTOCOL_UDP];
 
         if (!in_array($type, $allowed, true)) {
             $str = implode(',', $allowed);
             Show::error("Tha attach listen server type only allow: $str. don't support [$type]", 1);
         }
 
-        if ($cb = $this->beforeCreateServerHandler) {
+        if ($cb = $this->onBeforeCreatePort) {
             $cb($this);
         }
 
-        $socketType = $this->type === InterfaceServer::PROTOCOL_UDP ? SWOOLE_SOCK_UDP : SWOOLE_SOCK_TCP;
+        $socketType = $this->type === ServerInterface::PROTOCOL_UDP ? SWOOLE_SOCK_UDP : SWOOLE_SOCK_TCP;
 
         $this->port = $server->addlistener($this->options['host'], $this->options['port'], $socketType);
         $this->port->set($this->getOption('setting'));
 
-        $this->registerServerEvents();
+        $this->registerPortEvents();
+
+        if ($cb = $this->onBeforeCreatePort) {
+            $cb($this);
+        }
 
         return $this->port;
     }
@@ -157,7 +171,7 @@ abstract class PortListener implements InterfacePortListener
     /**
      * register Swoole Port Events
      */
-    public function registerServerEvents()
+    public function registerPortEvents()
     {
         foreach ((array)$this->options['events'] as $event => $method) {
             // ['onConnect'] --> 'Connect', 'onConnect

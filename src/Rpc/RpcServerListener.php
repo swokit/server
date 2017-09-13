@@ -8,15 +8,15 @@
 
 namespace Inhere\Server\Rpc;
 
-use Inhere\Server\PortListeners\InterfaceTcpListener;
 use Inhere\Server\PortListeners\PortListener;
+use Inhere\Server\PortListeners\TcpListenerInterface;
 use Swoole\Server;
 
 /**
  * Class RpcServer
  * @package Inhere\Server\Rpc
  */
-abstract class RpcServerListener extends PortListener implements InterfaceTcpListener
+abstract class RpcServerListener extends PortListener implements TcpListenerInterface
 {
     // protected $type = 'tcp';
 
@@ -39,7 +39,7 @@ abstract class RpcServerListener extends PortListener implements InterfaceTcpLis
     {
         $this->options['setting'] = [
             'open_eof_check' => true,
-            'package_eof'    => "\r\n\r\n",
+            'package_eof' => "\r\n\r\n",
             'package_max_length' => 1024 * 1024 * 2,
             'socket_buffer_size' => 1024 * 1024 * 2, //2M缓存区
         ];

@@ -9,10 +9,10 @@
 namespace Inhere\Server;
 
 /**
- * Interface InterfaceExtendServer
+ * Interface ExtendServerInterface
  * @package Inhere\Server
  */
-interface InterfaceExtendServer
+interface ExtendServerInterface
 {
-    public function setMgr(InterfaceServer $mgr);
+    public function setMgr(ServerInterface $mgr);
 }

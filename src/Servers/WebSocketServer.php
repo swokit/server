@@ -8,42 +8,41 @@
 
 namespace Inhere\Server\Servers;
 
+use Swoole\Http\Request;
 use Swoole\Server as SwServer;
 use Swoole\Websocket\Frame;
 use Swoole\Websocket\Server;
-use Swoole\Http\Request;
 
 /**
  * Class WebSocketServer
  * @package Inhere\Server\Servers
- *
  */
 class WebSocketServer extends HttpServer
 {
     const OPCODE_CONTINUATION_FRAME = 0x0;
-    const OPCODE_TEXT_FRAME         = 0x1;
-    const OPCODE_BINARY_FRAME       = 0x2;
-    const OPCODE_CONNECTION_CLOSE   = 0x8;
-    const OPCODE_PING               = 0x9;
-    const OPCODE_PONG               = 0xa;
+    const OPCODE_TEXT_FRAME = 0x1;
+    const OPCODE_BINARY_FRAME = 0x2;
+    const OPCODE_CONNECTION_CLOSE = 0x8;
+    const OPCODE_PING = 0x9;
+    const OPCODE_PONG = 0xa;
 
-    const CLOSE_NORMAL              = 1000;
-    const CLOSE_GOING_AWAY          = 1001;
-    const CLOSE_PROTOCOL_ERROR      = 1002;
-    const CLOSE_DATA_ERROR          = 1003;
-    const CLOSE_STATUS_ERROR        = 1005;
-    const CLOSE_ABNORMAL            = 1006;
-    const CLOSE_MESSAGE_ERROR       = 1007;
-    const CLOSE_POLICY_ERROR        = 1008;
-    const CLOSE_MESSAGE_TOO_BIG     = 1009;
-    const CLOSE_EXTENSION_MISSING   = 1010;
-    const CLOSE_SERVER_ERROR        = 1011;
-    const CLOSE_TLS                 = 1015;
+    const CLOSE_NORMAL = 1000;
+    const CLOSE_GOING_AWAY = 1001;
+    const CLOSE_PROTOCOL_ERROR = 1002;
+    const CLOSE_DATA_ERROR = 1003;
+    const CLOSE_STATUS_ERROR = 1005;
+    const CLOSE_ABNORMAL = 1006;
+    const CLOSE_MESSAGE_ERROR = 1007;
+    const CLOSE_POLICY_ERROR = 1008;
+    const CLOSE_MESSAGE_TOO_BIG = 1009;
+    const CLOSE_EXTENSION_MISSING = 1010;
+    const CLOSE_SERVER_ERROR = 1011;
+    const CLOSE_TLS = 1015;
 
-    const WEBSOCKET_VERSION         = 13;
-    
+    const WEBSOCKET_VERSION = 13;
+
     const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
-    
+
     /**
      * frame list
      * @var array
@@ -85,7 +84,7 @@ class WebSocketServer extends HttpServer
      */
 //    public function onRequest(Request $request, Response $response)
 //    {
-        // $response->end('Not found');
+    // $response->end('Not found');
 //        parent::onRequest($request, $response);
 //    }
 

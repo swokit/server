@@ -9,12 +9,11 @@
 namespace Inhere\Server;
 
 /**
- * Interface InterfaceServer
+ * Interface ServerInterface
  * @package Inhere\Server
- *
  * @property \Swoole\Server|\Swoole\Websocket\Server $server
  */
-interface InterfaceServer
+interface ServerInterface
 {
     const VERSION = '0.1.1';
 

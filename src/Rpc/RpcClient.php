@@ -38,7 +38,7 @@ class RpcClient
      */
     private $setting = [
         'open_eof_check' => true,
-        'package_eof'    => "\r\n\r\n",
+        'package_eof' => "\r\n\r\n",
         'package_max_length' => 1024 * 1024 * 2,
         'socket_buffer_size' => 1024 * 1024 * 2, //2M缓存区
     ];
@@ -126,8 +126,8 @@ class RpcClient
         ], $options));
 
         return "RPC-S: $service\r\n" .
-               "RPC-P: $params\r\n" .
-               "RPC-M: $meta\r\n\r\n";
+            "RPC-P: $params\r\n" .
+            "RPC-M: $meta\r\n\r\n";
     }
 
     protected function createCoroClient(array $conf, array $setting = [])
@@ -138,6 +138,7 @@ class RpcClient
 
         return $conn;
     }
+
     protected function createSyncClient(array $conf, array $setting = [])
     {
         $conn = new Client(SWOOLE_TCP | SWOOLE_KEEP);
@@ -151,21 +152,21 @@ class RpcClient
     {
         $conn = new Client(SWOOLE_TCP | SWOOLE_ASYNC);
         $conn->set($setting);
-        $conn->on('connect', function(Client $cli) {
+        $conn->on('connect', function (Client $cli) {
 
         });
 
-        $conn->on('receive', function(Client $cli, $data){
-            $cli->send(str_repeat('A', 1024*1024*4)."\n");
+        $conn->on('receive', function (Client $cli, $data) {
+            $cli->send(str_repeat('A', 1024 * 1024 * 4) . "\n");
         });
 
-        $conn->on('error', function(Client $cli){
+        $conn->on('error', function (Client $cli) {
             echo "error\n";
         });
-        $conn->on('close', function(Client $cli){
+        $conn->on('close', function (Client $cli) {
             echo "Connection close\n";
         });
-        $conn->on('bufferEmpty', function(Client $cli){
+        $conn->on('bufferEmpty', function (Client $cli) {
             $cli->close();
         });
         $conn->connect($conf['host'], $conf['port'], 3);
@@ -200,6 +201,7 @@ class RpcClient
 
         return $this->names;
     }
+
     /**
      * @return array
      */

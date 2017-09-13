@@ -14,7 +14,7 @@ use Swoole\Server as SwServer;
  * Class UdpListener
  * @package Inhere\Server\PortListeners
  */
-class UdpListener extends PortListener implements InterfaceUdpListener
+class UdpListener extends PortListener implements UdpListenerInterface
 {
     /**
      * @var string

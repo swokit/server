@@ -99,7 +99,7 @@ class AutoReloader
     /**
      * @param $serverPid
      */
-    public function     __construct($serverPid)
+    public function __construct($serverPid)
     {
         $this->pid = (int)$serverPid;
         $this->inotify = inotify_init();
