@@ -97,7 +97,7 @@ abstract class PortListener implements PortListenerInterface
     /**
      * @param null $key
      * @param null $default
-     * @return \inhere\library\collections\Config|mixed
+     * @return mixed
      */
     public function getConfig($key = null, $default = null)
     {
