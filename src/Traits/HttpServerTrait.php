@@ -9,7 +9,7 @@
 namespace Inhere\Server\Traits;
 
 use inhere\library\helpers\PhpHelper;
-use Inhere\Server\Helpers\StaticAccessHandler;
+use Inhere\Server\Components\StaticResourceProcessor;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
@@ -59,7 +59,7 @@ trait HttpServerTrait
 
     /**
      * handle static file access.
-     * @var StaticAccessHandler
+     * @var StaticResourceProcessor
      */
     protected $staticAccessHandler;
 

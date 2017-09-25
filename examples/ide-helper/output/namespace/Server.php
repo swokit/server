@@ -185,9 +185,10 @@ class Server
     public function finish($data){}
 
     /**
+     * @param bool $onlyTaskWorker
      * @return mixed
      */
-    public function reload(){}
+    public function reload($onlyTaskWorker = false){}
 
     /**
      * @return mixed

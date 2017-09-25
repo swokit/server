@@ -6,7 +6,7 @@
  * Time: 9:21
  */
 
-namespace Inhere\Server\Helpers;
+namespace Inhere\Server\Components;
 
 use inhere\library\files\Directory;
 use inhere\library\traits\LiteOptionsTrait;
@@ -15,7 +15,7 @@ use Swoole\Http\Response;
 
 /**
  * Class PhpSession
- * @package Inhere\Server\Helpers
+ * @package Inhere\Server\Components
  */
 class PhpSession
 {

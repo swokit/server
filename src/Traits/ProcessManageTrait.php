@@ -10,7 +10,7 @@ namespace Inhere\Server\Traits;
 
 use inhere\console\io\Input;
 use inhere\console\utils\Show;
-use Inhere\Server\Helpers\AutoReloader;
+use Inhere\Server\Components\HotReloading;
 use Inhere\Server\Helpers\ProcessHelper;
 use Inhere\Server\Helpers\ServerHelper;
 use Swoole\Process;
@@ -293,7 +293,7 @@ trait ProcessManageTrait
 
             $mgr->log("The reloader worker process success started. (PID:{$process->pid}, SVR_PID:$svrPid, Watched:<info>{$options['dirs']}</info>)");
 
-            $kit = new AutoReloader($svrPid);
+            $kit = new HotReloading($svrPid);
             $kit
                 ->addWatches($dirs, $this->config['root_path'])
                 ->setReloadHandler(function ($pid) use ($mgr, $onlyReloadTask) {

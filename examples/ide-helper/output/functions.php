@@ -55,11 +55,12 @@ function swoole_event_defer($callback){}
 function swoole_timer_after($ms, $callback, $param=null){}
 
 /**
- * @param $ms[required]
- * @param $callback[required]
+ * @param $ms [required]
+ * @param $callback [required]
+ * @param mixed $param
  * @return mixed
  */
-function swoole_timer_tick($ms, $callback){}
+function swoole_timer_tick($ms, $callback, $param=null){}
 
 /**
  * @param $timer_id[required]

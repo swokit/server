@@ -6,18 +6,17 @@
  * Time: 9:29
  */
 
-namespace Inhere\Server\Helpers;
+namespace Inhere\Server\Components;
 
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 
 /**
- * Class StaticAccessHandler
- * @package Inhere\Server\Helpers
+ * Class StaticResourceProcessor - Static resource processing
+ * @package Inhere\Server\Components
  */
-class StaticAccessHandler
+class StaticResourceProcessor
 {
-
     /**
      * 静态文件类型
      * @var array

@@ -6,14 +6,13 @@
  * Time: 17:50
  */
 
-namespace Inhere\Server\Helpers;
+namespace Inhere\Server\Components;
 
 /*
-
 // 单独使用
 
 //设置服务器程序的主进程PID
-$kit = new AutoReloader(26527);
+$kit = new HotReloading(26527);
 //设置要监听的源码目录
 $kit->watch(dirname(__DIR__).'/bootstrap');
 //监听后缀为.php的文件
@@ -21,7 +20,7 @@ $kit->addFileType('php');
 $kit->run();
 
 //
-$kit = new AutoReloader(26527);
+$kit = new HotReloading(26527);
 $kit
     ->addWatches($dirs)
     ->setReloadHandler(function($pid) use (\swoole_server $server, $onlyReloadTask) {
@@ -32,10 +31,10 @@ $kit
 use inhere\exceptions\NotFoundException;
 
 /**
- * Class AutoReloader
+ * Class HotReloading
  * @package Inhere\Server
  */
-class AutoReloader
+class HotReloading
 {
     /**
      * @var resource
