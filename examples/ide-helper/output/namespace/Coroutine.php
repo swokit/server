@@ -9,9 +9,10 @@ class Coroutine
 
 
     /**
+     * @param $callable
      * @return mixed
      */
-    public static function create(){}
+    public static function create($callable){}
 
     /**
      * @return mixed
@@ -36,6 +37,12 @@ class Coroutine
      * @return mixed
      */
     public static function getuid(){}
+
+    /**
+     * @param int|float $seconds
+     * @return mixed
+     */
+    public static function sleep($seconds){}
 
     /**
      * @return mixed
