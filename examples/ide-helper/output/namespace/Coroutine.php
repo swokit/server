@@ -50,9 +50,11 @@ class Coroutine
     public static function call_user_func(){}
 
     /**
+     * @param mixed $func
+     * @param array $args
      * @return mixed
      */
-    public static function call_user_func_array(){}
+    public static function call_user_func_array($func, $args){}
 
 
 }
