@@ -23,6 +23,9 @@ trait SomeSwooleEventTrait
     /** @var int */
     private $workPid = 0;
 
+    /** @var bool  */
+    private $taskWorker = false;
+
 //////////////////////////////////////////////////////////////////////
 /// swoole event handler
 //////////////////////////////////////////////////////////////////////
@@ -92,6 +95,7 @@ trait SomeSwooleEventTrait
     {
         $this->workId = $workerId;
         $this->workPid = $server->worker_pid;
+        $this->taskWorker = (bool)$server->taskworker;
 
         $taskMark = $server->taskworker ? 'task-worker' : 'event-worker';
 
@@ -175,6 +179,30 @@ trait SomeSwooleEventTrait
     public function onFinish(SwServer $server, $taskId, $data)
     {
         $this->log("AsyncTask[$taskId] Finish(task worker id: {$server->worker_id}). Data: $data");
+    }
+
+    /**
+     * @return bool
+     */
+    public function isTaskWorker(): bool
+    {
+        return $this->taskWorker;
+    }
+
+    /**
+     * @return int
+     */
+    public function getWorkId(): int
+    {
+        return $this->workId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getWorkPid(): int
+    {
+        return $this->workPid;
     }
 
 }

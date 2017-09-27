@@ -10,7 +10,6 @@ namespace Inhere\Server;
 
 use inhere\console\io\Input;
 use inhere\console\utils\Show;
-use inhere\library\log\FileLogger;
 use inhere\library\traits\ConfigTrait;
 use inhere\library\traits\EventTrait;
 use Inhere\Server\Traits\ProcessManageTrait;
@@ -46,6 +45,7 @@ class BoxServer implements ServerInterface
      */
     protected static $_statistics = [];
 
+    /** @var bool  */
     private $bootstrapped = false;
 
     /**
@@ -578,6 +578,14 @@ class BoxServer implements ServerInterface
     public function getSocket(): resource
     {
         return $this->server->getSocket();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBootstrapped(): bool
+    {
+        return $this->bootstrapped;
     }
 
 //////////////////////////////////////////////////////////////////////
