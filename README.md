@@ -1,5 +1,13 @@
 # php server
 
+## run flow
+
+```text
+                    
+php bin/server -> 
+
+```
+
 ## simple run 
 
 - create a instance 

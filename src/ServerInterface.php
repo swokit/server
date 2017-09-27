@@ -74,6 +74,11 @@ interface ServerInterface
     const ON_SERVER_START = 'serverStart';
 
     // # 2. running ...
+    // # 2.1 manager running ...
+    const ON_MANAGER_STARTED = 'managerStarted';
+    const ON_MANAGER_STOPPED = 'managerStopped';
+
+    // # 2.2 worker running ...
     const ON_WORKER_STARTED = 'workerStarted';
     const ON_WORKER_STOPPED = 'workerStopped';
 

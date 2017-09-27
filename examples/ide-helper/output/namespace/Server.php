@@ -292,5 +292,8 @@ class Server
      */
     public function bind($fd, $uid){}
 
-
+    /***
+     * @return resource
+     */
+    public function getSocket(){}
 }

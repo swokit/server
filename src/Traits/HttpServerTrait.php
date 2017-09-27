@@ -66,7 +66,7 @@ trait HttpServerTrait
     /**
      * @var array
      */
-    protected $defaultOptions = [
+    protected $options = [
         'start_session' => false,
 
         // @link http://php.net/manual/zh/session.configuration.php

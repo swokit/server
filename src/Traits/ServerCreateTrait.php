@@ -324,7 +324,7 @@ trait ServerCreateTrait
                 $info = "(<cyan>$type://{$port->host}:{$port->port}</cyan>)";
             }
 
-            $this->log("Attach the listen server <info>$name</info>$info to the main server");
+            $this->log("Attach the port listen server <info>$name</info>$info to the main server");
         }
 
         $this->fire(self::ON_PORT_CREATED, [$this]);
@@ -347,9 +347,7 @@ trait ServerCreateTrait
      */
     public function attachPortListener($name, $config)
     {
-        $name = strtolower($name);
-
-        if (isset($this->attachedNames[$name])) {
+        if (isset($this->attachedNames[strtolower($name)])) {
             throw new \RuntimeException("The add listen port server [$name] has been exists!");
         }
 

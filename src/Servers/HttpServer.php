@@ -58,13 +58,11 @@ class HttpServer extends BoxServer
      */
     public function __construct(array $config = [], array $options = [])
     {
-        $this->setOptions($this->defaultOptions);
+        parent::__construct($config);
 
         if ($options) {
             $this->setOptions($options);
         }
-
-        parent::__construct($config);
     }
 
     public function info()

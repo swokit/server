@@ -63,6 +63,7 @@ trait SomeSwooleEventTrait
     public function onManagerStart(SwServer $server)
     {
         // $server->manager_pid;
+        $this->fire(self::ON_MANAGER_STARTED, [$this, $server]);
 
         // file_put_contents($this->pidFile, ',' . $server->manager_pid, FILE_APPEND);
         ProcessHelper::setTitle("swoole: manager ({$this->name})");
@@ -76,6 +77,7 @@ trait SomeSwooleEventTrait
      */
     public function onManagerStop(SwServer $server)
     {
+        $this->fire(self::ON_MANAGER_STOPPED, [$this, $server]);
         $this->log("The manager process stopped. (PID {$server->manager_pid})");
     }
 

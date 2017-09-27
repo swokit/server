@@ -16,6 +16,7 @@ use inhere\library\traits\EventTrait;
 use Inhere\Server\Traits\ProcessManageTrait;
 use Inhere\Server\Traits\ServerCreateTrait;
 use Inhere\Server\Traits\SomeSwooleEventTrait;
+use Psr\Log\LoggerInterface;
 use Swoole\Process;
 use Swoole\Server;
 
@@ -75,6 +76,11 @@ class BoxServer implements ServerInterface
     public $input;
 
     /**
+     * @var LoggerInterface
+     */
+    public $logger;
+
+    /**
      * @var Server
      */
     public $server;
@@ -99,11 +105,11 @@ class BoxServer implements ServerInterface
         'auto_reload' => '', // 'src,config'
 
         // 当前server的日志配置(不是swoole的日志)
-        'log_service' => [
-            // 'name' => 'swoole_server_log'
-            // 'basePath' => PROJECT_PATH . '/temp/logs/test_server',
-            // 'logThreshold' => 0,
-            // 'levels' => '',
+        'log' => [
+            // 'name' => 'server_log'
+            // 'file' => PROJECT_PATH . '/temp/logs/test_server.log',
+//            'level' => LogLevel::DEBUG,
+//            'bufferSize' => 0, // 1000,
         ],
 
         // for main server
@@ -262,10 +268,6 @@ class BoxServer implements ServerInterface
 
     protected function beforeBootstrap()
     {
-        // create log service instance
-        if ($logService = $this->getValue('log_service')) {
-            FileLogger::make($logService);
-        }
     }
 
     /**
@@ -351,7 +353,7 @@ class BoxServer implements ServerInterface
                 'auto_reload' => $this->config['auto_reload'],
                 'pid_file' => $this->config['pid_file'],
             ],
-            'Server Log' => $this->config['log_service'],
+            'Server Log' => $this->config['log'],
         ];
 
 
@@ -439,31 +441,21 @@ class BoxServer implements ServerInterface
     }
 
     /**
-     * has Logger service
-     * @param  null|string $name
-     * @return boolean
+     * @param LoggerInterface $logger
      */
-    public function hasLogger($name = null)
+    public function setLogger(LoggerInterface $logger)
     {
-        $name = $name ?: $this->getValue('log_service.name');
-
-        return $name && FileLogger::has($name);
+        $this->logger = $logger;
     }
 
     /**
      * get Logger service
-     * @return FileLogger
+     * @return LoggerInterface
      * @throws \RuntimeException
      */
     public function getLogger()
     {
-        $name = $this->getValue('log_service.name');
-
-        if ($this->hasLogger($name)) {
-            return FileLogger::get($name);
-        }
-
-        throw new \RuntimeException('You don\'t config log service!');
+        return $this->logger;
     }
 
     /**
@@ -616,8 +608,8 @@ class BoxServer implements ServerInterface
             Show::write(sprintf('[%s.%s] [%s] %s %s', $time, $ms, strtoupper($type), $msg, $json));
         }
 
-        if ($this->hasLogger()) {
-            $this->getLogger()->log($type, strip_tags($msg), $data);
+        if ($this->logger) {
+            $this->logger->log($type, strip_tags($msg), $data);
         }
 
         // return;
