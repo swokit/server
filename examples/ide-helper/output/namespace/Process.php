@@ -4,6 +4,7 @@ namespace Swoole;
 /**
  * @since 2.0.8
  * @property int $pid
+ * @property resource $pipe
  */
 class Process
 {
@@ -117,7 +118,7 @@ class Process
      * @param $exit_code[optional]
      * @return mixed
      */
-    public function _exit($exit_code=null){}
+    public function exit($exit_code=null){}
 
     /**
      * @param $exec_file[required]

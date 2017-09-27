@@ -21,8 +21,9 @@ class RpcClient
      * @var array
      * [
      *  name => [
-     *      'host' => '',
-     *      'ip' => '',
+     *      'host' => 'xxx.com',
+     *      'ip' => '127.0.0.1:5685',
+     *      'weight' => 0, // 0 - 100
      *  ],
      * ]
      */
@@ -109,7 +110,7 @@ class RpcClient
             $this->connections[$server] = $conn;
         }
 
-        $conn->send();
+        $conn->send('ddd');
 
         return [];
     }

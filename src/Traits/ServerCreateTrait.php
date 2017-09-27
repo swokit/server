@@ -350,11 +350,16 @@ trait ServerCreateTrait
         $name = strtolower($name);
 
         if (isset($this->attachedNames[$name])) {
-            throw new \RuntimeException("The add listen port server [$name] exists!");
+            throw new \RuntimeException("The add listen port server [$name] has been exists!");
         }
 
         if (is_array($config)) {
             $class = Arr::remove($config, 'listener');
+
+            if (!$class) {
+                throw new \InvalidArgumentException("Please setting the 'listener' class for the port server: $name");
+            }
+
             $cb = new $class($config);
 
             if (!$cb instanceof PortListenerInterface) {
