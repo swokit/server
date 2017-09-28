@@ -18,13 +18,13 @@ use Swoole\Server as SwServer;
 trait SomeSwooleEventTrait
 {
     /** @var int */
-    private $workId = 0;
+    protected $workId = 0;
 
     /** @var int */
-    private $workPid = 0;
+    protected $workPid = 0;
 
     /** @var bool  */
-    private $taskWorker = false;
+    protected $taskWorker = false;
 
 //////////////////////////////////////////////////////////////////////
 /// swoole event handler
@@ -190,6 +190,14 @@ trait SomeSwooleEventTrait
     }
 
     /**
+     * @param int $workId
+     */
+    public function setWorkId(int $workId)
+    {
+        $this->workId = $workId;
+    }
+
+    /**
      * @return int
      */
     public function getWorkId(): int
@@ -203,6 +211,14 @@ trait SomeSwooleEventTrait
     public function getWorkPid(): int
     {
         return $this->workPid;
+    }
+
+    /**
+     * @param int $workPid
+     */
+    public function setWorkPid(int $workPid)
+    {
+        $this->workPid = $workPid;
     }
 
 }

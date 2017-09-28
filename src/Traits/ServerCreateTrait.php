@@ -8,7 +8,7 @@
 
 namespace Inhere\Server\Traits;
 
-use inhere\console\utils\Show;
+use Inhere\Console\Utils\Show;
 use inhere\library\helpers\Arr;
 use Inhere\Server\ExtendServerInterface;
 use Inhere\Server\Helpers\ProcessHelper;

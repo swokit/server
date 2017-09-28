@@ -8,8 +8,8 @@
 
 namespace Inhere\Server\Traits;
 
-use inhere\console\io\Input;
-use inhere\console\utils\Show;
+use Inhere\Console\IO\Input;
+use Inhere\Console\Utils\Show;
 use Inhere\Server\Components\HotReloading;
 use Inhere\Server\Helpers\ProcessHelper;
 use Inhere\Server\Helpers\ServerHelper;

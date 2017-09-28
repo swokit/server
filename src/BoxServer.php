@@ -8,16 +8,24 @@
 
 namespace Inhere\Server;
 
-use inhere\console\io\Input;
-use inhere\console\utils\Show;
+use Inhere\Console\IO\Input;
+use Inhere\Console\Utils\Show;
+
 use inhere\library\traits\ConfigTrait;
 use inhere\library\traits\EventTrait;
+
+use Inhere\Server\Components\FileLogHandler;
 use Inhere\Server\Traits\ProcessManageTrait;
 use Inhere\Server\Traits\ServerCreateTrait;
 use Inhere\Server\Traits\SomeSwooleEventTrait;
+
 use Psr\Log\LoggerInterface;
 use Swoole\Process;
 use Swoole\Server;
+
+use Monolog\Logger;
+use Monolog\Handler\FingersCrossedHandler;
+use Monolog\Processor\UidProcessor;
 
 /**
  * Class AServerManager
@@ -45,7 +53,7 @@ class BoxServer implements ServerInterface
      */
     protected static $_statistics = [];
 
-    /** @var bool  */
+    /** @var bool */
     private $bootstrapped = false;
 
     /**
@@ -106,10 +114,10 @@ class BoxServer implements ServerInterface
 
         // 当前server的日志配置(不是swoole的日志)
         'log' => [
-            // 'name' => 'server_log'
-            // 'file' => PROJECT_PATH . '/temp/logs/test_server.log',
-//            'level' => LogLevel::DEBUG,
-//            'bufferSize' => 0, // 1000,
+            'name' => 'server_log',
+            'file' => './temp/logs/test_server.log',
+            'level' => Logger::DEBUG,
+            'bufferSize' => 0, // 1000,
         ],
 
         // for main server
@@ -192,8 +200,9 @@ class BoxServer implements ServerInterface
     /**
      * BaseServer constructor.
      * @param array $config
+     * @param LoggerInterface|null $logger
      */
-    public function __construct(array $config = [])
+    public function __construct(array $config = [], LoggerInterface $logger = null)
     {
         self::$mgr = $this;
 
@@ -202,10 +211,14 @@ class BoxServer implements ServerInterface
         $this->setConfig($config);
 
         $this->init();
+
+        // create logger if not setting
+        if (!$this->logger = $logger) {
+            $this->makeLogger();
+        }
     }
 
     /**
-     * @return $this
      * @throws \RuntimeException
      */
     protected function init()
@@ -244,8 +257,6 @@ class BoxServer implements ServerInterface
         if ($methods = $this->getValue('main_server.extend_events')) {
             $this->setSwooleEvents($methods);
         }
-
-        return $this;
     }
 
     /**
@@ -260,6 +271,21 @@ class BoxServer implements ServerInterface
         if (($val = $input->sameOpt(['n', 'worker-number'])) > 0) {
             $this->config['swoole']['worker_num'] = $val;
         }
+    }
+
+    protected function makeLogger()
+    {
+        $opts = $this->getValue('log', []);
+
+        $fileHandler = new FileLogHandler($opts['file'], (int)$opts['level'], (int)$opts['splitType']);
+        $mainHandler = new FingersCrossedHandler($fileHandler, (int)$opts['level'], (int)$opts['bufferSize']);
+        $fileHandler->setServer($this);
+
+        $logger = new Logger($opts['name']);
+        $logger->pushProcessor(new UidProcessor());
+        $logger->pushHandler($mainHandler);
+
+        $this->logger = $logger;
     }
 
 //////////////////////////////////////////////////////////////////////
@@ -596,14 +622,22 @@ class BoxServer implements ServerInterface
      * output log message
      * @param  string $msg
      * @param  array $data
-     * @param string $type
+     * @param string|int $type
      * @return void
      * @throws \RuntimeException
      */
-    public function log($msg, array $data = [], $type = 'info')
+    public function log($msg, array $data = [], $type = Logger::INFO)
     {
-        if (!$this->debug && $type !== 'debug') {
-            return;
+        $context = [
+            'workerId' => $this->getWorkId(),
+            'workerPid' => $this->getWorkPid(),
+            'isTaskWorker' => $this->isTaskWorker(),
+        ];
+
+        if (isset($data['_context'])) {
+            $data['_context'] = array_merge($data['_context'], $context);
+        } else {
+            $data['_context'] = $context;
         }
 
         // if close debug, don't output debug log.

@@ -8,7 +8,7 @@
 
 namespace Inhere\Server\Extend;
 
-use inhere\console\utils\Show;
+use Inhere\Console\Utils\Show;
 use Inhere\Server\AbstractExtendServer;
 use Inhere\Server\Traits\HttpServerTrait;
 
