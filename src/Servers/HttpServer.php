@@ -60,6 +60,10 @@ class HttpServer extends BoxServer
     {
         parent::__construct($config);
 
+        if ($options1 = $this->getValue('options')) {
+            $this->setOptions($options1);
+        }
+
         if ($options) {
             $this->setOptions($options);
         }

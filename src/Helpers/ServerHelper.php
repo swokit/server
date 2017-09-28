@@ -9,6 +9,7 @@
 namespace Inhere\Server\Helpers;
 
 use inhere\library\helpers\PhpHelper;
+use Swoole\Coroutine;
 
 /**
  * Class ServerHelper
@@ -48,5 +49,13 @@ class ServerHelper
         if (!extension_loaded('swoole')) {
             throw new \RuntimeException('Run the server, extension \'swoole\' is required!');
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public static function coroutineIsEnabled()
+    {
+        return class_exists(Coroutine::class, false);
     }
 }

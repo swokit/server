@@ -96,7 +96,6 @@ trait SomeSwooleEventTrait
         $this->workId = $workerId;
         $this->workPid = $server->worker_pid;
         $this->taskWorker = (bool)$server->taskworker;
-
         $taskMark = $server->taskworker ? 'task-worker' : 'event-worker';
 
         $this->log("The #<cyan>{$workerId}</cyan> {$taskMark} process success started. (PID:{$server->worker_pid})");

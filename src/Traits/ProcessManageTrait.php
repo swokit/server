@@ -232,14 +232,19 @@ trait ProcessManageTrait
 
     public function check()
     {
-        Show::table([
-            ['Php version is gt 7', 'Yes'],
-            ['The Swoole is installed', 'Yes'],
-        ], 'check result', [
-            'tHead' => ['condition', 'result'],
-        ]);
+        $yes = '<info>Yes</info>';
+        $no = '<danger>No</danger>';
+        $info = [
+            'Php version is gt 7.1' => version_compare(PHP_VERSION, '7.1') ? $yes : $no,
+            'The Swoole is installed' => class_exists('Swoole\Server', false) ? $yes : $no,
+            'The Swoole Coroutine is enabled' => class_exists('Swoole\Coroutine', false) ? $yes : $no,
+        ];
 
-        // $this->showInformation();
+        Show::aList($info, 'the env check result', [
+            'keyStyle' => '',
+            'sepChar' => ' | ',
+            'ucfirst' => false,
+        ]);
     }
 
     public function status()

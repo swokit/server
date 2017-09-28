@@ -106,7 +106,10 @@ class FileLogHandler extends AbstractProcessingHandler
 
     protected function asyncIsEnabled()
     {
-        return class_exists(Async::class, false) && $this->server && !$this->server->isTaskWorker();
+        return class_exists(Async::class, false) &&
+            $this->server &&
+            $this->server->isBootstrapped() &&
+            !$this->server->isTaskWorker();
     }
 
     /**
