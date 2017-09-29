@@ -294,20 +294,22 @@ trait HttpServerTrait
             $content = json_encode([
                 'code' => $e->getCode() ?: 500,
                 'msg' => sprintf(
-                    '%s(%d): %s, File: %s(Line %d)',
+                    '%s(%d): %s, File: %s(Line %d), Catch By: %s',
                     $type,
                     $e->getCode(),
                     $e->getMessage(),
                     $e->getFile(),
-                    $e->getLine()
+                    $e->getLine(),
+                    __METHOD__
                 ),
                 'data' => $e->getTrace()
             ]);
         } else {
             $resp->header('Content-Type', 'text/html; charset=utf-8');
-            $content = PhpHelper::exceptionToString($e, false, $this->isDebug());
+            $content = PhpHelper::exceptionToString($e, false, $this->isDebug(), __METHOD__);
         }
 
+        $this->log($content);
         $resp->write($content);
         $this->respond($resp);
     }

@@ -269,7 +269,7 @@ trait ProcessManageTrait
     /**
      * create code hot reload worker
      * @see https://wiki.swoole.com/wiki/page/390.html
-     * @return bool
+     * @return Process|false
      * @throws \RuntimeException
      */
     protected function createHotReloader()
@@ -287,14 +287,14 @@ trait ProcessManageTrait
         ];
 
         // 创建用户自定义的工作进程worker
-        $this->reloadWorker = new Process(function (Process $process) use ($options, $mgr) {
-            ProcessHelper::setTitle("swoole: reloader ({$mgr->name})");
+        return new Process(function (Process $process) use ($options, $mgr) {
+            ProcessHelper::setTitle("swoole: hot-reload ({$mgr->name})");
 
             $svrPid = $mgr->server->master_pid;
             $onlyReloadTask = isset($options['only_reload_task']) ? (bool)$options['only_reload_task'] : false;
             $dirs = array_map('trim', explode(',', $options['dirs']));
 
-            $mgr->log("The reloader worker process success started. (PID:{$process->pid}, SVR_PID:$svrPid, Watched:<info>{$options['dirs']}</info>)");
+            $mgr->log("The <info>reload</info> worker process success started. (PID:{$process->pid}, SVR_PID:$svrPid, Watched:<info>{$options['dirs']}</info>)");
 
             $kit = new HotReloading($svrPid);
             $kit
@@ -322,11 +322,6 @@ trait ProcessManageTrait
             //     }
             // }
         });
-
-        // addProcess添加的用户进程中无法使用task投递任务，请使用 $server->sendMessage() 接口与工作进程通信
-        $this->server->addProcess($this->reloadWorker);
-
-        return true;
     }
 
     /**

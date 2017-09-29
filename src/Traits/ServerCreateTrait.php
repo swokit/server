@@ -180,8 +180,6 @@ trait ServerCreateTrait
      */
     protected function afterCreateServer()
     {
-        // create Reload Worker
-        $this->createHotReloader();
     }
 
     /**
@@ -228,6 +226,10 @@ trait ServerCreateTrait
      */
     protected function attachUserProcesses()
     {
+        // create Reload Worker
+        $reloader = $this->createHotReloader();
+        $this->server->addProcess($reloader);
+
         foreach ($this->processCallbacks as $name => $callback) {
             $this->createProcess($name, $callback);
         }
