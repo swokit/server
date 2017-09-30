@@ -10,6 +10,7 @@ namespace Inhere\Server\Traits;
 
 use Inhere\Console\Utils\Show;
 use inhere\library\helpers\Arr;
+use Inhere\Server\Components\HotReloading;
 use Inhere\Server\ExtendServerInterface;
 use Inhere\Server\Helpers\ProcessHelper;
 use Inhere\Server\PortListeners\PortListenerInterface;
@@ -294,6 +295,64 @@ trait ServerCreateTrait
         // 请使用 $server->sendMessage() 接口与工作进程通信
         $this->server->addProcess($process);
         $this->fire(self::ON_PROCESS_CREATED, [$this, $name]);
+    }
+
+    /**
+     * create code hot reload worker
+     * @see https://wiki.swoole.com/wiki/page/390.html
+     * @return Process|false
+     * @throws \RuntimeException
+     */
+    protected function createHotReloader()
+    {
+        $reload = $this->config['auto_reload'];
+
+        if (!$reload || !function_exists('inotify_init')) {
+            return false;
+        }
+
+        $mgr = $this;
+        $options = [
+            'dirs' => $reload,
+            // 'masterPid' => $this->server->master_pid
+        ];
+
+        // 创建用户自定义的工作进程worker
+        return new Process(function (Process $process) use ($options, $mgr) {
+            ProcessHelper::setTitle("swoole: hot-reload ({$mgr->name})");
+
+            $svrPid = $mgr->server->master_pid;
+            $onlyReloadTask = isset($options['only_reload_task']) ? (bool)$options['only_reload_task'] : false;
+            $dirs = array_map('trim', explode(',', $options['dirs']));
+
+            $mgr->log("The <info>hot-reload</info> worker process success started. (PID:{$process->pid}, SVR_PID:$svrPid, Watched:<info>{$options['dirs']}</info>)");
+
+            $kit = new HotReloading($svrPid);
+            $kit
+                ->addWatches($dirs, $this->config['root_path'])
+                ->setReloadHandler(function ($pid) use ($mgr, $onlyReloadTask) {
+                    $mgr->log("Begin reload workers process. (Master PID: {$pid})");
+                    $mgr->server->reload($onlyReloadTask);
+                    // $mgr->doReloadWorkers($pid, $onlyReloadTask);
+                });
+
+            //Interact::section('Watched Directory', $kit->getWatchedDirs());
+
+            $kit->run();
+
+            // while (true) {
+            //     $msg = $process->read();
+            //     // 重启所有worker进程
+            //     if ( $msg === 'reload' ) {
+            //         $onlyReloadTaskWorker = false;
+            //         $server->reload($onlyReloadTaskWorker);
+            //     } else {
+            //         foreach($server->connections as $conn) {
+            //             $server->send($conn, $msg);
+            //         }
+            //     }
+            // }
+        });
     }
 
     /*******************************************************************************

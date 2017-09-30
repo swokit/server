@@ -357,7 +357,7 @@ trait HttpServerTrait
         }
 
         if (isset($_SERVER['REQUEST_URI'])) {
-            $log .= '[URI:' . $_SERVER['REQUEST_URI'] . ']';
+            $log .= '[URI:' . $_SERVER['REQUEST_URI'] . '] catch by: ' . __METHOD__;
         }
 
         echo PhpHelper::dumpVars($log);

@@ -15,11 +15,12 @@ use inhere\library\traits\ConfigTrait;
 use inhere\library\traits\EventTrait;
 
 use Inhere\Server\Components\FileLogHandler;
-use Inhere\Server\Traits\ProcessManageTrait;
+use Inhere\Server\Traits\ServerManageTrait;
 use Inhere\Server\Traits\ServerCreateTrait;
 use Inhere\Server\Traits\SomeSwooleEventTrait;
 
 use Psr\Log\LoggerInterface;
+use Swoole\Coroutine;
 use Swoole\Process;
 use Swoole\Server;
 
@@ -36,9 +37,11 @@ use Monolog\Processor\UidProcessor;
  */
 class BoxServer implements ServerInterface
 {
-    use ConfigTrait;
+    use ConfigTrait {
+        setConfig as tSetConfig;
+    }
     use EventTrait;
-    use ProcessManageTrait;
+    use ServerManageTrait;
     use ServerCreateTrait;
     use SomeSwooleEventTrait;
 
@@ -288,9 +291,9 @@ class BoxServer implements ServerInterface
         $this->logger = $logger;
     }
 
-//////////////////////////////////////////////////////////////////////
-/// start server logic
-//////////////////////////////////////////////////////////////////////
+    /*******************************************************************************
+     * start server logic
+     ******************************************************************************/
 
     protected function beforeBootstrap()
     {
@@ -357,7 +360,7 @@ class BoxServer implements ServerInterface
             ],
             'Swoole Info' => [
                 'version' => SWOOLE_VERSION,
-                'coroutine' => class_exists('\Swoole\Coroutine', false),
+                'coroutine' => class_exists(Coroutine::class, false),
             ],
             'Swoole Config' => [
                 'dispatch_mode' => $swOpts['dispatch_mode'],
@@ -398,10 +401,9 @@ class BoxServer implements ServerInterface
         Show::notice('Sorry, The function un-completed!', 0);
     }
 
-
-//////////////////////////////////////////////////////////////////////
-/// getter/setter method
-//////////////////////////////////////////////////////////////////////
+    /*******************************************************************************
+     * getter/setter methods
+     ******************************************************************************/
 
     /**
      * @return bool
@@ -524,9 +526,9 @@ class BoxServer implements ServerInterface
         return self::$_statistics;
     }
 
-//////////////////////////////////////////////////////////////////////
-/// some help method(from swoole)
-//////////////////////////////////////////////////////////////////////
+    /*******************************************************************************
+     * some help method(from swoole)
+     ******************************************************************************/
 
     /**
      * checkEnvWhenEnableSSL
@@ -614,9 +616,31 @@ class BoxServer implements ServerInterface
         return $this->bootstrapped;
     }
 
-//////////////////////////////////////////////////////////////////////
-/// some help method
-//////////////////////////////////////////////////////////////////////
+    /**
+     * {@inheritDoc}
+     */
+    public function setConfig(array $config)
+    {
+        if ($this->bootstrapped) {
+            throw new \InvalidArgumentException('Has been initialize completed. don\'t allow change config.');
+        }
+
+        $this->tSetConfig($config);
+    }
+
+    /*******************************************************************************
+     * some help method
+     ******************************************************************************/
+
+
+    protected function prepareRuntimeContext()
+    {
+        return [
+            'workerId' => $this->getWorkId(),
+            'workerPid' => $this->getWorkPid(),
+            'isTaskWorker' => $this->isTaskWorker(),
+        ];
+    }
 
     /**
      * output log message
@@ -628,16 +652,12 @@ class BoxServer implements ServerInterface
      */
     public function log($msg, array $data = [], $type = Logger::INFO)
     {
-        $context = [
-            'workerId' => $this->getWorkId(),
-            'workerPid' => $this->getWorkPid(),
-            'isTaskWorker' => $this->isTaskWorker(),
-        ];
+        $appendContext = $this->prepareRuntimeContext();
 
         if (isset($data['_context'])) {
-            $data['_context'] = array_merge($data['_context'], $context);
+            $data['_context'] = array_merge($data['_context'], $appendContext);
         } else {
-            $data['_context'] = $context;
+            $data['_context'] = $appendContext;
         }
 
         // if close debug, don't output debug log.
@@ -646,6 +666,7 @@ class BoxServer implements ServerInterface
             $ms = str_pad($ms, 4, 0);
             $time = date('Y-m-d H:i:s', $ts);
             $json = $data ? json_encode($data) : '';
+            $type = Logger::getLevelName($type);
 
             Show::write(sprintf('[%s.%s] [%s] %s %s', $time, $ms, strtoupper($type), $msg, $json));
         }
@@ -665,6 +686,6 @@ class BoxServer implements ServerInterface
      */
     public function debug($msg, array $data = [])
     {
-        $this->log($msg, $data);
+        $this->log($msg, $data, Logger::DEBUG);
     }
 }

@@ -10,22 +10,21 @@ namespace Inhere\Server\Traits;
 
 use Inhere\Console\IO\Input;
 use Inhere\Console\Utils\Show;
-use Inhere\Server\Components\HotReloading;
 use Inhere\Server\Helpers\ProcessHelper;
 use Inhere\Server\Helpers\ServerHelper;
-use Swoole\Process;
+use Swoole\Coroutine;
 use Swoole\Server;
 
 /**
- * Class ProcessManageTrait
+ * Class ServerManageTrait
  * @package Inhere\Server\Traits
  * @property Server $server
  * @property Input $input
  */
-trait ProcessManageTrait
+trait ServerManageTrait
 {
     /*******************************************************************************
-     * server process
+     * server commands
      ******************************************************************************/
 
     protected function beforeRun()
@@ -230,14 +229,20 @@ trait ProcessManageTrait
         $this->showInformation();
     }
 
+    public function version()
+    {
+        Show::write(sprintf('Swoole server manager tool, Version <comment>%s</comment> Update time %s', self::VERSION, self::UPDATE_TIME));
+    }
+
     public function check()
     {
-        $yes = '<info>Yes</info>';
-        $no = '<danger>No</danger>';
+        $yes = '<info>√</info>';
+        $no = '<danger>X</danger>';
         $info = [
             'Php version is gt 7.1' => version_compare(PHP_VERSION, '7.1') ? $yes : $no,
-            'The Swoole is installed' => class_exists('Swoole\Server', false) ? $yes : $no,
-            'The Swoole Coroutine is enabled' => class_exists('Swoole\Coroutine', false) ? $yes : $no,
+            'The Swoole is installed' => class_exists(Server::class, false) ? $yes : $no,
+            'The Swoole version is gt 2' => version_compare(SWOOLE_VERSION, '2.0') ? $yes : $no,
+            'The Swoole Coroutine is enabled' => class_exists(Coroutine::class, false) ? $yes : $no,
         ];
 
         Show::aList($info, 'the env check result', [
@@ -264,64 +269,6 @@ trait ProcessManageTrait
         }
 
         return false;
-    }
-
-    /**
-     * create code hot reload worker
-     * @see https://wiki.swoole.com/wiki/page/390.html
-     * @return Process|false
-     * @throws \RuntimeException
-     */
-    protected function createHotReloader()
-    {
-        $reload = $this->config['auto_reload'];
-
-        if (!$reload || !function_exists('inotify_init')) {
-            return false;
-        }
-
-        $mgr = $this;
-        $options = [
-            'dirs' => $reload,
-            // 'masterPid' => $this->server->master_pid
-        ];
-
-        // 创建用户自定义的工作进程worker
-        return new Process(function (Process $process) use ($options, $mgr) {
-            ProcessHelper::setTitle("swoole: hot-reload ({$mgr->name})");
-
-            $svrPid = $mgr->server->master_pid;
-            $onlyReloadTask = isset($options['only_reload_task']) ? (bool)$options['only_reload_task'] : false;
-            $dirs = array_map('trim', explode(',', $options['dirs']));
-
-            $mgr->log("The <info>reload</info> worker process success started. (PID:{$process->pid}, SVR_PID:$svrPid, Watched:<info>{$options['dirs']}</info>)");
-
-            $kit = new HotReloading($svrPid);
-            $kit
-                ->addWatches($dirs, $this->config['root_path'])
-                ->setReloadHandler(function ($pid) use ($mgr, $onlyReloadTask) {
-                    $mgr->log("Begin reload workers process. (Master PID: {$pid})");
-                    $mgr->server->reload($onlyReloadTask);
-                    // $mgr->doReloadWorkers($pid, $onlyReloadTask);
-                });
-
-            //Interact::section('Watched Directory', $kit->getWatchedDirs());
-
-            $kit->run();
-
-            // while (true) {
-            //     $msg = $process->read();
-            //     // 重启所有worker进程
-            //     if ( $msg === 'reload' ) {
-            //         $onlyReloadTaskWorker = false;
-            //         $server->reload($onlyReloadTaskWorker);
-            //     } else {
-            //         foreach($server->connections as $conn) {
-            //             $server->send($conn, $msg);
-            //         }
-            //     }
-            // }
-        });
     }
 
     /**

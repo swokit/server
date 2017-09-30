@@ -43,7 +43,7 @@ trait SomeSwooleEventTrait
 
         ProcessHelper::setTitle(sprintf('swoole: master (%s IN %s)', $this->name, $this->getValue('root_path')));
 
-        $this->log("The <comment>master</comment> process success started. (PID:<notice>{$masterPid}</notice>, pid_file: $this->pidFile)");
+        $this->log("The <comment>master</comment> process success started. (PID:<info>{$masterPid}</info>, pid_file: $this->pidFile)");
     }
 
     /**
@@ -52,7 +52,7 @@ trait SomeSwooleEventTrait
      */
     public function onMasterStop(SwServer $server)
     {
-        $this->log("The swoole master process(PID: {$server->master_pid}) stopped.");
+        $this->log("The swoole master process(PID: <info>{$server->master_pid})</info> stopped.");
 
         $this->removePidFile();
 

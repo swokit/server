@@ -19,9 +19,10 @@ class MySQL
     public function __destruct(){}
 
     /**
+     * @param array $conf
      * @return mixed
      */
-    public function connect(){}
+    public function connect(array $conf){}
 
     /**
      * @return mixed
