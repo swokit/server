@@ -18,7 +18,7 @@ use Swoole\Server as SwServer;
 trait SomeSwooleEventTrait
 {
     /** @var int */
-    protected $workId = 0;
+    protected $workId = -1;
 
     /** @var int */
     protected $workPid = 0;

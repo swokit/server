@@ -8,7 +8,7 @@
 
 namespace Inhere\Server\Helpers;
 
-use inhere\library\helpers\PhpHelper;
+use Inhere\Library\Helpers\PhpHelper;
 
 /**
  * Class ProcessHelper

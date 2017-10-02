@@ -8,6 +8,7 @@
 
 namespace Inhere\Server\Components;
 
+use Inhere\Library\Helpers\PhpHelper;
 use Inhere\Server\BoxServer;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
@@ -102,6 +103,23 @@ class FileLogHandler extends AbstractProcessingHandler
         } else {
             Async::writeFile($file, (string)$record['formatted'], $this->onWriteEnd, FILE_APPEND);
         }
+    }
+
+    /**
+     * Processes a record.
+     *
+     * @param  array $record
+     * @return array
+     */
+    protected function processRecord(array $record)
+    {
+        if ($this->processors) {
+            foreach ($this->processors as $processor) {
+                $record = PhpHelper::call($processor, $record);
+            }
+        }
+
+        return $record;
     }
 
     protected function asyncIsEnabled()

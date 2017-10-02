@@ -239,7 +239,7 @@ trait ServerManageTrait
         $yes = '<info>√</info>';
         $no = '<danger>X</danger>';
         $info = [
-            'Php version is gt 7.1' => version_compare(PHP_VERSION, '7.1') ? $yes : $no,
+            'The Php version is gt 7.1' => version_compare(PHP_VERSION, '7.1') ? $yes : $no,
             'The Swoole is installed' => class_exists(Server::class, false) ? $yes : $no,
             'The Swoole version is gt 2' => version_compare(SWOOLE_VERSION, '2.0') ? $yes : $no,
             'The Swoole Coroutine is enabled' => class_exists(Coroutine::class, false) ? $yes : $no,

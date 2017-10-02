@@ -9,7 +9,7 @@
 namespace Inhere\Server\Traits;
 
 use Inhere\Console\Utils\Show;
-use inhere\library\helpers\Arr;
+use Inhere\Library\Helpers\Arr;
 use Inhere\Server\Components\HotReloading;
 use Inhere\Server\ExtendServerInterface;
 use Inhere\Server\Helpers\ProcessHelper;
@@ -228,8 +228,9 @@ trait ServerCreateTrait
     protected function attachUserProcesses()
     {
         // create Reload Worker
-        $reloader = $this->createHotReloader();
-        $this->server->addProcess($reloader);
+        if ($reloader = $this->createHotReloader()) {
+            $this->server->addProcess($reloader);
+        }
 
         foreach ($this->processCallbacks as $name => $callback) {
             $this->createProcess($name, $callback);

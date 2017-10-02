@@ -8,7 +8,7 @@
 
 namespace Inhere\Server\Rpc;
 
-use inhere\exceptions\DataParseException;
+use Inhere\Exceptions\DataParseException;
 
 /**
  * Class JsonParser

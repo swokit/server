@@ -8,7 +8,7 @@
 
 namespace Inhere\Server\Components;
 
-use inhere\library\helpers\PhpHelper;
+use Inhere\Library\Helpers\PhpHelper;
 
 /**
  * Class TimerManager - Swoole Timer Manager

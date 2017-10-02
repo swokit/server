@@ -9,7 +9,7 @@
 namespace Inhere\Server\Servers;
 
 use Inhere\Console\Utils\Show;
-use inhere\library\traits\OptionsTrait;
+use Inhere\Library\Traits\OptionsTrait;
 use Inhere\Server\BoxServer;
 use Inhere\Server\Traits\HttpServerTrait;
 

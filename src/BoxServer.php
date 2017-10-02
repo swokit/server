@@ -11,8 +11,8 @@ namespace Inhere\Server;
 use Inhere\Console\IO\Input;
 use Inhere\Console\Utils\Show;
 
-use inhere\library\traits\ConfigTrait;
-use inhere\library\traits\EventTrait;
+use Inhere\Library\Traits\ConfigTrait;
+use Inhere\Library\Traits\EventTrait;
 
 use Inhere\Server\Components\FileLogHandler;
 use Inhere\Server\Traits\ServerManageTrait;

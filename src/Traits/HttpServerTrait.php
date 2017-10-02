@@ -8,7 +8,8 @@
 
 namespace Inhere\Server\Traits;
 
-use inhere\library\helpers\PhpHelper;
+use Inhere\Library\Helpers\PhpHelper;
+use Inhere\LibraryPlus\Log\Logger;
 use Inhere\Server\Components\StaticResourceProcessor;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
@@ -309,7 +310,7 @@ trait HttpServerTrait
             $content = PhpHelper::exceptionToString($e, false, $this->isDebug(), __METHOD__);
         }
 
-        $this->log($content);
+        $this->log($content, [], Logger::ERROR);
         $resp->write($content);
         $this->respond($resp);
     }

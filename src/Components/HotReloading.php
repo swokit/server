@@ -28,7 +28,7 @@ $kit
     })
     ->run();
 */
-use inhere\exceptions\NotFoundException;
+use Inhere\Exceptions\NotFoundException;
 
 /**
  * Class HotReloading

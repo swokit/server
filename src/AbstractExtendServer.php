@@ -8,12 +8,12 @@
 
 namespace Inhere\Server;
 
-use inhere\library\traits\OptionsTrait;
+use Inhere\Library\Traits\OptionsTrait;
 
 /**
  * Interface AbstractExtendServer
  * @package Inhere\Server
- * @method mixed log($msg, array $data = [], $type = 'info')
+ * @method mixed log($msg, array $data = [], $type = 200)
  */
 abstract class AbstractExtendServer implements ExtendServerInterface
 {

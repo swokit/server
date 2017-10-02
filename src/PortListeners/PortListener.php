@@ -9,7 +9,7 @@
 namespace Inhere\Server\PortListeners;
 
 use Inhere\Console\Utils\Show;
-use inhere\library\traits\OptionsTrait;
+use Inhere\Library\Traits\OptionsTrait;
 use Inhere\Server\ServerInterface;
 use Swoole\Server;
 

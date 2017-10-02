@@ -8,9 +8,9 @@
 
 namespace Inhere\Server\Rpc;
 
-use inhere\exceptions\RequestException;
-use inhere\library\traits\EventTrait;
-use inhere\library\traits\OptionsTrait;
+use Inhere\Exceptions\RequestException;
+use Inhere\Library\Traits\EventTrait;
+use Inhere\Library\Traits\OptionsTrait;
 
 /**
  * Class RpcDispatcher

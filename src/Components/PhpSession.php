@@ -8,8 +8,8 @@
 
 namespace Inhere\Server\Components;
 
-use inhere\library\files\Directory;
-use inhere\library\traits\LiteOptionsTrait;
+use Inhere\Library\Files\Directory;
+use Inhere\Library\Traits\LiteOptionsTrait;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 
