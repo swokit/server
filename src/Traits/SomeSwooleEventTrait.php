@@ -117,7 +117,7 @@ trait SomeSwooleEventTrait
     public function onWorkerStop(SwServer $server, $workerId)
     {
         $this->fire(self::ON_WORKER_STOPPED, [$this, $workerId]);
-
+var_dump(__METHOD__);
         $this->log("The swoole #<info>$workerId</info> worker process stopped. (PID:{$server->worker_pid})");
     }
 

@@ -8,7 +8,7 @@
 
 namespace Inhere\Server\Servers;
 
-use Inhere\Server\BoxServer;
+use Inhere\Server\MainServer;
 use Swoole\Server as SwServer;
 
 /*
@@ -33,7 +33,7 @@ Tcp config:
  * Class TcpServerHandler
  * @package Inhere\Server\Servers
  */
-class TcpServer extends BoxServer
+class TcpServer extends MainServer
 {
     public function onConnect(SwServer $server, $fd)
     {

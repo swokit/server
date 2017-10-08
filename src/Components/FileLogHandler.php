@@ -9,7 +9,7 @@
 namespace Inhere\Server\Components;
 
 use Inhere\Library\Helpers\PhpHelper;
-use Inhere\Server\BoxServer;
+use Inhere\Server\MainServer;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
 use Swoole\Async;
@@ -36,7 +36,7 @@ class FileLogHandler extends AbstractProcessingHandler
     private $splitType;
 
     /**
-     * @var BoxServer
+     * @var MainServer
      */
     protected $server;
 
@@ -66,9 +66,9 @@ class FileLogHandler extends AbstractProcessingHandler
     }
 
     /**
-     * @param BoxServer $server
+     * @param MainServer $server
      */
-    public function setServer(BoxServer $server)
+    public function setServer(MainServer $server)
     {
         $this->server = $server;
     }

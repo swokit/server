@@ -11,6 +11,8 @@ namespace Inhere\Server;
 use Inhere\Console\IO\Input;
 use Inhere\Console\Utils\Show;
 
+use Inhere\Library\Components\ErrorHandler;
+use Inhere\Library\Helpers\PhpHelper;
 use Inhere\Library\Traits\ConfigTrait;
 use Inhere\Library\Traits\EventTrait;
 
@@ -20,8 +22,8 @@ use Inhere\Server\Traits\ServerCreateTrait;
 use Inhere\Server\Traits\SomeSwooleEventTrait;
 
 use Psr\Log\LoggerInterface;
+
 use Swoole\Coroutine;
-use Swoole\Process;
 use Swoole\Server;
 
 use Monolog\Logger;
@@ -32,10 +34,11 @@ use Monolog\Processor\UidProcessor;
  * Class AServerManager
  * @package Inhere\Server
  * Running processes:
+ *
  * ```
  * ```
  */
-class BoxServer implements ServerInterface
+class MainServer implements ServerInterface
 {
     use ConfigTrait {
         setConfig as tSetConfig;
@@ -45,64 +48,47 @@ class BoxServer implements ServerInterface
     use ServerCreateTrait;
     use SomeSwooleEventTrait;
 
-    /**
-     * server manager
-     * @var static
-     */
+    /** @var static  */
     public static $mgr;
 
-    /**
-     * @var array
-     */
+    /** @var array  */
     protected static $_statistics = [];
 
     /** @var bool */
     private $bootstrapped = false;
 
-    /**
-     * @var bool
-     */
+    /** @var bool  */
     private $debug = false;
 
-    /**
-     * @var bool
-     */
+    /** @var bool  */
     private $daemon = false;
+
+    /** @var ErrorHandler */
+    private $errorHandler;
 
     /**
      * current server name
      * @var string
      */
-    public $name;
+    protected $name;
 
     /**
      * pid File
      * @var string
      */
-    public $pidFile = '';
+    protected $pidFile = '';
 
-    /**
-     * @var Input
-     */
-    public $input;
+    /** @var Input */
+    protected $input;
 
-    /**
-     * @var LoggerInterface
-     */
+    /** @var LoggerInterface  */
     public $logger;
 
-    /**
-     * @var Server
-     */
+    /** @var Server */
     public $server;
 
     /**
-     * @var Process
-     */
-    public $reloadWorker;
-
-    /**
-     * config data instance
+     * config data
      * @var array
      */
     protected $config = [
@@ -114,6 +100,9 @@ class BoxServer implements ServerInterface
 
         // will create a process auto reload server
         'auto_reload' => '', // 'src,config'
+
+        // the error handler class
+        'error_handler' => '',
 
         // 当前server的日志配置(不是swoole的日志)
         'log' => [
@@ -219,6 +208,12 @@ class BoxServer implements ServerInterface
         if (!$this->logger = $logger) {
             $this->makeLogger();
         }
+
+        // register error handler
+        if ($errClass = $this->config['error_handler']) {
+            $this->errorHandler = new $errClass($this->logger);
+            $this->errorHandler->register();
+        }
     }
 
     /**
@@ -284,7 +279,7 @@ class BoxServer implements ServerInterface
         $mainHandler = new FingersCrossedHandler($fileHandler, (int)$opts['level'], (int)$opts['bufferSize']);
         $fileHandler->setServer($this);
 
-        $logger = new Logger($opts['name']);
+        $logger = new Logger($opts['name'] ?? 'server');
         $logger->pushProcessor(new UidProcessor());
         $logger->pushHandler($mainHandler);
 
@@ -323,6 +318,7 @@ class BoxServer implements ServerInterface
         $this->attachExtendServer();
 
         // setting swoole config
+        // 对于Server的配置即 $server->set() 中传入的参数设置，必须关闭/重启整个Server才可以重新加载
         $this->server->set($this->config['swoole']);
 
         // register swoole events handler
@@ -487,6 +483,14 @@ class BoxServer implements ServerInterface
     }
 
     /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
      * @return array
      */
     public function getSupportedProtocols()
@@ -628,11 +632,29 @@ class BoxServer implements ServerInterface
         $this->tSetConfig($config);
     }
 
+    /**
+     * @return ErrorHandler
+     */
+    public function getErrorHandler(): ErrorHandler
+    {
+        return $this->errorHandler;
+    }
+
+    /**
+     * @param ErrorHandler $errorHandler
+     */
+    public function setErrorHandler(ErrorHandler $errorHandler)
+    {
+        $this->errorHandler = $errorHandler;
+    }
+
     /*******************************************************************************
      * some help method
      ******************************************************************************/
 
-
+    /**
+     * @return array
+     */
     protected function prepareRuntimeContext()
     {
         return [
@@ -662,7 +684,7 @@ class BoxServer implements ServerInterface
 
         // if close debug, don't output debug log.
         if (!$this->daemon) {
-            list($ts, $ms) = explode('.', sprintf('%f', microtime(true)));
+            list($ts, $ms) = explode('.', sprintf('%.4f', microtime(true)));
             $ms = str_pad($ms, 4, 0);
             $time = date('Y-m-d H:i:s', $ts);
             $json = $data ? json_encode($data) : '';
@@ -679,13 +701,12 @@ class BoxServer implements ServerInterface
     }
 
     /**
-     * output a debug log message
-     * @param $msg
-     * @param array $data
-     * @throws \RuntimeException
+     * @param \Throwable $e (\Exception \Error)
      */
-    public function debug($msg, array $data = [])
+    public function handleException(\Throwable $e)
     {
-        $this->log($msg, $data, Logger::DEBUG);
+        $content = PhpHelper::exceptionToString($e, $this->isDebug(), true, __METHOD__);
+
+        $this->log($content, [], Logger::ERROR);
     }
 }

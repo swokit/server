@@ -68,7 +68,8 @@ trait HttpServerTrait
      * @var array
      */
     protected $options = [
-        'start_session' => false,
+        'startSession' => false,
+        'ignoreFavicon' => false,
 
         // @link http://php.net/manual/zh/session.configuration.php
         'session' => [
@@ -85,19 +86,8 @@ trait HttpServerTrait
             'cache_expire' => 1800,
         ],
 
-        // static asset handle
-        'enable_static' => true,
-        'document_root' => '', // enable_static_handler
-        'assets' => [
-            'ext' => [],
-            'dirMap' => [
-                // 'url prefix' => 'assets dir',
-                '/assets' => 'public/assets',
-                '/uploads' => 'public/uploads'
-            ]
-        ],
         'request' => [
-            'filterFavicon' => true,
+            'ignoreFavicon' => true,
         ],
         'response' => [
             'gzip' => true,
@@ -132,7 +122,7 @@ trait HttpServerTrait
 //        $this->loadGlobalData($request);
 
         // start session
-//        if ($this->getOption('start_session', false)) {
+//        if ($this->getOption('startSession', false)) {
         // $this->startSession($request, $response);
 //        }
     }
@@ -145,14 +135,15 @@ trait HttpServerTrait
      */
     public function onRequest(Request $request, Response $response)
     {
-        // 捕获异常
-        register_shutdown_function([$this, 'handleFatal']);
-
         $uri = $request->server['request_uri'];
 
         // test: `curl 127.0.0.1:9501/ping`
         if ($uri === '/ping') {
             return $response->end('+PONG' . PHP_EOL);
+        }
+
+        if (strtolower($uri) === '/favicon.ico' && $this->getOption('ignoreFavicon')) {
+            return $response->end('+ICON');
         }
 
         $stHandler = $this->staticAccessHandler;
@@ -164,14 +155,14 @@ trait HttpServerTrait
         }
 
         if ($error = $stHandler->getError()) {
-            $this->log($error, [], 'error');
+            $this->log($error, [], Logger::ERROR);
         }
 
         $this->beforeRequest($request, $response);
 
         try {
             if (!$cb = $this->dynamicRequestHandler) {
-                $this->log("Please set the property 'dynamicRequestHandler' to handle dynamic request(if you need).", [], 'notice');
+                $this->log("Please set the property 'dynamicRequestHandler' to handle dynamic request(if you need).", [], Logger::NOTICE);
                 $content = 'No content to display';
                 $response->write($content);
             } else {
@@ -188,7 +179,7 @@ trait HttpServerTrait
             // respond to client
             $this->respond($response);
         } catch (\Throwable $e) {
-            $this->handleException($e, $request, $response);
+            $this->handleHttpException($e, $request, $response);
         }
 
         $this->afterRequest($request, $response);
@@ -270,28 +261,19 @@ trait HttpServerTrait
     }
 
     /**
-     * @param int $num
-     * @param string $str
-     * @param string $file
-     * @param int $line
-     * @internal  null|mixed $context
-     */
-    public function handleError($num, $str, $file, $line)
-    {
-//        $this->handleException(new \ErrorException($str, 0, $num, $file, $line));
-    }
-
-    /**
      * @param \Throwable $e (\Exception \Error)
      * @param Request $req
      * @param Response $resp
      */
-    public function handleException(\Throwable $e, $req, $resp)
+    public function handleHttpException(\Throwable $e, $req, $resp)
     {
         $type = $e instanceof \ErrorException ? 'Error' : 'Exception';
 
         if ($this->isAjax($req)) {
-            $resp->header('Content-Type', 'application/json; charset=utf-8');
+            if ($resp) {
+                $resp->header('Content-Type', 'application/json; charset=utf-8');
+            }
+
             $content = json_encode([
                 'code' => $e->getCode() ?: 500,
                 'msg' => sprintf(
@@ -306,65 +288,18 @@ trait HttpServerTrait
                 'data' => $e->getTrace()
             ]);
         } else {
-            $resp->header('Content-Type', 'text/html; charset=utf-8');
-            $content = PhpHelper::exceptionToString($e, false, $this->isDebug(), __METHOD__);
-        }
-
-        $this->log($content, [], Logger::ERROR);
-        $resp->write($content);
-        $this->respond($resp);
-    }
-
-    /**
-     * Fatal Error的捕获
-     */
-    public function handleFatal()
-    {
-        $error = error_get_last();
-        if (!isset($error['type'])) {
-            return;
-        }
-        switch ($error['type']) {
-            case E_ERROR:
-            case E_PARSE:
-            case E_DEPRECATED:
-            case E_CORE_ERROR:
-            case E_COMPILE_ERROR:
-                break;
-            default:
-                return;
-        }
-        $message = $error['message'];
-        $file = $error['file'];
-        $line = $error['line'];
-        $log = "\nException：$message\nFile:$file($line)\nStack trace:\n";
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 10);
-
-        foreach ($trace as $i => $t) {
-            if (!isset($t['file'])) {
-                $t['file'] = 'unknown';
+            if ($resp) {
+                $resp->header('Content-Type', 'text/html; charset=utf-8');
             }
-            if (!isset($t['line'])) {
-                $t['line'] = 0;
-            }
-            if (!isset($t['function'])) {
-                $t['function'] = 'unknown';
-            }
-            $log .= "#$i {$t['file']}({$t['line']}): ";
-            if (isset($t['object']) && is_object($t['object'])) {
-                $log .= get_class($t['object']) . '->';
-            }
-            $log .= "{$t['function']}()\n";
+
+            $content = PhpHelper::exceptionToString($e, $this->isDebug(), false, __METHOD__);
         }
 
-        if (isset($_SERVER['REQUEST_URI'])) {
-            $log .= '[URI:' . $_SERVER['REQUEST_URI'] . '] catch by: ' . __METHOD__;
-        }
+        $this->log(strip_tags($content), [], Logger::ERROR);
 
-        echo PhpHelper::dumpVars($log);
-//        if ($this->response) {
-//            $this->response->status(500);
-//            $this->response->end($log);
-//        }
+        if ($resp) {
+            $resp->write($content);
+            $this->respond($resp);
+        }
     }
 }

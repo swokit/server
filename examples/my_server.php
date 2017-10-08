@@ -60,7 +60,7 @@ $config = [
 ];
 
 // $mgr = new \Inhere\Server\Extend\WebSocketServer($config);
-$mgr = new \Inhere\Server\BoxServer($config);
+$mgr = new \Inhere\Server\MainServer($config);
 
 $mgr->attachListener('port2', new \Inhere\Server\PortListeners\UdpListener([
     'host' => '0.0.0.0',

@@ -95,6 +95,7 @@ trait ServerManageTrait
     /**
      * Do start server
      * @param null|bool $daemon
+     * @throws \Throwable
      */
     public function start($daemon = null)
     {
@@ -106,18 +107,22 @@ trait ServerManageTrait
             $this->asDaemon($daemon);
         }
 
-        $this->bootstrap();
+        try {
+            $this->bootstrap();
 
-        self::$_statistics['start_time'] = microtime(1);
+            self::$_statistics['start_time'] = microtime(1);
 
-        // display some messages
-        $this->showStartStatus();
+            // display some messages
+            $this->showStartStatus();
 
-        $this->fire(self::ON_SERVER_START, [$this]);
-        $this->beforeServerStart();
+            $this->fire(self::ON_SERVER_START, [$this]);
+            $this->beforeServerStart();
 
-        // 对于Server的配置即 $server->set() 中传入的参数设置，必须关闭/重启整个Server才可以重新加载
-        $this->server->start();
+            // start server
+            $this->server->start();
+        } catch (\Throwable $e) {
+            $this->handleException($e);
+        }
     }
 
     protected function showStartStatus()

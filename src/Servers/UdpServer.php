@@ -8,7 +8,7 @@
 
 namespace Inhere\Server\Servers;
 
-use Inhere\Server\BoxServer;
+use Inhere\Server\MainServer;
 use Swoole\Server as SwServer;
 
 /**
@@ -17,7 +17,7 @@ use Swoole\Server as SwServer;
  * UDP服务器与TCP服务器不同，UDP没有连接的概念。启动Server后，客户端无需Connect，
  * 直接可以向Server监听的端口发送数据包。对应的事件为 onPacket。
  */
-class UdpServer extends BoxServer
+class UdpServer extends MainServer
 {
     /**
      * 接收数据的回调
