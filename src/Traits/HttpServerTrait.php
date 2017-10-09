@@ -179,7 +179,7 @@ trait HttpServerTrait
             // respond to client
             $this->respond($response);
         } catch (\Throwable $e) {
-            $this->handleHttpException($e, $request, $response);
+            $this->handleHttpException($e, __METHOD__, $request, $response);
         }
 
         $this->afterRequest($request, $response);
@@ -264,42 +264,24 @@ trait HttpServerTrait
      * @param \Throwable $e (\Exception \Error)
      * @param Request $req
      * @param Response $resp
+     * @param string $catcher
      */
-    public function handleHttpException(\Throwable $e, $req, $resp)
+    public function handleHttpException(\Throwable $e, $catcher, $req, $resp)
     {
-        $type = $e instanceof \ErrorException ? 'Error' : 'Exception';
+        $html = PhpHelper::exceptionToString($e, $this->isDebug(), $catcher);
+
+        // write error log
+        $this->log(strip_tags($html), [], Logger::ERROR);
 
         if ($this->isAjax($req)) {
-            if ($resp) {
-                $resp->header('Content-Type', 'application/json; charset=utf-8');
-            }
-
-            $content = json_encode([
-                'code' => $e->getCode() ?: 500,
-                'msg' => sprintf(
-                    '%s(%d): %s, File: %s(Line %d), Catch By: %s',
-                    $type,
-                    $e->getCode(),
-                    $e->getMessage(),
-                    $e->getFile(),
-                    $e->getLine(),
-                    __METHOD__
-                ),
-                'data' => $e->getTrace()
-            ]);
+            $json = PhpHelper::exceptionToJson($e, $this->isDebug(), $catcher);
+            $resp->header('Content-Type', 'application/json; charset=utf-8');
+            $resp->write($json);
         } else {
-            if ($resp) {
-                $resp->header('Content-Type', 'text/html; charset=utf-8');
-            }
-
-            $content = PhpHelper::exceptionToString($e, $this->isDebug(), false, __METHOD__);
+            $resp->header('Content-Type', 'text/html; charset=utf-8');
+            $resp->write($html);
         }
 
-        $this->log(strip_tags($content), [], Logger::ERROR);
-
-        if ($resp) {
-            $resp->write($content);
-            $this->respond($resp);
-        }
+        $this->respond($resp);
     }
 }
