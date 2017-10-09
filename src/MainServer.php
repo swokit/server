@@ -81,7 +81,7 @@ class MainServer implements ServerInterface
     /** @var Input */
     protected $input;
 
-    /** @var LoggerInterface  */
+    /** @var Logger  */
     public $logger;
 
     /** @var Server */
