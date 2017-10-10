@@ -68,7 +68,7 @@ class Process
      * @param $mode[optional]
      * @return mixed
      */
-    public function useQueue($key, $mode=null){}
+    public function useQueue($key = null, $mode=null){}
 
     /**
      * @return mixed

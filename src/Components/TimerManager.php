@@ -22,7 +22,7 @@ class TimerManager
     const IDX_PARAMS = 2;
     const IDX_TIME = 3;
 
-    const STOP = 10;
+    const STOP = -10;
 
     /**
      * @var array[]
@@ -101,7 +101,7 @@ class TimerManager
         if (!$name = $this->getTimerName($timerId)) {
             return false;
         }
-        
+
         if (!$conf = $this->getTimer($name)) {
             return false;
         }
@@ -126,7 +126,7 @@ class TimerManager
         if ($conf = $this->timers[$name] ?? null) {
             return $index === null ? $conf[$index] : $conf;
         }
-        
+
         return null;
     }
 

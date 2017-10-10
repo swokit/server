@@ -8,7 +8,7 @@
 
 namespace Inhere\Server\Process;
 
-use Inhere\Server\Helpers\ProcessHelper;
+use Inhere\Library\Helpers\ProcessHelper;
 use Swoole\Process;
 
 /**
