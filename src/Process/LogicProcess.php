@@ -6,27 +6,26 @@
  * Time: 9:44
  */
 
-namespace Inhere\Server\Components;
+namespace Inhere\Server\Process;
 
 use Inhere\Server\Helpers\ProcessHelper;
-use Swoole\Process as SwProcess;
+use Swoole\Process;
 use Swoole\Serialize;
-use function Sws\app;
+use Swoole\Server;
 
 /**
- * Class BusinessProcess
- * @package Inhere\Server\Components
+ * Class LogicProcess
+ * @package Inhere\Server\Process
  */
-class BusinessProcess
+class LogicProcess implements ProcessInterface
 {
-    const PIPE_NOT_CREATE = 0;
-    const PIPE_SOCK_STREAM = 1;
-    const PIPE_SOCK_DGRAM = 2;
-
     /** @var  string */
     private $name;
 
-    /** @var SwProcess  */
+    /** @var Server  */
+    private $server;
+
+    /** @var Process  */
     private $process;
 
     /** @var int  */
@@ -35,33 +34,45 @@ class BusinessProcess
     /** @var int  */
     private $index = 0;
 
+    /** @var int */
+    private $workerId;
+
     /**
-     * Process constructor.
-     * @param $name
+     * class constructor.
+     * @param string $name 进程名称
+     * @param Server $server Swoole server instance
+     * @param int $workerId  要与此进程通信的 worker id
      */
-    public function __construct($name)
+    public function __construct(string $name, Server $server, $workerId)
     {
         $this->name = $name;
-        $this->workerId = app()->server->worker_id;
-        $this->process = new SwProcess([$this, 'onStarted'], false, self::PIPE_SOCK_DGRAM);
+        $this->server = $server;
+        $this->workerId = $workerId;
+        $this->process = new Process([$this, 'started'], false, self::PIPE_SOCK_DGRAM);
 
         // add to server, will auto start it.
-        app()->server->addProcess($this->process);
+        $server->addProcess($this->process);
     }
 
     /**
-     * @param SwProcess $process
+     * @param Process $process
      */
-    public function onStarted(SwProcess $process)
+    public function started(Process $process)
     {
         if ($this->name) {
             ProcessHelper::setTitle($this->name);
         }
 
         swoole_event_add($process->pipe, [$this, 'onRead']);
-        app()->server->worker_id = $this->workerId;
+
+//        $this->server->worker_id = $this->workerId;
+        $this->server->dst_worker_id = $this->workerId;
     }
 
+    /**
+     * 接收到 worker 的调用，执行相关方法。需要返回值的就发送返回值到worker
+     * on pipe Read
+     */
     public function onRead()
     {
         $received = Serialize::unpack($this->process->read($this->bufferSize));
@@ -76,11 +87,12 @@ class BusinessProcess
             $newData['token'] = $data['token'];
             $bag = $this->packData('rpc', $newData);
 
-            app()->server->sendMessage($bag, $data['workerId']);
+            $this->server->sendMessage($data['workerId'], $bag);
         }
     }
 
     /**
+     * 在 worker 进程中调用 此进程 来执行方法
      * @param string $name
      * @param array $arguments
      * @param bool $returned
@@ -93,7 +105,8 @@ class BusinessProcess
         $data['args'] = $arguments;
         $data['func'] = $name;
         $data['token'] = $this->genToken($name);
-        $data['workerId'] = app()->server->worker_id;
+//        $data['workerId'] = $this->server->worker_id;
+        $data['workerId'] = $this->server->dst_worker_id;
         $data['returned'] = $returned;
 
         $this->process->write($this->packData('rpc', $data));
@@ -124,17 +137,9 @@ class BusinessProcess
     /**
      * @return null|string
      */
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
-    }
-
-    /**
-     * @param string $name
-     */
-    public function setName(string $name)
-    {
-        $this->name = $name;
     }
 
     /**
@@ -162,12 +167,10 @@ class BusinessProcess
     }
 
     /**
-     * @return SwProcess
+     * @return Process
      */
-    public function getProcess(): SwProcess
+    public function getProcess(): Process
     {
         return $this->process;
     }
-
-
 }
