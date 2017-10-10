@@ -11,6 +11,7 @@ namespace Inhere\Server\PortListeners;
 use Inhere\Console\Utils\Show;
 use Inhere\Library\Traits\OptionsTrait;
 use Inhere\Server\ServerInterface;
+use Monolog\Logger;
 use Swoole\Server;
 
 /**
@@ -113,11 +114,11 @@ abstract class PortListener implements PortListenerInterface
      * @see ServerInterface::log()
      * @param  string $msg
      * @param  array $data
-     * @param string $type
+     * @param int $level
      */
-    public function log($msg, array $data = [], $type = 'debug')
+    public function log($msg, array $data = [], $level = Logger::INFO)
     {
-        $this->mgr->log($msg, $data, $type);
+        $this->mgr->log($msg, $data, $level);
     }
 
     /**

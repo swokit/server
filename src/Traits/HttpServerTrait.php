@@ -71,6 +71,10 @@ trait HttpServerTrait
         'startSession' => false,
         'ignoreFavicon' => false,
 
+        // @link https://wiki.swoole.com/wiki/page/410.html
+        'openGzip' => true,
+        'gzipLevel' => 1, // allow 1 - 9
+
         // @link http://php.net/manual/zh/session.configuration.php
         'session' => [
             'save_path' => '', // app_session
@@ -84,13 +88,6 @@ trait HttpServerTrait
             'cookie_httponly' => false,
 
             'cache_expire' => 1800,
-        ],
-
-        'request' => [
-            'ignoreFavicon' => true,
-        ],
-        'response' => [
-            'gzip' => true,
         ],
     ];
 
@@ -210,9 +207,12 @@ trait HttpServerTrait
     {
         $this->beforeResponse($response);
 
-        // open gzip
-        // $response->gzip(1);
+        // if open gzip
+        if ($this->getOption('openGzip')) {
+             $response->gzip((int)$this->getOption('gzipLevel'));
+        }
 
+        // send response to client
         $ret = $response->end();
 
         $this->afterResponse($ret);
@@ -261,12 +261,12 @@ trait HttpServerTrait
     }
 
     /**
-     * @param \Throwable $e (\Exception \Error)
+     * @param \Throwable|\Exception $e
      * @param Request $req
      * @param Response $resp
      * @param string $catcher
      */
-    public function handleHttpException(\Throwable $e, $catcher, $req, $resp)
+    public function handleHttpException($e, $catcher, $req, $resp)
     {
         $html = PhpHelper::exceptionToString($e, $this->isDebug(), $catcher);
 

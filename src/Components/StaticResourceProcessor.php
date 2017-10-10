@@ -22,22 +22,32 @@ class StaticResourceProcessor
      * @var array
      */
     public static $mimeTypes = [
-        'js' => 'application/x-javascript',
-        'css' => 'text/css',
         'bmp' => 'image/bmp',
-        'png' => 'image/png',
+        'css' => 'text/css',
+        'csv' => 'text/csv',
+        'eot' => 'application/vnd.ms-fontobject',
+        'exe' => 'application/octet-stream',
+        'flv' => 'video/x-flv',
+        'jpe' => 'image/jpeg',
         'jpg' => 'image/jpeg',
         'jpeg' => 'image/jpeg',
+        'js' => 'application/javascript',
+        'json' => 'application/json',
         'gif' => 'image/gif',
         'ico' => 'image/x-icon',
-        'json' => 'application/json',
+        'png' => 'image/png',
         'svg' => 'image/svg+xml',
         'woff' => 'application/font-woff',
         'woff2' => 'application/font-woff2',
-        'ttf' => 'application/x-font-ttf',
-        'eot' => 'application/vnd.ms-fontobject',
         'htm' => 'text/html',
         'html' => 'text/html',
+        'md' => 'text/plain',
+        'markdown' => 'text/plain',
+        'rst' => 'text/plain',
+        'ttf' => 'application/x-font-ttf',
+        'txt' => 'text/plain',
+        'xml' => 'application/xml',
+        'zip' => 'application/zip',
     ];
 
     /**
@@ -62,6 +72,7 @@ class StaticResourceProcessor
     private $ext;
 
     /**
+     * dirs
      * @var array
      */
     private $dirMap = [
@@ -122,12 +133,11 @@ class StaticResourceProcessor
             throw new \LogicException('Must define the property [basePath] for handle static assets.');
         }
 
+        // all static resource ext.
         $extReg = implode('|', self::getAllowedExt());
 
-//         $this->log("begin match ext for the asset $uri, result: " . preg_match("/\.($extReg)/i", $uri, $matches), $exts);
-
         // 资源后缀匹配失败 返回交给php继续处理
-        if (1 !== preg_match("/.($extReg)/i", $path, $matches)) {
+        if (1 !== preg_match("/.($extReg)$/i", $path, $matches)) {
             return false;
         }
 
@@ -224,6 +234,14 @@ class StaticResourceProcessor
     public static function setMimeTypes(array $mimeTypes)
     {
         self::$mimeTypes = $mimeTypes;
+    }
+
+    /**
+     * @param array $mimeTypes
+     */
+    public static function addMimeTypes(array $mimeTypes)
+    {
+        self::$mimeTypes = array_merge(self::$mimeTypes, $mimeTypes);
     }
 
     /**

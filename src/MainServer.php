@@ -70,7 +70,7 @@ class MainServer implements ServerInterface
      * current server name
      * @var string
      */
-    protected $name;
+    public $name = 'server';
 
     /**
      * pid File
@@ -483,14 +483,6 @@ class MainServer implements ServerInterface
     }
 
     /**
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    /**
      * @return array
      */
     public function getSupportedProtocols()
@@ -690,7 +682,7 @@ class MainServer implements ServerInterface
             $json = $data ? json_encode($data) : '';
             $type = Logger::getLevelName($type);
 
-            Show::write(sprintf('[%s.%s] [%s] %s %s', $time, $ms, strtoupper($type), $msg, $json));
+            Show::write(sprintf('[%s.%s] [%s.%s] %s %s', $time, $ms, $this->name, strtoupper($type), $msg, $json));
         }
 
         if ($this->logger) {

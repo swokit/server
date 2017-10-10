@@ -7,6 +7,7 @@
  */
 
 namespace Inhere\Server;
+use Monolog\Logger;
 
 /**
  * Interface ServerInterface
@@ -90,13 +91,12 @@ interface ServerInterface
 
     /**
      * record log message
-     * @param  string $msg
-     * @param  array $data
-     * @param string $type
+     * @param string $msg
+     * @param array $data
+     * @param int $level
      * @return void
-     * @throws \RuntimeException
      */
-    public function log($msg, array $data = [], $type = 'info');
+    public function log($msg, array $data = [], $level = Logger::INFO);
 
     /**
      * @return array
