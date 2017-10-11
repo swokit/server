@@ -155,6 +155,11 @@ trait HttpServerTrait
             $this->log($error, [], Logger::ERROR);
         }
 
+        // if open gzip
+        if ($this->getOption('openGzip')) {
+            $response->gzip((int)$this->getOption('gzipLevel'));
+        }
+
         $this->beforeRequest($request, $response);
 
         try {
@@ -206,11 +211,6 @@ trait HttpServerTrait
     public function respond(Response $response)
     {
         $this->beforeResponse($response);
-
-        // if open gzip
-        if ($this->getOption('openGzip')) {
-             $response->gzip((int)$this->getOption('gzipLevel'));
-        }
 
         // send response to client
         $ret = $response->end();

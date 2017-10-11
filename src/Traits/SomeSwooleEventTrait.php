@@ -18,10 +18,10 @@ use Swoole\Server as SwServer;
 trait SomeSwooleEventTrait
 {
     /** @var int */
-    protected $workId = -1;
+    protected $workerId = -1;
 
     /** @var int */
-    protected $workPid = 0;
+    protected $workerPid = 0;
 
     /** @var bool  */
     protected $taskWorker = false;
@@ -93,8 +93,8 @@ trait SomeSwooleEventTrait
      */
     public function onWorkerStart(SwServer $server, $workerId)
     {
-        $this->workId = $workerId;
-        $this->workPid = $server->worker_pid;
+        $this->workerId = $workerId;
+        $this->workerPid = $server->worker_pid;
         $this->taskWorker = (bool)$server->taskworker;
         $taskMark = $server->taskworker ? 'task-worker' : 'event-worker';
 
@@ -189,35 +189,43 @@ trait SomeSwooleEventTrait
     }
 
     /**
-     * @param int $workId
+     * @return bool
      */
-    public function setWorkId(int $workId)
+    public function isUserWorker(): bool
     {
-        $this->workId = $workId;
+        return $this->workerId === -1 && $this->workerPid > 0;
+    }
+
+    /**
+     * @param int $workerId
+     */
+    public function setWorkerId(int $workerId)
+    {
+        $this->workerId = $workerId;
     }
 
     /**
      * @return int
      */
-    public function getWorkId(): int
+    public function getWorkerId(): int
     {
-        return $this->workId;
+        return $this->workerId;
     }
 
     /**
      * @return int
      */
-    public function getWorkPid(): int
+    public function getWorkerPid(): int
     {
-        return $this->workPid;
+        return $this->workerPid;
     }
 
     /**
-     * @param int $workPid
+     * @param int $workerPid
      */
-    public function setWorkPid(int $workPid)
+    public function setWorkerPid(int $workerPid)
     {
-        $this->workPid = $workPid;
+        $this->workerPid = $workerPid;
     }
 
 }

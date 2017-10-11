@@ -121,7 +121,7 @@ trait ServerManageTrait
             // start server
             $this->server->start();
         } catch (\Throwable $e) {
-            $this->handleException($e);
+            $this->handleException($e, __METHOD__);
         }
     }
 

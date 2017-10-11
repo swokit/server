@@ -320,13 +320,18 @@ trait ServerCreateTrait
 
         // 创建用户自定义的工作进程worker
         return new Process(function (Process $process) use ($options, $mgr) {
+            $pid = $process->pid;
+
+            $this->workerPid = $this->server->worker_pid = $pid;
             ProcessHelper::setTitle("swoole: hot-reload ({$mgr->name})");
 
+            // $pid = $process->pid;
             $svrPid = $mgr->server->master_pid;
             $onlyReloadTask = isset($options['only_reload_task']) ? (bool)$options['only_reload_task'] : false;
             $dirs = array_map('trim', explode(',', $options['dirs']));
 
-            $mgr->log("The <info>hot-reload</info> worker process success started. (PID:{$process->pid}, SVR_PID:$svrPid, Watched:<info>{$options['dirs']}</info>)");
+            $this->log("The <info>hot-reload</info> worker process success started. (PID:{$pid}, SVR_PID:$svrPid, Watched:<info>{$options['dirs']}</info>)");
+
 
             $kit = new HotReloading($svrPid);
             $kit

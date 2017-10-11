@@ -650,9 +650,10 @@ class MainServer implements ServerInterface
     protected function prepareRuntimeContext()
     {
         return [
-            'workerId' => $this->getWorkId(),
-            'workerPid' => $this->getWorkPid(),
+            'workerId' => $this->getWorkerId(),
+            'workerPid' => $this->getWorkerPid(),
             'isTaskWorker' => $this->isTaskWorker(),
+            'isUserWorker' => $this->isUserWorker(),
         ];
     }
 
@@ -693,11 +694,12 @@ class MainServer implements ServerInterface
     }
 
     /**
-     * @param \Throwable $e (\Exception \Error)
+     * @param \Throwable|\Exception $e (\Exception \Error)
+     * @param string $catcher
      */
-    public function handleException(\Throwable $e)
+    public function handleException($e, $catcher)
     {
-        $content = PhpHelper::exceptionToString($e, $this->isDebug(), true, __METHOD__);
+        $content = PhpHelper::exceptionToString($e, $this->isDebug(), $catcher);
 
         $this->log($content, [], Logger::ERROR);
     }
