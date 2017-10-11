@@ -11,22 +11,33 @@ namespace Inhere\Server\Components;
 use Inhere\Library\Helpers\PhpHelper;
 
 /**
- * Class TimerManager - Swoole Timer Manager
+ * Class TimedTaskManager - Timed Task Manager
  * @package Inhere\Server\Components
  * @link https://wiki.swoole.com/wiki/page/244.html
  */
-class TimerManager
+class TimedTaskManager
 {
     const IDX_ID = 0;
     const IDX_HANDLER = 1;
-    const IDX_PARAMS = 2;
+    const IDX_TIMES = 2;
     const IDX_TIME = 3;
+    const IDX_PARAMS = 4;
 
-    const STOP = -10;
+    /**
+     * some values
+     *  -10 manual clear timer.
+     *  -1  never stop/running
+     *  0   stopped timer
+     *  >0  run defined times, then stop it.
+     */
+    const ONCE = 1;
+    const STOPPED = 0;
+    const RUNNING = -1;
+    const CLEAR = -10;
 
     /**
      * @var array[]
-     * [ name => [id, handler, params, timeMs] ]
+     * [ name => [id, handler, times, timeMs, params] ]
      */
     private $timers = [];
 
@@ -36,33 +47,46 @@ class TimerManager
     private $idNames = [];
 
     /**
-     * add a tick timer 添加一个循环定时器
+     * @var array [id => times]
+     */
+    private $runTimes = [];
+
+    /**
+     * 1 Direct scheduling
+     * 2 save to queue
+     * @var int 1,2
+     */
+    private $dispatchMode = 1;
+
+    /**
+     * add a tick timer 添加一个循环定时任务
      * @param string $name
-     * @param int $timeMs
+     * @param int $timeMs Millisecond
      * @param callable $handler
      * @param array $params
+     * @param int $times
      * @return $this
      */
-    public function tick(string $name, int $timeMs, callable $handler, array $params = [])
+    public function tick(string $name, int $timeMs, callable $handler, array $params = [], int $times = self::RUNNING)
     {
-        return $this->add($name, $timeMs, $handler, $params);
+        return $this->add($name, $timeMs, $handler, $params, $times);
     }
 
     /**
-     * add a after timer 添加一个一次性定时器
+     * add a after timer 添加一个一次性定时任务
      * @param string $name
-     * @param int $timeMs
+     * @param int $timeMs Millisecond
      * @param callable $handler
      * @param array $params
      * @return $this
      */
     public function after(string $name, int $timeMs, callable $handler, array $params = [])
     {
-        return $this->add($name, $timeMs, $handler, $params, true);
+        return $this->add($name, $timeMs, $handler, $params, self::ONCE);
     }
 
     /**
-     * add a timer 添加一个定时器
+     * add a timer 添加一个定时任务
      * @NOTICE
      * - 定时器仅在当前进程空间内有效
      * - 定时器是纯异步实现的，不能与阻塞IO的函数一起使用，否则定时器的执行时间会发生错乱
@@ -70,23 +94,31 @@ class TimerManager
      * @param int $timeMs
      * @param callable $handler
      * @param array $params
-     * @param bool $isOnce
+     * @param int $times 大于0表示定时任务需要执行的次数; 小于等于0 表示此定时器的状态
+     * allowed values:
+     *  -1 never stop/always running. 一直执行的定时任务
+     *  0  stopped. 此定时任务暂时被停止执行
+     *  >0 run defined times, then stop it. 需要执行的次数
      * @return $this
      */
-    public function add(string $name, int $timeMs, callable $handler, array $params = [], $isOnce = false)
+    public function add(string $name, int $timeMs, callable $handler, array $params = [], int $times = self::RUNNING)
     {
         if ($this->has($name)) {
             throw new \InvalidArgumentException("The timer [$name] has been exists!");
         }
 
-        if ($isOnce) {
+        if ($times === self::ONCE) {
             $id = swoole_timer_after($timeMs, [$this, 'dispatch'], $params);
         } else {
             $id = swoole_timer_tick($timeMs, [$this, 'dispatch'], $params);
         }
 
         $this->idNames[$id] = $name;
-        $this->timers[$name] = [$id, $handler, $params, $timeMs];
+        $this->timers[$name] = [$id, $handler, $times, $timeMs, $params];
+
+        if ($times > 0) {
+            $this->runTimes[$id] = 0;
+        }
 
         return $this;
     }
@@ -102,15 +134,41 @@ class TimerManager
             return false;
         }
 
-        if (!$conf = $this->getTimer($name)) {
+        if (!$timer = $this->getTimer($name)) {
             return false;
         }
 
-        $handler = $conf[self::IDX_HANDLER];
+        $handler = $timer[self::IDX_HANDLER];
+        $maxTimes = $timer[self::IDX_TIMES];
+
+        // 停止的任务
+        if ($maxTimes === self::STOPPED) {
+            return true;
+        }
+
+        if ($maxTimes > 0) {
+            $runTimes = $this->runTimes[$timerId];
+
+            if ($runTimes >= $maxTimes) {
+//                $this->timers[$name][self::IDX_TIMES] = self::STOPPED;
+                $this->clear($name);
+
+                return true;
+            }
+        }
+
+        // run task
         $ret = PhpHelper::call($handler, $params);
 
-        if ($ret === self::STOP) {
+        // 主动返回状态等于 -10, 表明想要清除定时器/任务
+        if ($ret === self::CLEAR) {
             $this->clear($name);
+        }
+
+        if ($maxTimes > 0) {
+            $this->runTimes[$timerId]++;
+
+            return true;
         }
 
         return true;
@@ -123,8 +181,8 @@ class TimerManager
      */
     public function getTimer(string $name, int $index = null)
     {
-        if ($conf = $this->timers[$name] ?? null) {
-            return $index === null ? $conf[$index] : $conf;
+        if ($timer = $this->timers[$name] ?? null) {
+            return $index === null ? $timer[$index] : $timer;
         }
 
         return null;
@@ -163,8 +221,8 @@ class TimerManager
      */
     public function clear(string $name)
     {
-        if ($conf = $this->timers[$name] ?? null) {
-            $id = $conf[0];
+        if ($timer = $this->timers[$name] ?? null) {
+            $id = $timer[self::IDX_ID];
 
             unset($this->timers[$name], $this->idNames[$id]);
 

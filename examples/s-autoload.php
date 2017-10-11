@@ -16,11 +16,11 @@ spl_autoload_register(function($class)
     $vendorDir = dirname($inhereDir);
 
     $map = [
-        // 'inhere\\library\examples\\' => __DIR__,
+        // 'Inhere\\Library\Examples\\' => __DIR__,
         'Psr\\Log\\' => $vendorDir . '/psr/log/Psr/Log',
-        'inhere\\library\\' => $inhereDir . '/library/src',
-        'inhere\\console\\' => $inhereDir . '/console/src',
-        'inhere\\server\\' => dirname(__DIR__) . '/src',
+        'Inhere\\Library\\' => $inhereDir . '/library/src',
+        'Inhere\\Console\\' => $inhereDir . '/console/src',
+        'Inhere\\Server\\' => dirname(__DIR__) . '/src',
     ];
 
     foreach ($map as $np => $dir) {

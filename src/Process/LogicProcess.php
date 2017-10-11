@@ -15,6 +15,7 @@ use Swoole\Server;
 
 /**
  * Class LogicProcess
+ * @form SD framework
  * @package Inhere\Server\Process
  */
 class LogicProcess implements ProcessInterface
