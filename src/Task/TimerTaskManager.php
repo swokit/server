@@ -6,16 +6,17 @@
  * Time: 11:23
  */
 
-namespace Inhere\Server\Components;
+namespace Inhere\Server\Task;
 
+use Inhere\Library\Helpers\Obj;
 use Inhere\Library\Helpers\PhpHelper;
 
 /**
- * Class TimedTaskManager - Timed Task Manager
- * @package Inhere\Server\Components
+ * Class TimerTaskManager - Timed Task Manager, Schedule Task
+ * @package Inhere\Server\Task
  * @link https://wiki.swoole.com/wiki/page/244.html
  */
-class TimedTaskManager
+class TimerTaskManager
 {
     const IDX_ID = 0;
     const IDX_HANDLER = 1;
@@ -57,6 +58,15 @@ class TimedTaskManager
      * @var int 1,2
      */
     private $dispatchMode = 1;
+
+    /**
+     * class constructor.
+     * @param array $config
+     */
+    public function __construct(array $config = [])
+    {
+        Obj::smartConfigure($this, $config);
+    }
 
     /**
      * add a tick timer 添加一个循环定时任务
@@ -239,7 +249,7 @@ class TimedTaskManager
             $this->clear($name);
         }
 
-        $this->timers = [];
+        $this->timers = $this->runTimes = [];
     }
 
     /**
@@ -264,5 +274,21 @@ class TimedTaskManager
     public function getIdNames(): array
     {
         return $this->idNames;
+    }
+
+    /**
+     * @return int
+     */
+    public function getDispatchMode(): int
+    {
+        return $this->dispatchMode;
+    }
+
+    /**
+     * @param int $dispatchMode
+     */
+    public function setDispatchMode(int $dispatchMode)
+    {
+        $this->dispatchMode = $dispatchMode;
     }
 }
