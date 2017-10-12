@@ -10,6 +10,7 @@ namespace Inhere\Server\Servers;
 
 use Inhere\Console\Utils\Show;
 use Inhere\Library\Traits\OptionsTrait;
+use Inhere\Server\HttpServerInterface;
 use Inhere\Server\MainServer;
 use Inhere\Server\Traits\HttpServerTrait;
 
@@ -48,7 +49,7 @@ http config:
  * Class HttpServerHandler
  * @package Inhere\Server\handlers
  */
-class HttpServer extends MainServer
+abstract class HttpServer extends MainServer
 {
     use HttpServerTrait;
     use OptionsTrait;

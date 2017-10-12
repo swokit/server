@@ -8,7 +8,6 @@
 
 namespace Inhere\Server\Traits;
 
-use Inhere\Library\Helpers\PhpHelper;
 use Inhere\LibraryPlus\Log\Logger;
 use Inhere\Server\Components\StaticResourceProcessor;
 use Swoole\Http\Request;
@@ -53,12 +52,6 @@ http config:
 trait HttpServerTrait
 {
     /**
-     * handle dynamic request (for http server)
-     * @var \Closure
-     */
-    protected $dynamicRequestHandler;
-
-    /**
      * handle static file access.
      * @var StaticResourceProcessor
      */
@@ -70,10 +63,6 @@ trait HttpServerTrait
     protected $options = [
         'startSession' => false,
         'ignoreFavicon' => false,
-
-        // @link https://wiki.swoole.com/wiki/page/410.html
-        'openGzip' => true,
-        'gzipLevel' => 1, // allow 1 - 9
 
         // @link http://php.net/manual/zh/session.configuration.php
         'session' => [
@@ -100,15 +89,6 @@ trait HttpServerTrait
 //    {
 //        $this->mgr->onWorkerStart($server, $workerId);
 //    }
-
-    /**
-     * set a handler to handle the Dynamic Request 处理动态资源请求
-     * @param \Closure|callable $handler
-     */
-    public function handleDynamicRequest(callable $handler)
-    {
-        $this->dynamicRequestHandler = $handler;
-    }
 
     /**
      * @param Request $request
@@ -143,6 +123,7 @@ trait HttpServerTrait
             return $response->end('+ICON');
         }
 
+        // handle the static resource request
         $stHandler = $this->staticAccessHandler;
 
         if ($stHandler && $stHandler($request, $response, $uri)) {
@@ -155,39 +136,13 @@ trait HttpServerTrait
             $this->log($error, [], Logger::ERROR);
         }
 
-        // if open gzip
-        if ($this->getOption('openGzip')) {
-            $response->gzip((int)$this->getOption('gzipLevel'));
-        }
-
-        $this->beforeRequest($request, $response);
-
-        try {
-            if (!$cb = $this->dynamicRequestHandler) {
-                $this->log("Please set the property 'dynamicRequestHandler' to handle dynamic request(if you need).", [], Logger::NOTICE);
-                $content = 'No content to display';
-                $response->write($content);
-            } else {
-                // call user's handler
-                $response = $cb($request, $response);
-
-                // if not instanceof Response
-                if (!$response instanceof Response) {
-                    $content = $response ?: 'NO CONTENT TO DISPLAY';
-                    $response->write(is_string($content) ? $content : json_encode($content));
-                }
-            }
-
-            // respond to client
-            $this->respond($response);
-        } catch (\Throwable $e) {
-            $this->handleHttpException($e, __METHOD__, $request, $response);
-        }
-
-        $this->afterRequest($request, $response);
+        // handle the Dynamic Request 处理动态资源请求
+        $this->handleHttpRequest($request, $response);
 
         return true;
     }
+
+    abstract protected function handleHttpRequest(Request $request, Response $response);
 
     /**
      * @param Request $request
@@ -195,42 +150,6 @@ trait HttpServerTrait
      */
     public function afterRequest(Request $request, Response $response)
     {
-    }
-
-    /**
-     * @param Response $response
-     */
-    public function beforeResponse(Response $response)
-    {
-    }
-
-    /**
-     * @param Response $response
-     * @return mixed
-     */
-    public function respond(Response $response)
-    {
-        $this->beforeResponse($response);
-
-        // send response to client
-        $ret = $response->end();
-
-        $this->afterResponse($ret);
-
-        return $ret;
-    }
-
-    /**
-     * afterResponse. you can do some clear work
-     * @param $ret
-     */
-    protected function afterResponse($ret)
-    {
-        // commit session data.
-        // if started session by `session_start()`, call `session_write_close()` is required.
-//        if ($this->getOption('start_session', false)) {
-//            session_write_close();
-//        }
     }
 
     /**
@@ -244,7 +163,7 @@ trait HttpServerTrait
         $response->status($mode);
         $response->header('Location', $url);
 
-        return $this->respond($response);
+        return $response->end();
     }
 
     /**
@@ -258,30 +177,5 @@ trait HttpServerTrait
         }
 
         return false;
-    }
-
-    /**
-     * @param \Throwable|\Exception $e
-     * @param Request $req
-     * @param Response $resp
-     * @param string $catcher
-     */
-    public function handleHttpException($e, $catcher, $req, $resp)
-    {
-        $html = PhpHelper::exceptionToString($e, $this->isDebug(), $catcher);
-
-        // write error log
-        $this->log(strip_tags($html), [], Logger::ERROR);
-
-        if ($this->isAjax($req)) {
-            $json = PhpHelper::exceptionToJson($e, $this->isDebug(), $catcher);
-            $resp->header('Content-Type', 'application/json; charset=utf-8');
-            $resp->write($json);
-        } else {
-            $resp->header('Content-Type', 'text/html; charset=utf-8');
-            $resp->write($html);
-        }
-
-        $this->respond($resp);
     }
 }
