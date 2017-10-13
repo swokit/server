@@ -669,10 +669,10 @@ class MainServer implements ServerInterface
     {
         $appendContext = $this->prepareRuntimeContext();
 
-        if (isset($data['_context'])) {
-            $data['_context'] = array_merge($data['_context'], $appendContext);
+        if (isset($data['_env'])) {
+            $data['_env'] = array_merge($data['_env'], $appendContext);
         } else {
-            $data['_context'] = $appendContext;
+            $data['_env'] = $appendContext;
         }
 
         // if close debug, don't output debug log.

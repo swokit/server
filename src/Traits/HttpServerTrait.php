@@ -91,20 +91,6 @@ trait HttpServerTrait
 //    }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     */
-    protected function beforeRequest(Request $request, Response $response)
-    {
-//        $this->loadGlobalData($request);
-
-        // start session
-//        if ($this->getOption('startSession', false)) {
-        // $this->startSession($request, $response);
-//        }
-    }
-
-    /**
      * 处理http请求
      * @param  Request $request
      * @param  Response $response
@@ -136,21 +122,13 @@ trait HttpServerTrait
             $this->log($error, [], Logger::ERROR);
         }
 
-        // handle the Dynamic Request 处理动态资源请求
+        // handle the Dynamic Request
         $this->handleHttpRequest($request, $response);
 
         return true;
     }
 
     abstract protected function handleHttpRequest(Request $request, Response $response);
-
-    /**
-     * @param Request $request
-     * @param Response $response
-     */
-    public function afterRequest(Request $request, Response $response)
-    {
-    }
 
     /**
      * @param Response $response
