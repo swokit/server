@@ -12,6 +12,7 @@ use Inhere\Console\IO\Input;
 use Inhere\Console\Utils\Show;
 
 use Inhere\Library\Components\ErrorHandler;
+use Inhere\Library\Helpers\Arr;
 use Inhere\Library\Helpers\PhpHelper;
 use Inhere\Library\Traits\ConfigTrait;
 use Inhere\Library\Traits\EventTrait;
@@ -101,8 +102,12 @@ class MainServer implements ServerInterface
         // will create a process auto reload server
         'auto_reload' => '', // 'src,config'
 
-        // the error handler class
-        'error_handler' => '',
+        // error handle
+        'error' => [
+            // the error handler class
+            'class' => '',
+            'exitOnHandled' => true,
+        ],
 
         // 当前server的日志配置(不是swoole的日志)
         'log' => [
@@ -210,8 +215,9 @@ class MainServer implements ServerInterface
         }
 
         // register error handler
-        if ($errClass = $this->config['error_handler']) {
-            $this->errorHandler = new $errClass($this->logger);
+        if ($conf = $this->config['error']) {
+            $errClass = Arr::remove($conf, 'class');
+            $this->errorHandler = new $errClass($this->logger, $conf);
             $this->errorHandler->register();
         }
     }
@@ -280,7 +286,7 @@ class MainServer implements ServerInterface
         $fileHandler->setServer($this);
 
         $logger = new Logger($opts['name'] ?? 'server');
-        $logger->pushProcessor(new UidProcessor());
+//        $logger->pushProcessor(new UidProcessor());
         $logger->pushHandler($mainHandler);
 
         $this->logger = $logger;
