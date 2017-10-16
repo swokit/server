@@ -22,6 +22,10 @@ $server->run();
 
 ## 注意事项
 
+- 协程模式
+
+开启协程模式后，swoole_server 和swoole_http_server将以为每一个请求创建对应的协程，开发者可以在`onRequest`、`onReceive`、`onConnect` 3个事件回调中使用协程客户端
+
 - 在主服务器上追加监听的端口服务的事件不生效
 
 ```
