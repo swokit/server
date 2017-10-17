@@ -98,7 +98,14 @@ trait HttpServerTrait
      */
     public function onRequest(Request $request, Response $response)
     {
+        $startTime = microtime(true);
+
+        $request->server['request_memory'] = memory_get_usage();
         $uri = $request->server['request_uri'];
+        $reqTime = $request->server['request_time_float'];
+
+        \Sws::profile('static-check0');
+        $this->log("request start, current time={$startTime}, request time={$reqTime}");
 
         // test: `curl 127.0.0.1:9501/ping`
         if ($uri === '/ping') {
@@ -108,6 +115,9 @@ trait HttpServerTrait
         if (strtolower($uri) === '/favicon.ico' && $this->getOption('ignoreFavicon')) {
             return $response->end('+ICON');
         }
+        \Sws::profileEnd('static-check0');
+
+        \Sws::profile('static-check');
 
         // handle the static resource request
         $stHandler = $this->staticAccessHandler;
@@ -121,9 +131,15 @@ trait HttpServerTrait
         if ($error = $stHandler->getError()) {
             $this->log($error, [], Logger::ERROR);
         }
+        \Sws::profileEnd('static-check');
 
         // handle the Dynamic Request
         $this->handleHttpRequest($request, $response);
+        $endTime = microtime(true);
+        $this->log(sprintf(
+            'request end, start time=%s, current time=%s, runtime=%s ms',
+            $startTime, $endTime, round(($endTime - $startTime) * 1000, 4)
+        ));
 
         return true;
     }
