@@ -1,7 +1,7 @@
 {
   "name": "inhere/server",
   "type": "library",
-  "description": "a php server powerd by swoole",
+  "description": "a php server powered by swoole",
   "keywords": [ "library", "server", "swoole", "http", "webSocket", "tcp", "udp" ],
   "homepage": "https://github.com/inhere/php-server",
   "license": "MIT",
@@ -14,7 +14,6 @@
   ],
   "require": {
     "php": ">=7.0.0",
-    "ext-swoole": "*",
     "inhere/console": "dev-master",
     "inhere/library": "dev-master"
   },
@@ -24,6 +23,7 @@
     }
   },
   "suggest": {
+    "ext-swoole": "The swoole extension is required for running",
     "inhere/simple-print-tool": "Very lightweight data printing tools"
   }
 }

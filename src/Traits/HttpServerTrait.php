@@ -35,12 +35,7 @@ http config:
     'event_list' => [ '' ]
 ],
 'options' => [
-    // static asset handle
-    'static_setting' => [
-        // 'url_match' => 'assets dir',
-        '/assets'  => 'public/assets',
-        '/uploads' => 'public/uploads'
-    ],
+    'ignoreFavicon' => true,
 ]
 ```
 */

@@ -11,6 +11,8 @@ namespace Inhere\Server\Extend;
 use Inhere\Console\Utils\Show;
 use Inhere\Server\AbstractExtendServer;
 use Inhere\Server\Traits\HttpServerTrait;
+use Swoole\Http\Request;
+use Swoole\Http\Response;
 
 /*
 
@@ -64,4 +66,8 @@ class HttpServer extends AbstractExtendServer
         Show::mList($this->options);
     }
 
+    protected function handleHttpRequest(Request $request, Response $response)
+    {
+        // TODO: Implement handleHttpRequest() method.
+    }
 }
