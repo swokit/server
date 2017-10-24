@@ -35,6 +35,7 @@ trait ServerManageTrait
     /**
      * run
      * @throws \RuntimeException
+     * @throws \Throwable
      */
     public function run()
     {
@@ -43,10 +44,6 @@ trait ServerManageTrait
 
         if (!$command || $input->sameOpt(['h', 'help'])) {
             return $this->showHelp($input->getScript());
-        }
-
-        if (in_array($command, ['start', 'stop', 'restart', 'reload'], true)) {
-            ServerHelper::checkRuntimeEnv();
         }
 
         $this->fire(self::ON_BEFORE_RUN, [$this]);
@@ -84,10 +81,12 @@ trait ServerManageTrait
      * @param bool $value
      * @return $this
      */
-    public function asDaemon($value = true)
+    public function asDaemon($value = null)
     {
-        $this->daemon = (bool)$value;
-        $this->config['swoole']['daemonize'] = (bool)$value;
+        if (null !== $value) {
+            $this->daemon = (bool)$value;
+            $this->config['swoole']['daemonize'] = (bool)$value;
+        }
 
         return $this;
     }
@@ -99,6 +98,8 @@ trait ServerManageTrait
      */
     public function start($daemon = null)
     {
+        ServerHelper::checkRuntimeEnv();
+
         if ($pid = $this->getPidFromFile(true)) {
             Show::error("The swoole server({$this->name}) have been started. (PID:{$pid})", -1);
         }

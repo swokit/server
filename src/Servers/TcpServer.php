@@ -35,6 +35,9 @@ Tcp config:
  */
 class TcpServer extends MainServer
 {
+    /**
+     * {@inheritDoc}
+     */
     public function onConnect(SwServer $server, $fd)
     {
         $this->log("Has a new client [FD:$fd] connection.");

@@ -158,7 +158,7 @@ trait ServerCreateTrait
 
         $this->server = $server;
 
-        $this->log("The main server was created successfully. On <cyan>$type://{$host}:{$port}</cyan>");
+        $this->log("The main server was created successfully. Listening on <cyan>$type://{$host}:{$port}</cyan>");
         $this->setSwooleEvents($protocolEvents);
         $this->afterCreateServer();
     }

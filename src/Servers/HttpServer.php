@@ -10,6 +10,7 @@ namespace Inhere\Server\Servers;
 
 use Inhere\Console\Utils\Show;
 use Inhere\Library\Traits\OptionsTrait;
+use Inhere\Server\Components\StaticResourceProcessor;
 use Inhere\Server\HttpServerInterface;
 use Inhere\Server\MainServer;
 use Inhere\Server\Traits\HttpServerTrait;
@@ -35,12 +36,7 @@ http config:
     'event_list' => [ '' ]
 ],
 'options' => [
-    // static asset handle
-    'static_setting' => [
-        // 'url_match' => 'assets dir',
-        '/assets'  => 'public/assets',
-        '/uploads' => 'public/uploads'
-    ],
+
 ]
 ```
 */
@@ -51,8 +47,7 @@ http config:
  */
 abstract class HttpServer extends MainServer
 {
-    use HttpServerTrait;
-    use OptionsTrait;
+    use HttpServerTrait, OptionsTrait;
 
     /**
      * {@inheritDoc}
@@ -67,6 +62,17 @@ abstract class HttpServer extends MainServer
 
         if ($options) {
             $this->setOptions($options);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function beforeServerStart()
+    {
+        if ($this->getOption('enableStatic')) {
+            $opts = $this->getOption('staticSettings');
+            $this->staticAccessHandler = new StaticResourceProcessor($opts);
         }
     }
 

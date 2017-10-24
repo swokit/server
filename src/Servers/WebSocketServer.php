@@ -59,7 +59,7 @@ class WebSocketServer extends HttpServer
      */
     public function __construct(array $config = [])
     {
-        $this->defaultOptions['response'] = [
+        $this->options['response'] = [
             'gzip' => true,
             'keep_alive' => 1,
             'heart_time' => 1,

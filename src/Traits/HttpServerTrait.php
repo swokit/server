@@ -59,6 +59,17 @@ trait HttpServerTrait
         'startSession' => false,
         'ignoreFavicon' => false,
 
+        'enableStatic' => false,
+        'staticSettings' => [
+            'basePath' => '',
+            'ext' => [],
+            'dirMap' => [
+                // 'url_match' => 'assets dir',
+                '/assets' => 'web/assets',
+                '/uploads' => 'web/uploads'
+            ]
+        ],
+
         // @link http://php.net/manual/zh/session.configuration.php
         'session' => [
             'save_path' => '', // app_session
@@ -93,13 +104,9 @@ trait HttpServerTrait
      */
     public function onRequest(Request $request, Response $response)
     {
-        $startTime = microtime(true);
-
-        $request->server['request_memory'] = memory_get_usage();
         $uri = $request->server['request_uri'];
-        $reqTime = $request->server['request_time_float'];
-
-        $this->log("request start, current time={$startTime}, request time={$reqTime}");
+        $startTime = microtime(true);
+        $request->server['request_memory'] = memory_get_usage(true);
 
         // test: `curl 127.0.0.1:9501/ping`
         if ($uri === '/ping') {
@@ -110,30 +117,45 @@ trait HttpServerTrait
             return $response->end('+ICON');
         }
 
+        $reqTime = $request->server['request_time_float'];
+        $this->log("request start, current time={$startTime}, request time={$reqTime}", [
+            'uri' => $uri,
+        ]);
+
+
         // handle the static resource request
-        $stHandler = $this->staticAccessHandler;
+        if ($stHandler = $this->staticAccessHandler) {
+            if ($stHandler->handle($request, $response, $uri)) {
+                $this->log("Access asset: $uri");
+                return true;
+            }
 
-        if ($stHandler && $stHandler($request, $response, $uri)) {
-            $this->log("Access asset: $uri");
-
-            return true;
+            if ($error = $stHandler->getError()) {
+                $this->log($error, [], LogLevel::ERROR);
+            }
         }
 
-        if ($error = $stHandler->getError()) {
-            $this->log($error, [], LogLevel::ERROR);
-        }
 
         // handle the Dynamic Request
         $this->handleHttpRequest($request, $response);
+
+        // end
         $endTime = microtime(true);
         $this->log(sprintf(
-            'request end, start time=%s, current time=%s, runtime=%s ms',
+            'request ended, start time=%s, current time=%s, runtime=%s ms',
             $startTime, $endTime, round(($endTime - $startTime) * 1000, 4)
-        ));
+        ), [
+            'uri' => $uri,
+        ]);
 
         return true;
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return mixed
+     */
     abstract protected function handleHttpRequest(Request $request, Response $response);
 
     /**

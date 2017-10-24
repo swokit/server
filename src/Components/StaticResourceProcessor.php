@@ -91,13 +91,16 @@ class StaticResourceProcessor
      */
     private $file;
 
-    public function __construct($basePath, array $ext = [], array $dirMap = [])
+    /**
+     * StaticResourceProcessor constructor.
+     * @param array $options
+     */
+    public function __construct(array $options = [])
     {
-        $this->basePath = $basePath;
-        $this->ext = $ext;
-
-        if ($dirMap) {
-            $this->dirMap = $dirMap;
+        foreach ($options as $name => $value) {
+            if (property_exists($this, $name)) {
+                $this->$name = $value;
+            }
         }
     }
 
