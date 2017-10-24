@@ -8,7 +8,7 @@
 
 namespace Inhere\Server\Traits;
 
-use Inhere\LibraryPlus\Log\Logger;
+use Psr\Log\LogLevel;
 use Inhere\Server\Components\StaticResourceProcessor;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
@@ -99,7 +99,6 @@ trait HttpServerTrait
         $uri = $request->server['request_uri'];
         $reqTime = $request->server['request_time_float'];
 
-        \Sws::profile('static-check0');
         $this->log("request start, current time={$startTime}, request time={$reqTime}");
 
         // test: `curl 127.0.0.1:9501/ping`
@@ -110,9 +109,6 @@ trait HttpServerTrait
         if (strtolower($uri) === '/favicon.ico' && $this->getOption('ignoreFavicon')) {
             return $response->end('+ICON');
         }
-        \Sws::profileEnd('static-check0');
-
-        \Sws::profile('static-check');
 
         // handle the static resource request
         $stHandler = $this->staticAccessHandler;
@@ -124,9 +120,8 @@ trait HttpServerTrait
         }
 
         if ($error = $stHandler->getError()) {
-            $this->log($error, [], Logger::ERROR);
+            $this->log($error, [], LogLevel::ERROR);
         }
-        \Sws::profileEnd('static-check');
 
         // handle the Dynamic Request
         $this->handleHttpRequest($request, $response);

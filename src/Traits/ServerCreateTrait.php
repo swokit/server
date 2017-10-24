@@ -214,7 +214,7 @@ trait ServerCreateTrait
 
         Show::table($eventInfo, 'Registered events to the main server', [
             'showBorder' => 0,
-            'tHead' => ['event name', 'event handler']
+            'columns' => ['event name', 'event handler']
         ]);
     }
 
