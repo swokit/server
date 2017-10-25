@@ -22,7 +22,6 @@ interface ProcessInterface
 
     /**
      * @param Process $process
-     * @return mixed
      */
     public function started(Process $process);
 

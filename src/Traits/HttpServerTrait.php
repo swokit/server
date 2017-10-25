@@ -154,7 +154,6 @@ trait HttpServerTrait
     /**
      * @param Request $request
      * @param Response $response
-     * @return mixed
      */
     abstract protected function handleHttpRequest(Request $request, Response $response);
 
