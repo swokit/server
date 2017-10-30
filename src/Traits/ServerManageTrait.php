@@ -254,7 +254,7 @@ trait ServerManageTrait
         Show::aList($info, 'the env check result', [
             'keyStyle' => '',
             'sepChar' => ' | ',
-            'ucfirst' => false,
+            'ucFirst' => false,
         ]);
     }
 

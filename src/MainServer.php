@@ -29,7 +29,6 @@ use Swoole\Server;
 
 use Monolog\Logger;
 use Monolog\Handler\FingersCrossedHandler;
-use Monolog\Processor\UidProcessor;
 
 /**
  * Class AServerManager
