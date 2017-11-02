@@ -3,6 +3,15 @@ namespace Swoole;
 
 /**
  * @since 2.0.8
+ *
+ * @property int affected_rows
+ * @property int|string insert_id
+ *
+ * @property string connect_error
+ * @property int connect_errno
+ *
+ * @property int errno
+ * @property string error
  */
 class MySQL
 {
