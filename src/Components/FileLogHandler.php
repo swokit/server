@@ -50,7 +50,7 @@ class FileLogHandler extends AbstractProcessingHandler
     {
         parent::__construct($level);
 
-        if (is_string($file)) {
+        if (\is_string($file)) {
             $this->file = $file;
         } else {
             throw new \InvalidArgumentException('A stream must either be a resource or a string.');
@@ -60,7 +60,7 @@ class FileLogHandler extends AbstractProcessingHandler
         $this->splitType = $splitType;
 
         // fix it
-        if ($this->splitType && !in_array($this->splitType, [self::SPLIT_DAY, self::SPLIT_HOUR], true)) {
+        if ($this->splitType && !\in_array($this->splitType, [self::SPLIT_DAY, self::SPLIT_HOUR], true)) {
             $this->splitType = self::SPLIT_DAY;
         }
     }
@@ -161,11 +161,11 @@ class FileLogHandler extends AbstractProcessingHandler
     {
         $pos = strpos($stream, '://');
         if ($pos === false) {
-            return dirname($stream);
+            return \dirname($stream);
         }
 
         if (0 === strpos($stream, 'file://')) {
-            return dirname(substr($stream, 7));
+            return \dirname(substr($stream, 7));
         }
 
         return null;

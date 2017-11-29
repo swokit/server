@@ -26,7 +26,7 @@ class ServerHelper
             throw new \RuntimeException('Server must run in the CLI mode.');
         }
 
-        if (!extension_loaded('swoole')) {
+        if (!\extension_loaded('swoole')) {
             throw new \RuntimeException('Run the server, extension \'swoole\' is required!');
         }
     }

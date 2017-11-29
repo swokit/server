@@ -194,19 +194,19 @@ trait ServerCreateTrait
         // register event to swoole
         foreach (self::$swooleEventMap as $name => $cb) {
             // is a Closure callback, add by self::onSwoole()
-            if (is_object($cb) && method_exists($cb, '__invoke')) {
-                $eventInfo[] = [$name, get_class($cb)];
+            if (\is_object($cb) && method_exists($cb, '__invoke')) {
+                $eventInfo[] = [$name, \get_class($cb)];
                 $this->server->on($name, $cb);
 
                 // if use Custom Outside Handler
             } elseif ($this->extServer && method_exists($this->extServer, $cb)) {
-                $eventInfo[] = [$name, get_class($this->extServer) . "->$cb"];
+                $eventInfo[] = [$name, \get_class($this->extServer) . "->$cb"];
                 $this->server->on($name, [$this->extServer, $cb]);
                 // if use Custom Outside Handler
             } elseif (method_exists($this, $cb)) {
                 $eventInfo[] = [$name, static::class . "->$cb"];
                 $this->server->on($name, [$this, $cb]);
-            } elseif (function_exists($cb)) {
+            } elseif (\function_exists($cb)) {
                 $eventInfo[] = [$name, $cb];
                 $this->server->on($name, $cb);
             }
@@ -308,7 +308,7 @@ trait ServerCreateTrait
     {
         $reload = $this->config['auto_reload'];
 
-        if (!$reload || !function_exists('inotify_init')) {
+        if (!$reload || !\function_exists('inotify_init')) {
             return false;
         }
 
@@ -418,7 +418,7 @@ trait ServerCreateTrait
             throw new \RuntimeException("The add listen port server [$name] has been exists!");
         }
 
-        if (is_array($config)) {
+        if (\is_array($config)) {
             $class = Arr::remove($config, 'listener');
 
             if (!$class) {

@@ -22,7 +22,7 @@ class ScheduleCheck
      */
     public static function isDue($schedule)
     {
-        if (is_callable($schedule)) {
+        if (\is_callable($schedule)) {
             return $schedule();
         }
 

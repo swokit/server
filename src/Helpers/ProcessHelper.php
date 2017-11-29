@@ -28,7 +28,7 @@ final class ProcessHelper
             return false;
         }
 
-        if (function_exists('cli_set_process_title')) {
+        if (\function_exists('cli_set_process_title')) {
             cli_set_process_title($title);
         }
 

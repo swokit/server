@@ -74,9 +74,9 @@ class RpcDispatcher
             throw new \RuntimeException("The service:{$name} has been registered!");
         }
 
-        if (is_string($handler) && class_exists($handler)) {
+        if (\is_string($handler) && class_exists($handler)) {
             $handler = new $handler;
-        } elseif (!is_object($handler)) {
+        } elseif (!\is_object($handler)) {
             throw new \InvalidArgumentException("The service:{$name} handler must is an Object!");
         }
 

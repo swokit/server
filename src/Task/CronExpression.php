@@ -72,7 +72,7 @@ class CronExpression
         }
 
         $cron = preg_split("/[\s]+/i", trim($expression));
-        $len = count($cron);
+        $len = \count($cron);
 
         if ($len === 6) {
             $date = [
@@ -101,11 +101,11 @@ class CronExpression
         $dateStr = date('i G j w n', $startTime);
 
         if (
-            in_array((int)date('i', $startTime), $date['min'], true) &&
-            in_array((int)date('G', $startTime), $date['hours'], true) &&
-            in_array((int)date('j', $startTime), $date['day'], true) &&
-            in_array((int)date('w', $startTime), $date['week'], true) &&
-            in_array((int)date('n', $startTime), $date['month'], true)
+            \in_array((int)date('i', $startTime), $date['min'], true) &&
+            \in_array((int)date('G', $startTime), $date['hours'], true) &&
+            \in_array((int)date('j', $startTime), $date['day'], true) &&
+            \in_array((int)date('w', $startTime), $date['week'], true) &&
+            \in_array((int)date('n', $startTime), $date['month'], true)
         ) {
             return $date['sec'];
         }
@@ -133,7 +133,7 @@ class CronExpression
 //            $_min = count($v4) === 2 ? (int)$v4[0] : ($v3[0] === '*' ? $min : (int)$v3[0]);
 //            $_max = count($v4) === 2 ? (int)$v4[1] : ($v3[0] === '*' ? $max : (int)$v3[0]);
 
-            if (count($v4) === 2) {
+            if (\count($v4) === 2) {
                 $_min = (int)$v4[0];
                 $_max = (int)$v4[1];
             } else {

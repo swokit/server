@@ -7,6 +7,7 @@
  */
 
 namespace Inhere\Server\Task;
+
 use Inhere\Library\Helpers\PhpHelper;
 use Inhere\Library\Helpers\Sys;
 
@@ -83,7 +84,7 @@ class CronTabTask
             return false;
         }
 
-        $logs = dirname($logfile);
+        $logs = \dirname($logfile);
 
         if (!file_exists($logs)) {
             mkdir($logs, 0755, true);

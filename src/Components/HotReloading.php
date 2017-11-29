@@ -126,7 +126,7 @@ class HotReloading
                     continue;
                 }
 
-                if (in_array($ev['mask'], [IN_CREATE, IN_DELETE, IN_MODIFY, IN_MOVED_TO, IN_MOVED_FROM], true)) {
+                if (\in_array($ev['mask'], [IN_CREATE, IN_DELETE, IN_MODIFY, IN_MOVED_TO, IN_MOVED_FROM], true)) {
                     $fileType = strrchr($ev['name'], '.');
 
                     //非重启类型

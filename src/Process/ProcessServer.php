@@ -169,7 +169,7 @@ class ProcessServer
 
     public function wait()
     {
-        while (count($this->workerIds)) {
+        while (\count($this->workerIds)) {
             if ($ret = Process::wait()) {
                 $this->rebootProcess($ret);
             }

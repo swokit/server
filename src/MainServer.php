@@ -234,7 +234,7 @@ class MainServer implements ServerInterface
 
         // project root path
         if (!$this->getValue('root_path')) {
-            if (defined('PROJECT_PATH')) {
+            if (\defined('PROJECT_PATH')) {
                 $this->setConfig(['root_path' => PROJECT_PATH]);
             } else {
                 throw new \RuntimeException('The project path \'root_path\' is must setting');
@@ -429,7 +429,7 @@ class MainServer implements ServerInterface
     {
         foreach ($events as $key => $value) {
             $this->setSwooleEvent(
-                is_int($key) && is_string($value) ? lcfirst(substr($value, 2)) : $key,
+                \is_int($key) && \is_string($value) ? lcfirst(substr($value, 2)) : $key,
                 $value
             );
         }
@@ -516,7 +516,7 @@ class MainServer implements ServerInterface
      */
     public function isSupportedEvents($event)
     {
-        return in_array($event, self::SWOOLE_EVENTS, true);
+        return \in_array($event, self::SWOOLE_EVENTS, true);
     }
 
     /**
@@ -536,7 +536,7 @@ class MainServer implements ServerInterface
      */
     protected function checkEnvWhenEnableSSL()
     {
-        if (!defined('SWOOLE_SSL')) {
+        if (!\defined('SWOOLE_SSL')) {
             Show::error('If you want use SSL(https), must add option --enable-openssl on the compile swoole.', 1);
         }
 
@@ -668,7 +668,6 @@ class MainServer implements ServerInterface
      * @param  array $data
      * @param string|int $type
      * @return void
-     * @throws \RuntimeException
      */
     public function log($msg, array $data = [], $type = Logger::INFO)
     {

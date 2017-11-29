@@ -9,6 +9,7 @@
 namespace Inhere\Server\Servers;
 
 use Swoole\Http\Request;
+use Swoole\Http\Response;
 use Swoole\Server as SwServer;
 use Swoole\Websocket\Frame;
 use Swoole\Websocket\Server;
@@ -173,4 +174,13 @@ class WebSocketServer extends HttpServer
 //            $server->push($fd, json_encode($data));
 //        }
 //    }
+
+    /**
+     * @param Request $request
+     * @param Response $response
+     */
+    protected function handleHttpRequest(Request $request, Response $response)
+    {
+        // TODO: Implement handleHttpRequest() method.
+    }
 }

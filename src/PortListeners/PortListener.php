@@ -146,7 +146,7 @@ abstract class PortListener implements PortListenerInterface
         $type = $this->type;
         $allowed = [ServerInterface::PROTOCOL_TCP, ServerInterface::PROTOCOL_UDP];
 
-        if (!in_array($type, $allowed, true)) {
+        if (!\in_array($type, $allowed, true)) {
             $str = implode(',', $allowed);
             Show::error("Tha attach listen server type only allow: $str. don't support [$type]", 1);
         }
@@ -176,7 +176,7 @@ abstract class PortListener implements PortListenerInterface
     {
         foreach ((array)$this->options['events'] as $event => $method) {
             // ['onConnect'] --> 'Connect', 'onConnect
-            if (is_int($event)) {
+            if (\is_int($event)) {
                 $event = substr($method, 2);
             }
 

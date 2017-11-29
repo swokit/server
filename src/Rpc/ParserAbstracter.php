@@ -43,7 +43,7 @@ abstract class ParserAbstracter implements ParserInterface
      */
     public function validate($data)
     {
-        if (is_string($data)) {
+        if (\is_string($data)) {
             $data = [
                 'd' => $data,
                 't' => time(),
