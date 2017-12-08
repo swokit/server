@@ -56,7 +56,7 @@ trait SomeSwooleEventTrait
 
         $this->removePidFile();
 
-        self::$_statistics['stop_time'] = microtime(1);
+        self::$_stats['stop_time'] = microtime(1);
     }
 
     /**

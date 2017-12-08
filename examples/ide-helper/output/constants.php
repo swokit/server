@@ -15,6 +15,7 @@ define('SWOOLE_TCP', 1);
 define('SWOOLE_TCP6', 3);
 define('SWOOLE_UDP', 2);
 define('SWOOLE_UDP6', 4);
+define('SWOOLE_SSL', 5);
 define('SWOOLE_UNIX_DGRAM', 5);
 define('SWOOLE_UNIX_STREAM', 6);
 define('SWOOLE_SOCK_SYNC', 0);

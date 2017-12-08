@@ -8,7 +8,7 @@
 
 namespace Inhere\Server\Servers;
 
-use Inhere\Server\MainServer;
+use Inhere\Server\Server;
 use Swoole\Server as SwServer;
 
 /*
@@ -33,7 +33,7 @@ Tcp config:
  * Class TcpServerHandler
  * @package Inhere\Server\Servers
  */
-class TcpServer extends MainServer
+class TcpServer extends Server
 {
     /**
      * {@inheritDoc}

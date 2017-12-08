@@ -12,7 +12,7 @@ use Inhere\Console\Utils\Show;
 use Inhere\Library\Traits\OptionsTrait;
 use Inhere\Server\Components\StaticResourceProcessor;
 use Inhere\Server\HttpServerInterface;
-use Inhere\Server\MainServer;
+use Inhere\Server\Server;
 use Inhere\Server\Traits\HttpServerTrait;
 
 /*
@@ -45,7 +45,7 @@ http config:
  * Class HttpServerHandler
  * @package Inhere\Server\handlers
  */
-abstract class HttpServer extends MainServer
+abstract class HttpServer extends Server
 {
     use HttpServerTrait, OptionsTrait;
 

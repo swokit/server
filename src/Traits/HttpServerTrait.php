@@ -122,7 +122,6 @@ trait HttpServerTrait
             'uri' => $uri,
         ]);
 
-
         // handle the static resource request
         if ($stHandler = $this->staticAccessHandler) {
             if ($stHandler->handle($request, $response, $uri)) {

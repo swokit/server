@@ -24,8 +24,11 @@ abstract class TimerTask implements TaskInterface
     public function run(array $args)
     {
         $this->beforeRun($args);
+        $this->doRun($args);
         $this->afterRun($args);
     }
+
+    abstract public function doRun($args);
 
     public function afterRun($args)
     {

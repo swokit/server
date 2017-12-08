@@ -47,6 +47,9 @@ class HotReloading
      */
     protected $events;
 
+    /** @var int */
+    private $eventMask;
+
     /**
      * swoole server master process id
      * @var int
@@ -89,6 +92,7 @@ class HotReloading
      * @var array
      */
     protected $watchedFiles = [];
+
 
     public static function make($mPid)
     {

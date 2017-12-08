@@ -10,81 +10,65 @@ namespace Inhere\Server;
 
 use Inhere\Console\IO\Input;
 use Inhere\Console\Utils\Show;
-
 use Inhere\Library\Components\ErrorHandler;
 use Inhere\Library\Helpers\Arr;
 use Inhere\Library\Helpers\PhpHelper;
 use Inhere\Library\Traits\ConfigTrait;
 use Inhere\Library\Traits\EventTrait;
-
 use Inhere\Server\Components\FileLogHandler;
-use Inhere\Server\Traits\ServerManageTrait;
 use Inhere\Server\Traits\ServerCreateTrait;
+use Inhere\Server\Traits\ServerManageTrait;
 use Inhere\Server\Traits\SomeSwooleEventTrait;
-
-use Psr\Log\LoggerInterface;
-
-use Swoole\Coroutine;
-use Swoole\Server;
-
-use Monolog\Logger;
 use Monolog\Handler\FingersCrossedHandler;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
+use Swoole\Coroutine;
 
 /**
- * Class AServerManager
+ * Class Server - Server Manager
  * @package Inhere\Server
  * Running processes:
- *
  * ```
  * ```
  */
-class MainServer implements ServerInterface
+class Server implements ServerInterface
 {
     use ConfigTrait {
         setConfig as tSetConfig;
     }
-    use EventTrait;
-    use ServerManageTrait;
-    use ServerCreateTrait;
-    use SomeSwooleEventTrait;
+    use EventTrait, ServerManageTrait, ServerCreateTrait, SomeSwooleEventTrait;
 
-    /** @var static  */
+    /** @var static */
     public static $mgr;
 
-    /** @var array  */
-    protected static $_statistics = [];
+    /** @var array */
+    protected static $_stats = [];
 
     /** @var bool */
     private $bootstrapped = false;
 
-    /** @var bool  */
+    /** @var bool */
     private $debug = false;
 
-    /** @var bool  */
+    /** @var bool */
     private $daemon = false;
 
     /** @var ErrorHandler */
     private $errorHandler;
 
-    /**
-     * current server name
-     * @var string
-     */
+    /** @var string current server name */
     public $name = 'server';
 
-    /**
-     * pid File
-     * @var string
-     */
+    /** @var string pid File */
     protected $pidFile = '';
 
     /** @var Input */
     protected $input;
 
-    /** @var Logger  */
+    /** @var Logger */
     public $logger;
 
-    /** @var Server */
+    /** @var \Swoole\Server */
     public $server;
 
     /**
@@ -128,9 +112,6 @@ class MainServer implements ServerInterface
 
             // append register swoole events
             'extend_events' => [], // e.g [ 'onRequest', ]
-
-            // use outside's extend event handler
-            'extend_server' => '', // e.g '\Inhere\Server\Extend\HttpServerHandler'
         ],
 
         // for attach servers
@@ -320,7 +301,7 @@ class MainServer implements ServerInterface
         $this->fire(self::ON_SERVER_CREATED, [$this]);
 
         // attach Extend Server
-        $this->attachExtendServer();
+        // $this->attachExtendServer();
 
         // setting swoole config
         // 对于Server的配置即 $server->set() 中传入的参数设置，必须关闭/重启整个Server才可以重新加载
@@ -375,7 +356,6 @@ class MainServer implements ServerInterface
                 'host' => $main['host'],
                 'port' => $main['port'],
                 'class' => static::class,
-                'extClass' => $main['extend_server'] ?? 'NO setting',
             ],
             'Project Config' => [
                 'name' => $this->name,
@@ -522,9 +502,9 @@ class MainServer implements ServerInterface
     /**
      * @return array
      */
-    public static function getStatistics(): array
+    public static function getStats(): array
     {
-        return self::$_statistics;
+        return self::$_stats;
     }
 
     /*******************************************************************************

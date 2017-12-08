@@ -11,7 +11,6 @@ namespace Inhere\Server\Traits;
 use Inhere\Console\Utils\Show;
 use Inhere\Library\Helpers\Arr;
 use Inhere\Server\Components\HotReloading;
-use Inhere\Server\ExtendServerInterface;
 use Inhere\Server\Helpers\ProcessHelper;
 use Inhere\Server\PortListeners\PortListenerInterface;
 use Inhere\Server\ServerInterface;
@@ -28,11 +27,6 @@ use Swoole\Websocket\Server as WSServer;
  */
 trait ServerCreateTrait
 {
-    /**
-     * @var ExtendServerInterface
-     */
-    protected $extServer;
-
     /**
      * custom user process
      * @var Process[] [name => Process]
@@ -164,18 +158,6 @@ trait ServerCreateTrait
     }
 
     /**
-     * attach Extend Server
-     */
-    protected function attachExtendServer()
-    {
-        if ($extServerClass = $this->config['main_server']['extend_server']) {
-            /** @var ServerInterface $this */
-            $this->extServer = new $extServerClass($this->config['options']);
-            $this->extServer->setMgr($this);
-        }
-    }
-
-    /**
      * afterCreateServer
      * @throws \RuntimeException
      */
@@ -199,13 +181,10 @@ trait ServerCreateTrait
                 $this->server->on($name, $cb);
 
                 // if use Custom Outside Handler
-            } elseif ($this->extServer && method_exists($this->extServer, $cb)) {
-                $eventInfo[] = [$name, \get_class($this->extServer) . "->$cb"];
-                $this->server->on($name, [$this->extServer, $cb]);
-                // if use Custom Outside Handler
             } elseif (method_exists($this, $cb)) {
                 $eventInfo[] = [$name, static::class . "->$cb"];
                 $this->server->on($name, [$this, $cb]);
+
             } elseif (\function_exists($cb)) {
                 $eventInfo[] = [$name, $cb];
                 $this->server->on($name, $cb);
@@ -445,22 +424,6 @@ trait ServerCreateTrait
 
         $this->attachedNames[$name] = true;
         $this->attachedListeners[$name] = $cb;
-    }
-
-    /**
-     * @param ExtendServerInterface $extServer
-     */
-    public function setExtServer(ExtendServerInterface $extServer)
-    {
-        $this->extServer = $extServer;
-    }
-
-    /**
-     * @return ExtendServerInterface
-     */
-    public function getExtServer()
-    {
-        return $this->extServer;
     }
 
     /**
