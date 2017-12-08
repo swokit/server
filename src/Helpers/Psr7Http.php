@@ -27,7 +27,7 @@ class Psr7Http
      * @param SwRequest $swRequest
      * @return ServerRequest
      */
-    public static function createRequest(SwRequest $swRequest)
+    public static function createServerRequest(SwRequest $swRequest)
     {
         $uri = $swRequest->server['request_uri'];
         $method = $swRequest->server['request_method'];
@@ -90,9 +90,10 @@ class Psr7Http
     /**
      * @param Response|ResponseInterface $response
      * @param SwResponse $swResponse
-     * @return SwResponse
+     * @param bool $send
+     * @return SwResponse|mixed
      */
-    public static function respond(Response $response, SwResponse $swResponse)
+    public static function respond(Response $response, SwResponse $swResponse, $send = true)
     {
         // set http status
         $swResponse->status($response->getStatus());
@@ -113,6 +114,10 @@ class Psr7Http
         }
 
         // send response to client
-        return $swResponse->end();
+        if ($send) {
+            return $swResponse->end();
+        }
+
+        return $swResponse;
     }
 }
