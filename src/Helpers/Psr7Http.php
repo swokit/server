@@ -39,7 +39,7 @@ class Psr7Http
 
         // GET data
         if (isset($swRequest->get)) {
-            $request->setParsedBody($swRequest->get);
+            $request->setQueryParams($swRequest->get);
         }
 
         // POST data
@@ -93,8 +93,10 @@ class Psr7Http
      * @param bool $send
      * @return SwResponse|mixed
      */
-    public static function respond(Response $response, SwResponse $swResponse, $send = true)
+    public static function respond(Response $response, SwResponse $swResponse = null, $send = true)
     {
+        $swResponse = $swResponse ?: new SwResponse();
+
         // set http status
         $swResponse->status($response->getStatus());
 

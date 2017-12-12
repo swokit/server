@@ -59,6 +59,10 @@ trait HttpServerTrait
         'startSession' => false,
         'ignoreFavicon' => false,
 
+        // @link https://wiki.swoole.com/wiki/page/410.html
+        'openGzip' => true,
+        'gzipLevel' => 1, // allow 1 - 9
+
         'enableStatic' => false,
         'staticSettings' => [
             'basePath' => '',
@@ -95,6 +99,13 @@ trait HttpServerTrait
 //    {
 //        $this->mgr->onWorkerStart($server, $workerId);
 //    }
+
+    /**
+     * @param Request $request
+     * @param Response $response
+     */
+    public function beforeRequest(Request $request, Response $response)
+    {}
 
     /**
      * 处理http请求
@@ -134,7 +145,6 @@ trait HttpServerTrait
             }
         }
 
-
         // handle the Dynamic Request
         $this->handleHttpRequest($request, $response);
 
@@ -147,8 +157,17 @@ trait HttpServerTrait
             'uri' => $uri,
         ]);
 
+        $this->afterRequest($request, $response);
+
         return true;
     }
+
+    /**
+     * @param Request $request
+     * @param Response $response
+     */
+    protected function afterRequest(Request $request, Response $response)
+    {}
 
     /**
      * @param Request $request
