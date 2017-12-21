@@ -6,7 +6,7 @@
  * Time: 下午8:20
  */
 
-require __DIR__ . '/s-autoload.php';
+require dirname(__DIR__) . '/tests/boot.php';
 
 /**
  * Class MyProcess
