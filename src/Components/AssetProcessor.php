@@ -15,7 +15,7 @@ use Swoole\Http\Response;
  * Class StaticResourceProcessor - Static resource processing
  * @package Inhere\Server\Components
  */
-class StaticResourceProcessor
+class AssetProcessor
 {
     /**
      * 静态文件类型
@@ -298,7 +298,7 @@ class StaticResourceProcessor
     /**
      * @return string
      */
-    public function getError(): ?string
+    public function getError()
     {
         return $this->error;
     }
@@ -306,7 +306,7 @@ class StaticResourceProcessor
     /**
      * @return string
      */
-    public function getFile(): ?string
+    public function getFile()
     {
         return $this->file;
     }

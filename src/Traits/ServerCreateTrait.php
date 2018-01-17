@@ -12,7 +12,7 @@ use Inhere\Console\Utils\Show;
 use Inhere\Library\Helpers\Arr;
 use Inhere\Server\Components\HotReloading;
 use Inhere\Server\Helpers\ProcessHelper;
-use Inhere\Server\PortListeners\PortListenerInterface;
+use Inhere\Server\Listeners\Ports\PortListenerInterface;
 use Inhere\Server\ServerInterface;
 use Swoole\Http\Server as HttpServer;
 use Swoole\Process;

@@ -6,14 +6,14 @@
  * Time: 15:20
  */
 
-namespace Inhere\Server\PortListeners;
+namespace Inhere\Server\Listeners\Ports;
 
 use Inhere\Server\ServerInterface;
 use Swoole\Server;
 
 /**
  * Class PortListenerInterface
- * @package Inhere\Server\PortListeners
+ * @package Inhere\Server\Listeners\Ports
  */
 interface PortListenerInterface
 {

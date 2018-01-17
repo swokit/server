@@ -9,7 +9,7 @@
 namespace Inhere\Server\Traits;
 
 use Psr\Log\LogLevel;
-use Inhere\Server\Components\StaticResourceProcessor;
+use Inhere\Server\Components\AssetProcessor;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
@@ -48,7 +48,7 @@ trait HttpServerTrait
 {
     /**
      * handle static file access.
-     * @var StaticResourceProcessor
+     * @var AssetProcessor
      */
     protected $staticAccessHandler;
 

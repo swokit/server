@@ -10,7 +10,7 @@ namespace Inhere\Server\Servers;
 
 use Inhere\Console\Utils\Show;
 use Inhere\Library\Traits\OptionsTrait;
-use Inhere\Server\Components\StaticResourceProcessor;
+use Inhere\Server\Components\AssetProcessor;
 use Inhere\Server\HttpServerInterface;
 use Inhere\Server\Server;
 use Inhere\Server\Traits\HttpServerTrait;
@@ -72,7 +72,7 @@ abstract class HttpServer extends Server
     {
         if ($this->getOption('enableStatic')) {
             $opts = $this->getOption('staticSettings');
-            $this->staticAccessHandler = new StaticResourceProcessor($opts);
+            $this->staticAccessHandler = new AssetProcessor($opts);
         }
     }
 
