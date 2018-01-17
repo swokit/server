@@ -39,13 +39,19 @@ class Server implements ServerInterface
     use EventTrait, ServerManageTrait, ServerCreateTrait, SomeSwooleEventTrait;
 
     /** @var static */
-    public static $mgr;
+    private static $instance;
 
     /** @var array */
-    protected static $_stats = [];
+    private static $_stats = [];
 
-    /** @var bool */
-    private $bootstrapped = false;
+    /** @var string Current server name */
+    public $name = 'server';
+
+    /** @var Logger */
+    public $logger;
+
+    /** @var \Swoole\Server */
+    public $server;
 
     /** @var bool */
     private $debug = false;
@@ -53,23 +59,17 @@ class Server implements ServerInterface
     /** @var bool */
     private $daemon = false;
 
+    /** @var bool */
+    private $bootstrapped = false;
+
     /** @var ErrorHandler */
     private $errorHandler;
-
-    /** @var string current server name */
-    public $name = 'server';
 
     /** @var string pid File */
     protected $pidFile = '';
 
     /** @var Input */
     protected $input;
-
-    /** @var Logger */
-    public $logger;
-
-    /** @var \Swoole\Server */
-    public $server;
 
     /**
      * config data
@@ -175,14 +175,21 @@ class Server implements ServerInterface
     ];
 
     /**
+     * @return static
+     */
+    public static function instance()
+    {
+        return self::$instance;
+    }
+
+    /**
      * BaseServer constructor.
      * @param array $config
      * @param LoggerInterface|null $logger
      */
     public function __construct(array $config = [], LoggerInterface $logger = null)
     {
-        self::$mgr = $this;
-
+        self::$instance = $this;
         $this->input = new Input;
 
         $this->setConfig($config);
@@ -500,6 +507,15 @@ class Server implements ServerInterface
     }
 
     /**
+     * @param string $name
+     * @param $value
+     */
+    public static function addStat(string $name, $value)
+    {
+        self::$_stats[$name] = $value;
+    }
+
+    /**
      * @return array
      */
     public static function getStats(): array
@@ -517,12 +533,18 @@ class Server implements ServerInterface
     protected function checkEnvWhenEnableSSL()
     {
         if (!\defined('SWOOLE_SSL')) {
-            Show::error('If you want use SSL(https), must add option --enable-openssl on the compile swoole.', 1);
+            Show::error(
+                "If you want use SSL(https), must add option '--enable-openssl' on the compile swoole.",
+                1
+            );
         }
 
         // check ssl config
         if (!$this->getValue('swoole.ssl_cert_file') || !$this->getValue('swoole.ssl_key_file')) {
-            Show::error("If you want use SSL(https), must config the 'swoole.ssl_cert_file' and 'swoole.ssl_key_file'", 1);
+            Show::error(
+                "If you want use SSL(https), must config the 'swoole.ssl_cert_file' and 'swoole.ssl_key_file'",
+                1
+            );
         }
     }
 

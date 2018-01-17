@@ -8,11 +8,16 @@
 
 namespace Inhere\Server\Listeners\Server;
 
+use Inhere\Server\Server;
+
 /**
- * Class ServerListenerInterface
+ * Interface ServerListenerInterface
  * @package Inhere\Server\Listeners\Server
  */
-class ServerListenerInterface
+interface ServerListenerInterface
 {
-
+    /**
+     * @param Server $server
+     */
+    public function handle(Server $server): void;
 }

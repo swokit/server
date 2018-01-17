@@ -359,8 +359,8 @@ trait ServerCreateTrait
                 $port = $cb($server, $this);
             } else {
                 /**
-                 * @var PortListenerInterface $cb
                  * @var ServerInterface $this
+                 * @var PortListenerInterface $cb
                  */
                 $port = $cb->attachTo($this, $server);
             }

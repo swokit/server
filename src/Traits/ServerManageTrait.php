@@ -111,7 +111,7 @@ trait ServerManageTrait
         try {
             $this->bootstrap();
 
-            self::$_stats['start_time'] = microtime(1);
+            self::addStat('start_time', microtime(1));
 
             // display some messages
             $this->showStartStatus();
