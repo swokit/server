@@ -26,9 +26,9 @@ trait SomeSwooleEventTrait
     /** @var bool  */
     protected $taskWorker = false;
 
-//////////////////////////////////////////////////////////////////////
-/// swoole event handler
-//////////////////////////////////////////////////////////////////////
+    /*********************************************************************************************
+     * swoole event handler
+     ********************************************************************************************/
 
     /**
      * on Master Start
@@ -41,9 +41,9 @@ trait SomeSwooleEventTrait
         // save master process id to file.
         $this->createPidFile($masterPid);
 
-        ProcessHelper::setTitle(sprintf('swoole: master (%s IN %s)', $this->name, $this->getValue('root_path')));
+        ProcessHelper::setTitle(sprintf('swoole: master (%s IN %s)', $this->name, $this->config('rootPath')));
 
-        $this->log("The <comment>master</comment> process success started. (PID:<info>{$masterPid}</info>, pid_file: $this->pidFile)");
+        $this->log("The <comment>master</comment> process success started. (PID:<info>{$masterPid}</info>, pidFile: $this->pidFile)");
     }
 
     /**

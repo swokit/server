@@ -174,7 +174,7 @@ trait ServerCreateTrait
         // Show::aList($this->swooleEventMap, 'Registered swoole events to the main server: event -> handler');
 
         // register event to swoole
-        foreach (self::$swooleEventMap as $name => $cb) {
+        foreach (self::$swooleEvents as $name => $cb) {
             // is a Closure callback, add by self::onSwoole()
             if (\is_object($cb) && method_exists($cb, '__invoke')) {
                 $eventInfo[] = [$name, \get_class($cb)];
@@ -314,7 +314,7 @@ trait ServerCreateTrait
 
             $kit = new HotReloading($svrPid);
             $kit
-                ->addWatches($dirs, $this->config['root_path'])
+                ->addWatches($dirs, $this->config['rootPath'])
                 ->setReloadHandler(function ($pid) use ($mgr, $onlyReloadTask) {
                     $mgr->log("Begin reload workers process. (Master PID: {$pid})");
                     $mgr->server->reload($onlyReloadTask);
@@ -324,19 +324,6 @@ trait ServerCreateTrait
             //Interact::section('Watched Directory', $kit->getWatchedDirs());
 
             $kit->run();
-
-            // while (true) {
-            //     $msg = $process->read();
-            //     // 重启所有worker进程
-            //     if ( $msg === 'reload' ) {
-            //         $onlyReloadTaskWorker = false;
-            //         $server->reload($onlyReloadTaskWorker);
-            //     } else {
-            //         foreach($server->connections as $conn) {
-            //             $server->send($conn, $msg);
-            //         }
-            //     }
-            // }
         });
     }
 
@@ -381,17 +368,17 @@ trait ServerCreateTrait
      * @param $name
      * @param \Closure|array|PortListenerInterface $config
      */
-    public function attachListener($name, $config)
+    public function attachListener(string $name, $config)
     {
         $this->attachPortListener($name, $config);
     }
 
     /**
      * attach add listen port to main server.
-     * @param $name
+     * @param string $name
      * @param \Closure|array|PortListenerInterface $config
      */
-    public function attachPortListener($name, $config)
+    public function attachPortListener(string $name, $config)
     {
         if (isset($this->attachedNames[strtolower($name)])) {
             throw new \RuntimeException("The add listen port server [$name] has been exists!");
@@ -427,10 +414,10 @@ trait ServerCreateTrait
     }
 
     /**
-     * @param $name
-     * @return Port
+     * @param string $name
+     * @return Port|mixed
      */
-    public function getAttachedListener($name)
+    public function getAttachedListener(string $name)
     {
         return $this->getAttachedServer($name);
     }
@@ -439,7 +426,7 @@ trait ServerCreateTrait
      * @param $name
      * @return mixed
      */
-    public function getAttachedServer($name)
+    public function getAttachedServer(string $name)
     {
         if (!isset($this->attachedNames[$name])) {
             throw new \RuntimeException("The add listen port server [$name] don't exists!");
@@ -452,14 +439,14 @@ trait ServerCreateTrait
      * @param $name
      * @return bool
      */
-    public function isAttachedServer($name)
+    public function isAttachedServer(string $name): bool
     {
         return isset($this->attachedNames[$name]);
     }
 
     /**
      * @param null|string $protocol
-     * @return array
+     * @return array|null
      */
     public function getSwooleProtocolEvents($protocol = null)
     {

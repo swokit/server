@@ -15,7 +15,7 @@ require dirname(__DIR__) . '/tests/boot.php';
 $config = [
     'debug' => true,
     'name' => 'demo',
-    'pid_file' => __DIR__ . '/logs/test_server.pid',
+    'pidFile' => __DIR__ . '/logs/test_server.pid',
     'log_service' => [
         'name'     => 'slim_server',
         'basePath' => __DIR__ . '/logs/test_server',

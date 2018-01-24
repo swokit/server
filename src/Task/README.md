@@ -1,7 +1,12 @@
 # task
 
+## timer task
 
-## linux cronTab
+定时任务
+
+## Schedule Task(linux cronTab)
+
+计划任务
 
 crontab文件中每行的每个字段代表一项设置，它的格式共分为六个字段，前五段是时间设定段，第六段是要执行的命令段，
 

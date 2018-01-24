@@ -193,7 +193,7 @@ trait HttpServerTrait
      * @param Request $req
      * @return bool
      */
-    public function isAjax(Request $req)
+    public function isAjax(Request $req): bool
     {
         if (isset($req->header['x-requested-with'])) {
             return $req->header['x-requested-with'] === 'XMLHttpRequest';

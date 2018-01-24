@@ -13,7 +13,6 @@ use Inhere\Console\Utils\Show;
 use Inhere\Library\Components\ErrorHandler;
 use Inhere\Library\Helpers\Arr;
 use Inhere\Library\Helpers\PhpHelper;
-use Inhere\Library\Traits\ConfigTrait;
 use Inhere\Library\Traits\EventTrait;
 use Inhere\Server\Components\FileLogHandler;
 use Inhere\Server\Traits\ServerCreateTrait;
@@ -28,14 +27,12 @@ use Swoole\Coroutine;
  * Class Server - Server Manager
  * @package Inhere\Server
  * Running processes:
+ *
  * ```
  * ```
  */
-class Server implements ServerInterface
+class Server extends AbstractServer
 {
-    use ConfigTrait {
-        setConfig as tSetConfig;
-    }
     use EventTrait, ServerManageTrait, ServerCreateTrait, SomeSwooleEventTrait;
 
     /** @var static */
@@ -79,8 +76,8 @@ class Server implements ServerInterface
         // basic config
         'name' => '',
         'debug' => false,
-        'root_path' => '',
-        'pid_file' => '/tmp/swoole_server.pid',
+        'rootPath' => '',
+        'pidFile' => '/tmp/swoole_server.pid',
 
         // will create a process auto reload server
         'auto_reload' => '', // 'src,config'
@@ -155,7 +152,7 @@ class Server implements ServerInterface
     /**
      * @var array
      */
-    protected static $swooleEventMap = [
+    protected static $swooleEvents = [
         // 'event'  => 'callback',
         'start' => 'onMasterStart',
         'shutdown' => 'onMasterStop',
@@ -192,8 +189,6 @@ class Server implements ServerInterface
         self::$instance = $this;
         $this->input = new Input;
 
-        $this->setConfig($config);
-
         $this->init();
 
         // create logger if not setting
@@ -216,26 +211,22 @@ class Server implements ServerInterface
     {
         $this->loadCommandLineOpts($this->input);
 
-        if (!$this->pidFile = $this->getValue('pid_file')) {
-            throw new \RuntimeException('The config option \'pid_file\' is must setting');
+        if (!$this->pidFile = $this->config('pidFile')) {
+            throw new \RuntimeException("The config option 'pidFile' is must setting");
         }
 
         // project root path
-        if (!$this->getValue('root_path')) {
-            if (\defined('PROJECT_PATH')) {
-                $this->setConfig(['root_path' => PROJECT_PATH]);
-            } else {
-                throw new \RuntimeException('The project path \'root_path\' is must setting');
-            }
+        if (!$this->config('rootPath')) {
+            throw new \RuntimeException("The project path 'rootPath' is must setting");
         }
 
-        if (!($this->name = $this->getValue('name'))) {
-            $this->name = basename($this->getValue('root_path'));
-            $this->setConfig(['name' => $this->name]);
+        if (!$this->name = $this->config('name')) {
+            $this->name = basename($this->config('rootPath'));
+            $this->config['name'] = $this->name;
         }
 
         // Get server is debug mode
-        $this->debug = (bool)$this->getValue('debug', false);
+        $this->debug = (bool)$this->config('debug', false);
 
         // register attach server from config
         if ($attachServers = $this->config['attach_servers']) {
@@ -245,7 +236,7 @@ class Server implements ServerInterface
         }
 
         // register main server event method
-        if ($methods = $this->getValue('main_server.extend_events')) {
+        if ($methods = $this->config('main_server.extend_events')) {
             $this->setSwooleEvents($methods);
         }
     }
@@ -266,7 +257,7 @@ class Server implements ServerInterface
 
     protected function makeLogger()
     {
-        $opts = $this->getValue('log', []);
+        $opts = $this->config('log', []);
 
         $fileHandler = new FileLogHandler($opts['file'], (int)$opts['level'], (int)$opts['splitType']);
         $mainHandler = new FingersCrossedHandler($fileHandler, (int)$opts['level'], (int)$opts['bufferSize']);
@@ -277,6 +268,14 @@ class Server implements ServerInterface
         $logger->pushHandler($mainHandler);
 
         $this->logger = $logger;
+    }
+
+    /**
+     * @return array
+     */
+    public function getConfig(): array
+    {
+        return $this->config;
     }
 
     /*******************************************************************************
@@ -366,9 +365,9 @@ class Server implements ServerInterface
             ],
             'Project Config' => [
                 'name' => $this->name,
-                'path' => $this->config['root_path'],
+                'path' => $this->config['rootPath'],
                 'auto_reload' => $this->config['auto_reload'],
-                'pid_file' => $this->config['pid_file'],
+                'pidFile' => $this->config['pidFile'],
             ],
             'Server Log' => $this->config['log'],
         ];
@@ -440,20 +439,20 @@ class Server implements ServerInterface
     {
         $event = trim($event);
 
-        if (!$this->isSupportedEvents($event)) {
+        if (!$this->isSwooleEvent($event)) {
             $supported = implode(',', self::SWOOLE_EVENTS);
             Show::error("You want add a not supported swoole event: $event. supported: \n $supported", -2);
         }
 
-        self::$swooleEventMap[$event] = $cb;
+        self::$swooleEvents[$event] = $cb;
     }
 
     /**
      * @return array
      */
-    public static function getSwooleEventMap()
+    public static function getSwooleEvents(): array
     {
-        return self::$swooleEventMap;
+        return self::$swooleEvents;
     }
 
     /**
@@ -469,7 +468,7 @@ class Server implements ServerInterface
      * @return LoggerInterface
      * @throws \RuntimeException
      */
-    public function getLogger()
+    public function getLogger(): LoggerInterface
     {
         return $this->logger;
     }
@@ -477,7 +476,7 @@ class Server implements ServerInterface
     /**
      * @return array
      */
-    public function getSupportedProtocols()
+    public function getSupportedProtocols(): array
     {
         return [
             self::PROTOCOL_HTTP,
@@ -492,7 +491,7 @@ class Server implements ServerInterface
     /**
      * @return array
      */
-    public function getSwooleEvents()
+    public function allSwooleEvents(): array
     {
         return self::SWOOLE_EVENTS;
     }
@@ -501,7 +500,7 @@ class Server implements ServerInterface
      * @param string $event
      * @return bool
      */
-    public function isSupportedEvents($event)
+    public function isSwooleEvent(string $event): bool
     {
         return \in_array($event, self::SWOOLE_EVENTS, true);
     }
@@ -540,7 +539,7 @@ class Server implements ServerInterface
         }
 
         // check ssl config
-        if (!$this->getValue('swoole.ssl_cert_file') || !$this->getValue('swoole.ssl_key_file')) {
+        if (!$this->config['swoole']['ssl_cert_file'] || !$this->config['swoole']['ssl_key_file']) {
             Show::error(
                 "If you want use SSL(https), must config the 'swoole.ssl_cert_file' and 'swoole.ssl_key_file'",
                 1
@@ -553,7 +552,7 @@ class Server implements ServerInterface
      * @param int $cid
      * @return array
      */
-    public function getPeerName($cid)
+    public function getPeerName(int $cid): array
     {
         $data = $this->getClientInfo($cid);
 
@@ -579,7 +578,7 @@ class Server implements ServerInterface
      *  close_errno => int 连接关闭的错误码，如果连接异常关闭，close_errno的值是非零
      * ]
      */
-    public function getClientInfo(int $cid)
+    public function getClientInfo(int $cid): array
     {
         // @link https://wiki.swoole.com/wiki/page/p-connection_info.html
         return $this->server->getClientInfo($cid);
@@ -588,7 +587,7 @@ class Server implements ServerInterface
     /**
      * @return int
      */
-    public function getErrorNo()
+    public function getErrorNo(): int
     {
         return $this->server->getLastError();
     }
@@ -596,7 +595,7 @@ class Server implements ServerInterface
     /**
      * @return string
      */
-    public function getErrorMsg()
+    public function getErrorMsg(): string
     {
         $err = error_get_last();
 
@@ -620,18 +619,6 @@ class Server implements ServerInterface
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public function setConfig(array $config)
-    {
-        if ($this->bootstrapped) {
-            throw new \InvalidArgumentException('Has been initialize completed. don\'t allow change config.');
-        }
-
-        $this->tSetConfig($config);
-    }
-
-    /**
      * @return ErrorHandler
      */
     public function getErrorHandler(): ErrorHandler
@@ -652,9 +639,19 @@ class Server implements ServerInterface
      ******************************************************************************/
 
     /**
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    public function config(string $key, $default = null)
+    {
+        return $this->config[$key] ?? $default;
+    }
+
+    /**
      * @return array
      */
-    protected function prepareRuntimeContext()
+    protected function prepareRuntimeContext(): array
     {
         return [
             'workerId' => $this->getWorkerId(),
@@ -671,7 +668,7 @@ class Server implements ServerInterface
      * @param string|int $type
      * @return void
      */
-    public function log($msg, array $data = [], $type = Logger::INFO)
+    public function log(string $msg, array $data = [], $type = Logger::INFO)
     {
         $appendContext = $this->prepareRuntimeContext();
 
@@ -703,10 +700,11 @@ class Server implements ServerInterface
      * @param \Throwable|\Exception $e (\Exception \Error)
      * @param string $catcher
      */
-    public function handleException($e, $catcher)
+    public function handleException($e, string $catcher)
     {
         $content = PhpHelper::exceptionToString($e, $this->isDebug(), $catcher);
 
         $this->log($content, [], Logger::ERROR);
     }
+
 }

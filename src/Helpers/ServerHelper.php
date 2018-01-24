@@ -34,7 +34,7 @@ class ServerHelper
     /**
      * @return bool
      */
-    public static function coroutineIsEnabled()
+    public static function coIsEnabled(): bool
     {
         return class_exists(Coroutine::class, false);
     }

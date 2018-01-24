@@ -14,7 +14,10 @@ namespace Inhere\Server\Task;
  */
 abstract class TimerTask implements TaskInterface
 {
-    public function beforeRun($args)
+    /**
+     * @param array $args
+     */
+    public function beforeRun(array $args)
     {
     }
 
@@ -28,9 +31,16 @@ abstract class TimerTask implements TaskInterface
         $this->afterRun($args);
     }
 
-    abstract public function doRun($args);
+    /**
+     * @param array $args
+     * @return mixed
+     */
+    abstract public function doRun(array $args);
 
-    public function afterRun($args)
+    /**
+     * @param array $args
+     */
+    public function afterRun(array $args)
     {
     }
 }

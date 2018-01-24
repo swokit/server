@@ -8,7 +8,10 @@
 
 namespace Inhere\Server\Task;
 
-
+/**
+ * Class ScheduleTask
+ * @package Inhere\Server\Task
+ */
 class ScheduleTask
 {
 

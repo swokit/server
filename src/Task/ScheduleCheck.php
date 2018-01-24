@@ -20,7 +20,7 @@ class ScheduleCheck
      * @param string|callable $schedule
      * @return bool
      */
-    public static function isDue($schedule)
+    public static function isDue($schedule): bool
     {
         if (\is_callable($schedule)) {
             return $schedule();

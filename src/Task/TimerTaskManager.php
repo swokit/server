@@ -33,7 +33,7 @@ class TimerTaskManager
      */
     const ONCE = 1;
     const STOPPED = 0;
-    const RUNNING = -1;
+    const FOREVER = -1;
     const CLEAR = -10;
 
     /**
@@ -77,7 +77,7 @@ class TimerTaskManager
      * @param int $times
      * @return $this
      */
-    public function tick(string $name, int $timeMs, callable $handler, array $params = [], int $times = self::RUNNING)
+    public function tick(string $name, int $timeMs, callable $handler, array $params = [], int $times = self::FOREVER)
     {
         return $this->add($name, $timeMs, $handler, $params, $times);
     }
@@ -111,7 +111,7 @@ class TimerTaskManager
      *  >0 run defined times, then stop it. 需要执行的次数
      * @return $this
      */
-    public function add(string $name, int $timeMs, callable $handler, array $params = [], int $times = self::RUNNING)
+    public function add(string $name, int $timeMs, callable $handler, array $params = [], int $times = self::FOREVER)
     {
         if ($this->has($name)) {
             throw new \InvalidArgumentException("The timer [$name] has been exists!");
@@ -138,7 +138,7 @@ class TimerTaskManager
      * @param mixed $params
      * @return bool
      */
-    public function dispatch(int $timerId, array $params = [])
+    public function dispatch(int $timerId, array $params = []): bool
     {
         if (!$name = $this->getTimerName($timerId)) {
             return false;
@@ -202,7 +202,7 @@ class TimerTaskManager
      * @param string $name
      * @return int
      */
-    public function getTimerId(string $name)
+    public function getTimerId(string $name): int
     {
         return array_search($name, $this->idNames, true) ?: 0;
     }
@@ -211,16 +211,16 @@ class TimerTaskManager
      * @param int $id
      * @return string|null
      */
-    public function getTimerName(int $id) : ?string
+    public function getTimerName(int $id) : string
     {
-        return $this->idNames[$id] ?? null;
+        return $this->idNames[$id] ?? '';
     }
 
     /**
      * @param string $name
      * @return bool
      */
-    public function has(string $name)
+    public function has(string $name): bool
     {
         return isset($this->timers[$name]);
     }
@@ -229,7 +229,7 @@ class TimerTaskManager
      * @param string $name
      * @return bool
      */
-    public function clear(string $name)
+    public function clear(string $name): bool
     {
         if ($timer = $this->timers[$name] ?? null) {
             $id = $timer[self::IDX_ID];

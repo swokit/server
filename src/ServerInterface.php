@@ -42,9 +42,9 @@ interface ServerInterface
      */
     const SWOOLE_EVENTS = [
         // basic
-        'start', 'shutdown', 'workerStart', 'workerStop', 'workerError', 'managerStart', 'managerStop',
+        'start', 'shutdown', 'workerStart', 'workerStop', 'workerExit', 'workerError', 'managerStart', 'managerStop',
         // special
-        'pipeMessage',
+        'pipeMessage', 'bufferFull', 'bufferEmpty',
         // tcp/udp
         'connect', 'receive', 'packet', 'close',
         // task
@@ -96,22 +96,22 @@ interface ServerInterface
      * @param int $level
      * @return void
      */
-    public function log($msg, array $data = [], $level = Logger::INFO);
+    public function log(string $msg, array $data = [], $level = Logger::INFO);
 
     /**
      * @return array
      */
-    public function getSupportedProtocols();
+    public function getSupportedProtocols(): array;
 
     /**
      * @return array
      */
-    public function getConfig();
+    public function getConfig(): array;
 
     /**
      * @param string $key
      * @param mixed $default
      * @return mixed
      */
-    public function getValue(string $key, $default = null);
+    public function config(string $key, $default = null);
 }

@@ -173,6 +173,7 @@ trait ServerManageTrait
     /**
      * Do restart server
      * @param null|bool $daemon
+     * @throws \Throwable
      */
     public function restart($daemon = null)
     {
@@ -188,7 +189,7 @@ trait ServerManageTrait
      * @param  boolean $quit Quit, When stop success?
      * @return int
      */
-    public function stop($quit = true)
+    public function stop($quit = true): int
     {
         if (!$masterPid = $this->getPidFromFile(true)) {
             return Show::error("The swoole server({$this->name}) is not running.", true);
@@ -268,7 +269,7 @@ trait ServerManageTrait
      * @param null|int $workerId
      * @return bool
      */
-    public function stopWorker($workerId = null)
+    public function stopWorker(int $workerId = null): bool
     {
         if ($this->server) {
             return $this->server->stop($workerId);
@@ -282,7 +283,7 @@ trait ServerManageTrait
      * @param bool $quit
      * @return bool
      */
-    public function showHelp($scriptName, $quit = false)
+    public function showHelp($scriptName, $quit = false): bool
     {
         // 'bin/test_server.php'
         // $scriptName = $input->getScriptName();
@@ -328,7 +329,7 @@ trait ServerManageTrait
      * @param bool $checkRunning
      * @return int
      */
-    public function getPidFromFile($checkRunning = false)
+    public function getPidFromFile($checkRunning = false): int
     {
         return ProcessHelper::getPidFromFile($this->pidFile, $checkRunning);
     }
