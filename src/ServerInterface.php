@@ -34,6 +34,7 @@ interface ServerInterface
     const PROTOCOL_UDP = 'udp';
     const PROTOCOL_HTTP = 'http';
     const PROTOCOL_HTTPS = 'https';
+    const PROTOCOL_RDS = 'rds';  // redis
     const PROTOCOL_WS = 'ws';  // webSocket
     const PROTOCOL_WSS = 'wss'; // webSocket ssl
 

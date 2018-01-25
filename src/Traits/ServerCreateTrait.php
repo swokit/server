@@ -18,6 +18,7 @@ use Swoole\Http\Server as HttpServer;
 use Swoole\Process;
 use Swoole\Server;
 use Swoole\Server\Port;
+use Swoole\Redis\Server as RedisServer;
 use Swoole\Websocket\Server as WSServer;
 
 /**
@@ -71,16 +72,36 @@ trait ServerCreateTrait
      */
     private static $swooleProtocolEvents = [
         // TCP server callback
-        'tcp' => ['onConnect', 'onReceive', 'onClose'],
+        'tcp' => [
+            'connect' => 'onConnect',
+            'receive' => 'onReceive',
+            'close' => 'onClose'
+        ],
 
         // UDP server callback
-        'udp' => ['onPacket', 'onClose'],
+        'udp' => [
+            'packet' => 'onPacket',
+            'close' => 'onClose'
+        ],
 
         // HTTP server callback
-        'http' => ['onRequest'],
+        'http' => [
+            'request' => 'onRequest'
+        ],
 
         // Web Socket server callback
-        'ws' => ['onMessage', 'onOpen', 'onHandShake', 'onClose'],
+        'ws' => [
+            'open' => 'onOpen',
+            'close' => 'onClose',
+            'message' => 'onMessage',
+            'handShake' => 'onHandShake',
+        ],
+
+        // redis server callback
+        'rds' => [
+            'task' => 'onTask',
+            'finish' => 'onFinish',
+        ],
     ];
 
 //////////////////////////////////////////////////////////////////////
@@ -109,7 +130,6 @@ trait ServerCreateTrait
         $type = strtolower($opts['type']);
 
         $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_HTTP];
-        $this->beforeCreateServer();
 
         // create swoole server
         // 使用SSL必须在编译swoole时加入--enable-openssl选项,并且配置证书文件
@@ -133,6 +153,11 @@ trait ServerCreateTrait
                 $server = new HttpServer($host, $port, $mode, SWOOLE_SOCK_TCP | SWOOLE_SSL);
                 break;
 
+            case self::PROTOCOL_RDS:
+                $server = new RedisServer($host, $port, $mode);
+                $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_RDS];
+                break;
+
             case self::PROTOCOL_WS:
                 $server = new WSServer($host, $port, $mode);
                 $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_WS];
@@ -151,18 +176,10 @@ trait ServerCreateTrait
         }
 
         $this->server = $server;
+        $this->server->set($this->config['swoole']);
 
         $this->log("The main server was created successfully. Listening on <cyan>$type://{$host}:{$port}</cyan>");
         $this->setSwooleEvents($protocolEvents);
-        $this->afterCreateServer();
-    }
-
-    /**
-     * afterCreateServer
-     * @throws \RuntimeException
-     */
-    protected function afterCreateServer()
-    {
     }
 
     /**
@@ -171,10 +188,9 @@ trait ServerCreateTrait
     protected function registerServerEvents()
     {
         $eventInfo = [];
-        // Show::aList($this->swooleEventMap, 'Registered swoole events to the main server: event -> handler');
 
         // register event to swoole
-        foreach (self::$swooleEvents as $name => $cb) {
+        foreach ($this->swooleEvents as $name => $cb) {
             // is a Closure callback, add by self::onSwoole()
             if (\is_object($cb) && method_exists($cb, '__invoke')) {
                 $eventInfo[] = [$name, \get_class($cb)];
@@ -191,9 +207,9 @@ trait ServerCreateTrait
             }
         }
 
-        Show::table($eventInfo, 'Registered events to the main server', [
+        Show::table($eventInfo, 'Registered events to the server', [
             'showBorder' => 0,
-            'columns' => ['event name', 'event handler']
+            'columns' => ['event name', 'swoole event handler']
         ]);
     }
 

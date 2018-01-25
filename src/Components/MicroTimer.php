@@ -24,6 +24,9 @@ use Swoole\Process;
  */
 class MicroTimer
 {
+    /**
+     * @return $this
+     */
     public function create()
     {
         Process::signal(SIGALRM, function () {
@@ -33,21 +36,31 @@ class MicroTimer
         return $this;
     }
 
+    /**
+     * @param int $uSecond
+     */
     public function start(int $uSecond)
     {
         Process::alarm($uSecond);
     }
 
+    /**
+     *
+     */
     protected function run()
     {
         static $i = 0;
         echo "#{$i}\talarm\n";
         $i++;
+
         if ($i > 20) {
             $this->clear(1);
         }
     }
 
+    /**
+     * @param bool $exit
+     */
     public function clear($exit = false)
     {
         Process::alarm(-1);
