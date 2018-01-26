@@ -1,5 +1,11 @@
 # task
 
+任务我看来有三个 
+
+- swoole的异步任务 
+- timer的定时任务 
+- 类似cron的计划任务
+
 ## timer task
 
 定时任务
