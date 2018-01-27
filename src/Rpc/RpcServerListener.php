@@ -8,8 +8,8 @@
 
 namespace Inhere\Server\Rpc;
 
-use Inhere\Server\Listeners\Ports\PortListener;
-use Inhere\Server\Listeners\Ports\TcpListenerInterface;
+use Inhere\Server\Listener\Port\PortListener;
+use Inhere\Server\Listener\Port\TcpListenerInterface;
 use Swoole\Server;
 
 /**

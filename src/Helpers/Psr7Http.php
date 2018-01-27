@@ -6,7 +6,7 @@
  * Time: 15:25
  */
 
-namespace Inhere\Server\Helpers;
+namespace Inhere\Server\Helper;
 
 use Inhere\Http\ServerRequest;
 use Inhere\Http\Response;

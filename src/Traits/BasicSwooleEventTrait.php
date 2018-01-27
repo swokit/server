@@ -9,7 +9,7 @@
 namespace Inhere\Server\Traits;
 
 use Inhere\Console\Utils\ProcessUtil;
-use Inhere\Server\Helpers\ServerUtil;
+use Inhere\Server\Helper\ServerUtil;
 use Swoole\Server;
 
 /**

@@ -6,13 +6,13 @@
  * Time: 15:20
  */
 
-namespace Inhere\Server\Listeners\Ports;
+namespace Inhere\Server\Listener\Port;
 
 use Swoole\Server as SwServer;
 
 /**
  * Class TcpListenerInterface
- * @package Inhere\Server\Listeners\Ports
+ * @package Inhere\Server\Listener\Port
  */
 interface TcpListenerInterface //extends InterfacePortListener
 {

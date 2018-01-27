@@ -18,7 +18,7 @@
     "inhere/library": "dev-master"
   },
   "autoload": {
-    "files": ["src/Helpers/Functions.php"],
+    "files": ["src/Helper/functions.php"],
     "psr-4": {
       "Inhere\\Server\\" : "src/"
     }

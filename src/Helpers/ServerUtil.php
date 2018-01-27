@@ -6,7 +6,7 @@
  * Time: 19:09
  */
 
-namespace Inhere\Server\Helpers;
+namespace Inhere\Server\Helper;
 
 use Inhere\Console\Utils\ProcessUtil;
 use Inhere\Console\Utils\Show;

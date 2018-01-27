@@ -6,11 +6,11 @@
  * Time: 9:27
  */
 
-namespace Inhere\Server\Listeners\Server;
+namespace Inhere\Server\Listener\Server;
 
 /**
  * Class ServerEvents
- * @package Inhere\Server\Listeners\Server
+ * @package Inhere\Server\Listener\Server
  */
 final class ServerEvents
 {

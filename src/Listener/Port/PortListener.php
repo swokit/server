@@ -6,7 +6,7 @@
  * Time: 15:20
  */
 
-namespace Inhere\Server\Listeners\Ports;
+namespace Inhere\Server\Listener\Port;
 
 use Inhere\Console\Utils\Show;
 use Inhere\Library\Traits\OptionsTrait;
@@ -16,7 +16,7 @@ use Swoole\Server;
 
 /**
  * Class BaseListener
- * @package Inhere\Server\Listeners\Ports
+ * @package Inhere\Server\Listener\Port
  */
 abstract class PortListener implements PortListenerInterface
 {

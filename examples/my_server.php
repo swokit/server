@@ -16,11 +16,13 @@ $config = [
     'debug' => true,
     'name' => 'demo',
     'pidFile' => __DIR__ . '/logs/test_server.pid',
-    'log_service' => [
+
+    'logger' => [
         'name'     => 'slim_server',
         'basePath' => __DIR__ . '/logs/test_server',
         'logThreshold' => 0,
     ],
+
     'auto_reload' => 'src,config',
 
     // for current main server/ outside extend server.
@@ -29,19 +31,20 @@ $config = [
     ],
 
     // main server
-    'main_server' => [
-        'type' => 'tcp', // http https tcp udp ws wss
+    'server' => [
+        'type' => 'tcp', // http https tcp udp ws wss rds
         'port' => 9501,
     ],
 
     // attach port server by config
-    'attach_servers' => [
+    'ports' => [
         'port1' => [
             'host' => '0.0.0.0',
             'port' => '9761',
             'type' => 'udp',
+
             // must setting the handler class in config.
-            'listener' => \Inhere\Server\PortListeners\UdpListener::class,
+            'listener' => \Inhere\Server\Listener\Port\UdpListener::class,
         ]
     ],
 
@@ -58,7 +61,7 @@ $config = [
 // $mgr = new \Inhere\Server\Extend\WebSocketServer($config);
 $mgr = new \Inhere\Server\Server($config);
 
-$mgr->attachListener('port2', new \Inhere\Server\PortListeners\UdpListener([
+$mgr->attachListener('port2', new \Inhere\Server\Listener\Port\UdpListener([
     'host' => '0.0.0.0',
     'port' => '9762',
 ]));

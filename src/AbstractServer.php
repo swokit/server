@@ -11,7 +11,7 @@ namespace Inhere\Server;
 use Inhere\Console\Utils\Show;
 use Inhere\Library\Helpers\PhpException;
 use Inhere\Library\Traits\EventTrait;
-use Inhere\Server\Helpers\ServerUtil;
+use Inhere\Server\Helper\ServerUtil;
 use Inhere\Server\Traits\BasicSwooleEventTrait;
 use Inhere\Server\Traits\ServerCreateTrait;
 use Inhere\Server\Traits\ServerManageTrait;

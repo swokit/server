@@ -6,13 +6,13 @@
  * Time: 9:27
  */
 
-namespace Inhere\Server\Listeners\Server;
+namespace Inhere\Server\Listener\Server;
 
 use Inhere\Server\Server;
 
 /**
  * Interface ServerListenerInterface
- * @package Inhere\Server\Listeners\Server
+ * @package Inhere\Server\Listener\Server
  */
 interface ServerListenerInterface
 {

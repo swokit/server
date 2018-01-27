@@ -10,8 +10,8 @@ namespace Inhere\Server\Traits;
 
 use Inhere\Console\Utils\Show;
 use Inhere\Console\Utils\ProcessUtil;
-use Inhere\Server\Helpers\ProcessHelper;
-use Inhere\Server\Helpers\ServerUtil;
+use Inhere\Server\Helper\ProcessHelper;
+use Inhere\Server\Helper\ServerUtil;
 use Swoole\Coroutine;
 use Swoole\Server;
 
