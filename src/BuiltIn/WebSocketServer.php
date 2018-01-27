@@ -6,7 +6,7 @@
  * Time: 16:04
  */
 
-namespace Inhere\Server\Servers;
+namespace Inhere\Server\BuiltIn;
 
 use Swoole\Http\Request;
 use Swoole\Http\Response;
@@ -16,7 +16,7 @@ use Swoole\Websocket\Server;
 
 /**
  * Class WebSocketServer
- * @package Inhere\Server\Servers
+ * @package Inhere\Server\BuiltIn
  */
 class WebSocketServer extends HttpServer
 {

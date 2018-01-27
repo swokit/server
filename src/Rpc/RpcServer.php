@@ -8,7 +8,7 @@
 
 namespace Inhere\Server\Rpc;
 
-use Inhere\Server\Servers\TcpServer;
+use Inhere\Server\BuiltIn\TcpServer;
 
 /**
  * Class RpcServer

@@ -8,7 +8,7 @@
 
 namespace Inhere\Server\Console\Controllers;
 
-use Inhere\Server\Servers\TaskServer;
+use Inhere\Server\BuiltIn\TaskServer;
 
 /**
  * Class TaskServerController

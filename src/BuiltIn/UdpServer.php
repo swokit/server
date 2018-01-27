@@ -6,14 +6,14 @@
  * Time: 16:04
  */
 
-namespace Inhere\Server\Servers;
+namespace Inhere\Server\BuiltIn;
 
 use Inhere\Server\Server;
 use Swoole\Server as SwServer;
 
 /**
  * Class UdpServerHandler
- * @package Inhere\Server\Servers
+ * @package Inhere\Server\BuiltIn
  * UDP服务器与TCP服务器不同，UDP没有连接的概念。启动Server后，客户端无需Connect，
  * 直接可以向Server监听的端口发送数据包。对应的事件为 onPacket。
  */

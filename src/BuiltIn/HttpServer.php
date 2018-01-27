@@ -6,7 +6,7 @@
  * Time: 16:04
  */
 
-namespace Inhere\Server\Servers;
+namespace Inhere\Server\BuiltIn;
 
 use Inhere\Console\Utils\Show;
 use Inhere\Library\Traits\OptionsTrait;
