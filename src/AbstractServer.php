@@ -612,6 +612,17 @@ abstract class AbstractServer implements ServerInterface
     }
 
     /**
+     * @param array $config
+     * @return AbstractServer
+     */
+    public function setSwoole(array $config): AbstractServer
+    {
+        $this->config['swoole'] = array_merge($this->config['swoole'], $config);
+
+        return $this;
+    }
+
+    /**
      * @param array $swooleEvents
      * @return AbstractServer
      */

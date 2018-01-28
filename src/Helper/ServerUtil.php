@@ -58,6 +58,42 @@ class ServerUtil
     }
 
     /**
+     * @return bool
+     */
+    public static function coroutineIsEnabled(): bool
+    {
+        return self::isSupportCoroutine();
+    }
+
+    /**
+     * @return bool
+     */
+    public static function coIsEnabled(): bool
+    {
+        return self::isSupportCoroutine();
+    }
+
+    /**
+     * @return bool
+     */
+    public static function isSupportCoroutine(): bool
+    {
+        return class_exists(Coroutine::class, false);
+    }
+
+    /**
+     * @return bool
+     */
+    public static function inCoroutine(): bool
+    {
+        if (self::isSupportCoroutine()) {
+            return Coroutine::getuid() > 0;
+        }
+
+        return false;
+    }
+
+    /**
      * @param string $pidFile
      * @param bool $checkRunning
      * @return int
