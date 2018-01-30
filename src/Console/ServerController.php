@@ -19,7 +19,7 @@ class ServerController extends Controller
     protected static $name = 'server';
     protected static $description = 'some operation for application server';
 
-    public static function commandAliases()
+    public static function commandAliases(): array
     {
         return [
             'conf' => 'config',
