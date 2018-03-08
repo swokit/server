@@ -15,7 +15,7 @@
   "require": {
     "php": ">=7.0.0",
     "inhere/console": "dev-master",
-    "inhere/library": "dev-master"
+    "swoole-libs/utils": "~1.0"
   },
   "autoload": {
     "files": ["src/Helper/functions.php"],
