@@ -8,7 +8,7 @@
 
 namespace Inhere\Server\Components;
 
-use Inhere\Library\Helpers\Sys;
+use MyLib\SysUtil\Sys;
 
 /**
  * Class FilesWatcher - Check Dir's files modified by md5_file()

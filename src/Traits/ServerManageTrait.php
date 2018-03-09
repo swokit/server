@@ -8,12 +8,12 @@
 
 namespace Inhere\Server\Traits;
 
-use Inhere\Console\Utils\Show;
-use Inhere\Console\Utils\ProcessUtil;
-use Inhere\Server\Helper\ProcessHelper;
-use Inhere\Server\Helper\ServerUtil;
-use Swoole\Coroutine;
 use Swoole\Server;
+use Swoole\Coroutine;
+use Inhere\Console\Utils\Show;
+use MyLib\SysUtil\ProcessUtil;
+use Inhere\Server\Helper\ServerUtil;
+use Inhere\Server\Helper\ProcessHelper;
 
 /**
  * Class ServerManageTrait

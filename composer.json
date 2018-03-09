@@ -13,18 +13,19 @@
     }
   ],
   "require": {
-    "php": ">=7.0.0",
+    "php": ">7.0.0",
     "inhere/console": "dev-master",
-    "inhere/library": "dev-master"
+    "swoole-libs/utils": "~1.0"
   },
   "autoload": {
-    "files": ["src/Helper/functions.php"],
+    "files": [
+      "src/Helper/functions.php"
+    ],
     "psr-4": {
       "Inhere\\Server\\" : "src/"
     }
   },
   "suggest": {
-    "ext-swoole": "The swoole extension is required for running",
-    "inhere/simple-print-tool": "Very lightweight data printing tools"
+    "ext-swoole": "The swoole extension is required for running"
   }
 }
