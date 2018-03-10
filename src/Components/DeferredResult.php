@@ -10,7 +10,7 @@ namespace Inhere\Server\Components;
 
 /**
  * Class DeferredResult
- * @package Inhere\Library\Components
+ * @package Inhere\Server\Components
  */
 class DeferredResult
 {

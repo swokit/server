@@ -8,18 +8,18 @@
 
 namespace Inhere\Server\Traits;
 
+use Swoole\Server;
+use Swoole\Process;
+use Swoole\Server\Port;
 use Inhere\Console\Utils\Show;
+use MyLib\SysUtil\ProcessUtil;
 use Inhere\Library\Helpers\Arr;
-use Inhere\Server\Components\HotReloading;
-use Inhere\Server\Helper\ProcessHelper;
-use Inhere\Server\Listener\Port\PortListenerInterface;
 use Inhere\Server\ServerInterface;
 use Swoole\Http\Server as HttpServer;
-use Swoole\Process;
-use Swoole\Server;
-use Swoole\Server\Port;
 use Swoole\Redis\Server as RedisServer;
 use Swoole\Websocket\Server as WSServer;
+use Inhere\Server\Components\HotReloading;
+use Inhere\Server\Listener\Port\PortListenerInterface;
 
 /**
  * Class ServerCreateTrait
@@ -278,7 +278,7 @@ trait ServerCreateTrait
         $this->fire(self::ON_PROCESS_CREATE, [$this, $name]);
 
         $process = new Process(function (Process $p) use($callback, $name) {
-            ProcessHelper::setTitle("swoole: {$name} ({$this->name})");
+            ProcessUtil::setTitle("swoole: {$name} ({$this->name})");
 
             $this->fire(self::ON_PROCESS_STARTED, [$this, $name]);
             $callback($p, $this);
@@ -318,7 +318,7 @@ trait ServerCreateTrait
             $pid = $process->pid;
 
             $this->workerPid = $this->server->worker_pid = $pid;
-            ProcessHelper::setTitle("swoole: hot-reload ({$mgr->name})");
+            ProcessUtil::setTitle("swoole: hot-reload ({$mgr->name})");
 
             // $pid = $process->pid;
             $svrPid = $mgr->server->master_pid;

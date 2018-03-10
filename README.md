@@ -1,16 +1,22 @@
 # php server
 
+## install
+
+```bash
+composer require inhere/server
+```
+
 ## run flow
 
 ```text
-                    
-php bin/server -> 
+
+php bin/server ->
 
 ```
 
-## simple run 
+## simple run
 
-- create a instance 
+- create a instance
 
 ```
 $server = new TcpServer($config);
@@ -29,7 +35,7 @@ $server->run();
 - 在主服务器上追加监听的端口服务的事件不生效
 
 ```
-//file: server.php 
+//file: server.php
 
 $mainServer = new swoole_http_server('0.0.0.0', 9501);
 
@@ -61,11 +67,11 @@ $port->set([]); // 设置tcp监听的配置，可以覆盖继承的主server(swo
 $mainServer->start();
 ```
 
-重新运行server后再测试: 
+重新运行server后再测试:
 
 ```
 telnet 127.0.0.1 9661
-text 
+text
 Server text // 返回了消息
 ```
 

@@ -9,7 +9,7 @@
 namespace Inhere\Server;
 
 use Inhere\Console\Utils\Show;
-use Inhere\Library\Helpers\PhpException;
+use MyLib\PhpUtil\PhpException;
 use Inhere\Library\Traits\EventTrait;
 use Inhere\Server\Helper\ServerUtil;
 use Inhere\Server\Traits\BasicSwooleEventTrait;

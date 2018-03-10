@@ -8,9 +8,9 @@
 
 namespace Inhere\Server\Traits;
 
-use Inhere\Console\Utils\ProcessUtil;
-use Inhere\Server\Helper\ServerUtil;
 use Swoole\Server;
+use SwooleLib\Util\ServerUtil;
+use MyLib\SysUtil\ProcessUtil;
 
 /**
  * Trait BasicSwooleEventTrait
