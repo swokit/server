@@ -16,9 +16,7 @@ spl_autoload_register(function($class)
     $vendorDir = dirname($inhereDir);
 
     $map = [
-        // 'Inhere\\Library\Examples\\' => __DIR__,
         'Psr\\Log\\' => $vendorDir . '/psr/log/Psr/Log',
-        'Inhere\\Library\\' => $inhereDir . '/library/src',
         'Inhere\\Console\\' => $inhereDir . '/console/src',
         'Inhere\\Server\\' => dirname(__DIR__) . '/src',
     ];

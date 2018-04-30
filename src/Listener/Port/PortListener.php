@@ -9,7 +9,7 @@
 namespace Inhere\Server\Listener\Port;
 
 use Inhere\Console\Utils\Show;
-use Inhere\Library\Traits\OptionsTrait;
+use Toolkit\Traits\Config\OptionsTrait;
 use Inhere\Server\ServerInterface;
 use Monolog\Logger;
 use Swoole\Server;

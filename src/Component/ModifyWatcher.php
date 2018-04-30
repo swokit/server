@@ -6,13 +6,13 @@
  * Time: 20:56
  */
 
-namespace Inhere\Server\Components;
+namespace Inhere\Server\Component;
 
-use MyLib\SysUtil\Sys;
+use Toolkit\Sys\Sys;
 
 /**
  * Class FilesWatcher - Check Dir's files modified by md5_file()
- * @package Inhere\Server\Components
+ * @package Inhere\Server\Component
  */
 final class ModifyWatcher
 {

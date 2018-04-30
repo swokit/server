@@ -9,9 +9,11 @@
 namespace Inhere\Server;
 
 use Inhere\Console\Utils\Show;
-use MyLib\PhpUtil\PhpException;
-use Inhere\Library\Traits\EventTrait;
-use Inhere\Server\Helper\ServerUtil;
+use Inhere\Server\Event\ServerEvent;
+use Inhere\Server\Event\SwooleEvent;
+use Inhere\Server\Traits\ServerEventManageTrait;
+use Toolkit\PhpUtil\PhpException;
+use SwooleKit\Util\ServerUtil;
 use Inhere\Server\Traits\BasicSwooleEventTrait;
 use Inhere\Server\Traits\ServerCreateTrait;
 use Inhere\Server\Traits\ServerManageTrait;
@@ -24,7 +26,7 @@ use Psr\Log\NullLogger;
  */
 abstract class AbstractServer implements ServerInterface
 {
-    use EventTrait, BasicSwooleEventTrait, ServerCreateTrait, ServerManageTrait;
+    use ServerEventManageTrait, BasicSwooleEventTrait, ServerCreateTrait, ServerManageTrait;
 
     /** @var static */
     private static $instance;
@@ -180,6 +182,16 @@ abstract class AbstractServer implements ServerInterface
     ];
 
     /**
+     * @var array
+     */
+    protected $portsSettings = [];
+
+    /**
+     * @var array The settings for swoole. ($server->set($this->settings))
+     */
+    protected $settings = [];
+
+    /**
      * @param array $config
      * @return static
      */
@@ -259,6 +271,9 @@ abstract class AbstractServer implements ServerInterface
         }
     }
 
+    /**
+     * @throws \InvalidArgumentException
+     */
     protected function validateConfig()
     {
         foreach ($this->required as $name) {
@@ -291,7 +306,7 @@ abstract class AbstractServer implements ServerInterface
      * @param bool $value
      * @return $this
      */
-    public function asDaemon($value = null)
+    public function asDaemon($value = null): self
     {
         if (null !== $value) {
             $this->daemon = (bool)$value;
@@ -357,24 +372,25 @@ abstract class AbstractServer implements ServerInterface
 
     /**
      * bootstrap start
+     * @throws \RuntimeException
      */
     protected function bootstrap()
     {
         $this->bootstrapped = false;
 
         // prepare start server
-        $this->fire(self::ON_BOOTSTRAP, [$this]);
+        $this->fire(ServerEvent::BEFORE_BOOTSTRAP, [$this]);
         $this->beforeBootstrap();
 
         // do something for before create main server
-        $this->fire(self::ON_SERVER_CREATE, [$this]);
+        $this->fire(ServerEvent::BEFORE_SERVER_CREATE, [$this]);
         $this->beforeCreateServer();
 
         // create swoole server instance
         $this->createServer();
 
         // do something for after create main server(eg add custom process)
-        $this->fire(self::ON_SERVER_CREATED, [$this]);
+        $this->fire(ServerEvent::SERVER_CREATED, [$this]);
         $this->afterCreateServer();
 
         // attach Extend Server
@@ -390,7 +406,7 @@ abstract class AbstractServer implements ServerInterface
         $this->createListenServers($this->server);
 
         // prepared for start server
-        $this->fire(self::ON_BOOTSTRAPPED, [$this]);
+        $this->fire(ServerEvent::BOOTSTRAPPED, [$this]);
         $this->afterBootstrap();
 
         $this->bootstrapped = true;
@@ -484,6 +500,22 @@ abstract class AbstractServer implements ServerInterface
     }
 
     /**
+     * @return array
+     */
+    public function getPortsSettings(): array
+    {
+        return $this->portsSettings;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSettings(): array
+    {
+        return $this->settings;
+    }
+
+    /**
      * checkEnvWhenEnableSSL
      */
     protected function checkEnvWhenEnableSSL()
@@ -525,7 +557,7 @@ abstract class AbstractServer implements ServerInterface
      */
     public function allSwooleEvents(): array
     {
-        return self::SWOOLE_EVENTS;
+        return SwooleEvent::getAllEvents();
     }
 
     /**
@@ -534,7 +566,7 @@ abstract class AbstractServer implements ServerInterface
      */
     public function isSwooleEvent(string $event): bool
     {
-        return \in_array($event, self::SWOOLE_EVENTS, true);
+        return isset(SwooleEvent::DEFAULT_HANDLERS[$event]);
     }
 
     /**
@@ -617,7 +649,7 @@ abstract class AbstractServer implements ServerInterface
      */
     public function setSwoole(array $config): AbstractServer
     {
-        $this->config['swoole'] = array_merge($this->config['swoole'], $config);
+        $this->config['swoole'] = \array_merge($this->config['swoole'], $config);
 
         return $this;
     }
@@ -628,7 +660,7 @@ abstract class AbstractServer implements ServerInterface
      */
     public function setSwooleEvents(array $swooleEvents): AbstractServer
     {
-        $this->swooleEvents = array_merge($this->swooleEvents, $swooleEvents);
+        $this->swooleEvents = \array_merge($this->swooleEvents, $swooleEvents);
 
         return $this;
     }

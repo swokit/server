@@ -6,11 +6,11 @@
  * Time: 17:27
  */
 
-namespace Inhere\Server\Components;
+namespace Inhere\Server\Component;
 
 /**
  * Class DeferredResult
- * @package Inhere\Server\Components
+ * @package Inhere\Server\Component
  */
 class DeferredResult
 {

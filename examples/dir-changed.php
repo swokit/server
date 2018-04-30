@@ -8,7 +8,7 @@
 
 require dirname(__DIR__) . '/tests/boot.php';
 
-$cdc = new \Inhere\Server\Components\CheckDirChanged();
+$cdc = new \Inhere\Server\Component\CheckDirChanged();
 $ret = $cdc
     ->setIdFile(__DIR__ . '/dir.id')
     ->setWatchDir(dirname(__DIR__))

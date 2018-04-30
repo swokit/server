@@ -8,9 +8,9 @@
 
 namespace Inhere\Server;
 
-use Inhere\Console\IO\Input;
 use Inhere\Console\Utils\Show;
-use Inhere\Server\Components\FileLogHandler;
+use Inhere\Server\Component\FileLogHandler;
+use Inhere\Server\Event\SwooleEvent;
 use Monolog\Handler\FingersCrossedHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
@@ -26,20 +26,6 @@ use Swoole\Coroutine;
  */
 class Server extends AbstractServer
 {
-    /**
-     * @param Input $input
-     */
-    protected function loadCommandLineOpts(Input $input)
-    {
-        if (($val = $input->sameOpt(['d', 'daemon'])) !== null) {
-            $this->asDaemon($val);
-        }
-
-        if (($val = $input->sameOpt(['n', 'worker-number'])) > 0) {
-            $this->config['swoole']['worker_num'] = $val;
-        }
-    }
-
     /**
      * @param array $opts
      * @return mixed|LoggerInterface
@@ -144,10 +130,10 @@ class Server extends AbstractServer
      */
     public function setSwooleEvent($event, $cb)
     {
-        $event = trim($event);
+        $event = \trim($event);
 
         if (!$this->isSwooleEvent($event)) {
-            $supported = implode(',', self::SWOOLE_EVENTS);
+            $supported = \implode(',', SwooleEvent::getAllEvents());
             Show::error("You want add a not supported swoole event: $event. supported: \n $supported", -2);
         }
 

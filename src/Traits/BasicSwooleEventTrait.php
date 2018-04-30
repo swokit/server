@@ -8,9 +8,10 @@
 
 namespace Inhere\Server\Traits;
 
+use Inhere\Server\Event\SwooleEvent;
 use Swoole\Server;
-use SwooleLib\Util\ServerUtil;
-use MyLib\SysUtil\ProcessUtil;
+use SwooleKit\Util\ServerUtil;
+use Toolkit\Sys\ProcessUtil;
 
 /**
  * Trait BasicSwooleEventTrait
@@ -98,14 +99,20 @@ trait BasicSwooleEventTrait
         $this->workerId = $workerId;
         $this->workerPid = $server->worker_pid;
         $this->taskWorker = (bool)$server->taskworker;
-        $taskMark = $server->taskworker ? 'task-worker' : 'event-worker';
+        $taskMark = $server->taskworker ? 'task process' : 'work process';
 
         $this->log("The #<cyan>{$workerId}</cyan> {$taskMark} process success started. (PID:{$server->worker_pid})");
 
         ProcessUtil::setTitle("{$this->name}: {$taskMark}");
 
+        if ($server->taskworker) {
+            $this->fire(SwooleEvent::WORKER_START, [$server, $workerId]);
+        } else {
+
+        }
+
         // ServerHelper::setUserAndGroup();
-        // $this->fire(self::ON_WORKER_STARTED, [$this, $workerId, $this->taskWorker]);
+        $this->fire(SwooleEvent::WORKER_START, [$server, $workerId]);
 
         // 此数组中的文件表示进程启动前就加载了，所以无法reload
         // Show::write('进程启动前就加载了，无法reload的文件：');

@@ -9,11 +9,9 @@
 namespace Inhere\Server\Traits;
 
 use Swoole\Server;
-use Swoole\Coroutine;
 use Inhere\Console\Utils\Show;
-use MyLib\SysUtil\ProcessUtil;
-use Inhere\Server\Helper\ServerUtil;
-use Inhere\Server\Helper\ProcessHelper;
+use Toolkit\Sys\ProcessUtil;
+use SwooleKit\Util\ServerUtil;
 
 /**
  * Class ServerManageTrait

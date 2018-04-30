@@ -8,17 +8,18 @@
 
 namespace Inhere\Server\Traits;
 
+use Inhere\Server\Event\ServerEvent;
 use Swoole\Server;
 use Swoole\Process;
 use Swoole\Server\Port;
 use Inhere\Console\Utils\Show;
-use MyLib\SysUtil\ProcessUtil;
-use Inhere\Library\Helpers\Arr;
+use Toolkit\Sys\ProcessUtil;
+use Toolkit\ArrUtil\Arr;
 use Inhere\Server\ServerInterface;
 use Swoole\Http\Server as HttpServer;
 use Swoole\Redis\Server as RedisServer;
-use Swoole\Websocket\Server as WSServer;
-use Inhere\Server\Components\HotReloading;
+use Swoole\Websocket\Server as WebSocketServer;
+use Inhere\Server\Component\HotReloading;
 use Inhere\Server\Listener\Port\PortListenerInterface;
 
 /**
@@ -104,9 +105,9 @@ trait ServerCreateTrait
         ],
     ];
 
-//////////////////////////////////////////////////////////////////////
-/// create Main Server
-//////////////////////////////////////////////////////////////////////
+    /************************************************************************************
+     * create Main Server
+     **********************************************************************************/
 
     /**
      * before create Server
@@ -159,13 +160,13 @@ trait ServerCreateTrait
                 break;
 
             case self::PROTOCOL_WS:
-                $server = new WSServer($host, $port, $mode);
+                $server = new WebSocketServer($host, $port, $mode);
                 $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_WS];
                 break;
 
             case self::PROTOCOL_WSS:
                 $this->checkEnvWhenEnableSSL();
-                $server = new WSServer($host, $port, $mode, SWOOLE_SOCK_TCP | SWOOLE_SSL);
+                $server = new WebSocketServer($host, $port, $mode, SWOOLE_SOCK_TCP | SWOOLE_SSL);
                 $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_WS];
                 break;
 
@@ -275,12 +276,12 @@ trait ServerCreateTrait
      */
     public function createProcess(string $name, \Closure $callback)
     {
-        $this->fire(self::ON_PROCESS_CREATE, [$this, $name]);
+        $this->fire(ServerEvent::BEFORE_PROCESS_CREATE, [$this, $name]);
 
-        $process = new Process(function (Process $p) use($callback, $name) {
+        $process = new Process(function (Process $p) use ($callback, $name) {
             ProcessUtil::setTitle("swoole: {$name} ({$this->name})");
 
-            $this->fire(self::ON_PROCESS_STARTED, [$this, $name]);
+            $this->fire(ServerEvent::PROCESS_STARTED, [$this, $name]);
             $callback($p, $this);
 
             // 群发收到的消息
@@ -290,7 +291,7 @@ trait ServerCreateTrait
         // addProcess 添加的用户进程中无法使用task投递任务，
         // 请使用 $server->sendMessage() 接口与工作进程通信
         $this->server->addProcess($process);
-        $this->fire(self::ON_PROCESS_CREATED, [$this, $name]);
+        $this->fire(ServerEvent::PROCESS_CREATED, [$this, $name]);
     }
 
     /**
@@ -353,7 +354,7 @@ trait ServerCreateTrait
      */
     protected function createListenServers(Server $server)
     {
-        $this->fire(self::ON_PORT_CREATE, [$this]);
+        $this->fire(ServerEvent::BEFORE_PORT_CREATE, [$this]);
 
         foreach ($this->attachedListeners as $name => $cb) {
             $info = '';
@@ -376,7 +377,7 @@ trait ServerCreateTrait
             $this->log("Attach the port listen server <info>$name</info>$info to the main server");
         }
 
-        $this->fire(self::ON_PORT_CREATED, [$this]);
+        $this->fire(ServerEvent::PORT_CREATED, [$this]);
     }
 
     /**

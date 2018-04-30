@@ -6,7 +6,7 @@
  * Time: 17:50
  */
 
-namespace Inhere\Server\Components;
+namespace Inhere\Server\Component;
 
 /*
 // 单独使用

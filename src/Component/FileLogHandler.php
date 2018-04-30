@@ -6,12 +6,12 @@
  * Time: 16:45
  */
 
-namespace Inhere\Server\Components;
+namespace Inhere\Server\Component;
 
 use Swoole\Async;
 use Monolog\Logger;
 use Inhere\Server\Server;
-use MyLib\PhpUtil\PhpHelper;
+use Toolkit\PhpUtil\PhpHelper;
 use Monolog\Handler\AbstractProcessingHandler;
 
 /**
