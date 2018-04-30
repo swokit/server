@@ -39,8 +39,8 @@ abstract class AbstractServer implements ServerInterface
      */
     protected $swooleEvents = [
         // 'event'  => 'callback method',
-        'start' => 'onMasterStart',
-        'shutdown' => 'onMasterStop',
+        'start' => 'onStart',
+        'shutdown' => 'onShutdown',
 
         'managerStart' => 'onManagerStart',
         'managerStop' => 'onManagerStop',
@@ -481,6 +481,10 @@ abstract class AbstractServer implements ServerInterface
      */
     public function log(string $msg, array $context = [], $type = 'info')
     {
+        if (!$this->isDebug()) {
+            return;
+        }
+
         $context = $this->collectRuntimeContext($context);
 
         // if on Daemon, don't output log.

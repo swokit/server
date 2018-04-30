@@ -38,8 +38,8 @@ $serv->on('Timer', function() {
 ## 事件列表
 
 ```
-'onStart' // 'onMasterStart',
-'onShutdown' // 'onMasterStop',
+'onStart' // 'onStart',
+'onShutdown' // 'onShutdown',
 
 'onManagerStart',
 'onManagerStop',

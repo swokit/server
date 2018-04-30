@@ -38,12 +38,15 @@ final class ServerEvent
     const BEFORE_SERVER_START = 'beforeServerStart';
 
     // # 2. running ...
-    // # 2.1 manager running ...
+    // # 2.1 master/manager running ...
+    const STARTED = 'started';
+    const SHUTDOWN = 'shutdown';
     const MANAGER_STARTED = 'managerStarted';
     const MANAGER_STOPPED = 'managerStopped';
 
     // # 2.2 worker running ...
     const WORKER_STARTED = 'workerStarted';
-    const TASK_WORKER_STARTED = 'taskWorkerStarted';
+    const TASK_PROCESS_STARTED = 'taskProcessStarted';
+    const WORK_PROCESS_STARTED = 'workProcessStarted';
     const WORKER_STOPPED = 'workerStopped';
 }

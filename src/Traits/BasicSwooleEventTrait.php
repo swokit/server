@@ -8,7 +8,7 @@
 
 namespace Inhere\Server\Traits;
 
-use Inhere\Server\Event\SwooleEvent;
+use Inhere\Server\Event\ServerEvent;
 use Swoole\Server;
 use SwooleKit\Util\ServerUtil;
 use Toolkit\Sys\ProcessUtil;
@@ -29,38 +29,8 @@ trait BasicSwooleEventTrait
     protected $taskWorker = false;
 
     /**************************************************************************
-     * swoole event handler
+     * swoole events handle
      *************************************************************************/
-
-    /**
-     * on Master Start
-     * @param  Server $server
-     */
-    public function onMasterStart(Server $server)
-    {
-        $masterPid = $server->master_pid;
-        $rootPath = $this->config('rootPath');
-        $rootPath = $rootPath ? " (at $rootPath)" : '';
-
-        // save master process id to file.
-        ServerUtil::createPidFile($masterPid, $this->pidFile);
-        ProcessUtil::setTitle(sprintf('%s: master%s', $this->name, $rootPath));
-
-        $this->log("The <comment>master</comment> process success started. (PID:<info>{$masterPid}</info>, pidFile: $this->pidFile)");
-    }
-
-    /**
-     * on Master Stop
-     * @param  Server $server
-     */
-    public function onMasterStop(Server $server)
-    {
-        $this->log("The swoole master process(PID: <info>{$server->master_pid})</info> stopped.");
-
-        ServerUtil::removePidFile($this->pidFile);
-
-        // self::addStat('stop_time', microtime(1));
-    }
 
     /**
      * on Manager Start
@@ -69,9 +39,10 @@ trait BasicSwooleEventTrait
     public function onManagerStart(Server $server)
     {
         // $server->manager_pid;
-        // $this->fire(self::ON_MANAGER_STARTED, [$this, $server]);
+        $this->fire(ServerEvent::MANAGER_STARTED, [$server]);
 
         // file_put_contents($this->pidFile, ',' . $server->manager_pid, FILE_APPEND);
+        ServerUtil::createPidFile($server->manager_pid, $this->pidFile);
         ProcessUtil::setTitle("{$this->name}: manager");
 
         $this->log("The <comment>manager</comment> process success started. (PID:{$server->manager_pid})");
@@ -83,8 +54,41 @@ trait BasicSwooleEventTrait
      */
     public function onManagerStop(Server $server)
     {
-        // $this->fire(self::ON_MANAGER_STOPPED, [$this, $server]);
+        $this->fire(ServerEvent::MANAGER_STOPPED, [$server]);
         $this->log("The manager process stopped. (PID {$server->manager_pid})");
+
+        ServerUtil::removePidFile($this->pidFile);
+    }
+
+    /**
+     * on Master Start
+     * @param  Server $server
+     */
+    public function onStart(Server $server)
+    {
+        $this->fire(ServerEvent::SHUTDOWN, [$server]);
+
+        $masterPid = $server->master_pid;
+        $rootPath = $this->config('rootPath');
+        $rootPath = $rootPath ? " (at $rootPath)" : '';
+
+        // save master process id to file.
+        ProcessUtil::setTitle(sprintf('%s: master%s', $this->name, $rootPath));
+
+        $this->log("The <comment>master</comment> process success started. (PID:<info>{$masterPid}</info>, pidFile: $this->pidFile)");
+    }
+
+    /**
+     * on Master Stop
+     * @param  Server $server
+     */
+    public function onShutdown(Server $server)
+    {
+        $this->fire(ServerEvent::SHUTDOWN, [$server]);
+
+        $this->log("The swoole master process(PID: <info>{$server->master_pid})</info> stopped.");
+
+        // self::addStat('stop_time', microtime(1));
     }
 
     /**
@@ -106,13 +110,13 @@ trait BasicSwooleEventTrait
         ProcessUtil::setTitle("{$this->name}: {$taskMark}");
 
         if ($server->taskworker) {
-            $this->fire(SwooleEvent::WORKER_START, [$server, $workerId]);
+            $this->fire(ServerEvent::TASK_PROCESS_STARTED, [$server, $workerId]);
         } else {
-
+            $this->fire(ServerEvent::WORK_PROCESS_STARTED, [$server, $workerId]);
         }
 
         // ServerHelper::setUserAndGroup();
-        $this->fire(SwooleEvent::WORKER_START, [$server, $workerId]);
+        $this->fire(ServerEvent::WORKER_STARTED, [$server, $workerId]);
 
         // 此数组中的文件表示进程启动前就加载了，所以无法reload
         // Show::write('进程启动前就加载了，无法reload的文件：');

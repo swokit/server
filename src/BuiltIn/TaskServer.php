@@ -50,8 +50,8 @@ class TaskServer extends \Inhere\Server\Server
     public function afterCreateServer()
     {
         // load task data
-        if (is_file($this->dataFile)) {
-            $this->server->data = unserialize(file_get_contents($this->dataFile), ['allowed_classes' => false]);
+        if (\is_file($this->dataFile)) {
+            $this->server->data = \unserialize(\file_get_contents($this->dataFile), ['allowed_classes' => false]);
         } else {
             $this->server->data = [];
         }
@@ -204,9 +204,9 @@ class TaskServer extends \Inhere\Server\Server
     /**
      * @param Server $server
      */
-    public function onMasterStart(Server $server)
+    public function onStart(Server $server)
     {
-        parent::onMasterStart($server);
+        parent::onStart($server);
 
         $this->registerEureka();
     }
@@ -225,9 +225,9 @@ class TaskServer extends \Inhere\Server\Server
     /**
      * @param Server $server
      */
-    public function onMasterStop(Server $server)
+    public function onShutdown(Server $server)
     {
-        parent::onMasterStop($server);
+        parent::onShutdown($server);
 
         $this->cancelEureka();
     }
