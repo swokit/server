@@ -45,6 +45,7 @@ class FileLogHandler extends AbstractProcessingHandler
      * @param bool|int $level The minimum logging level at which this handler will be triggered
      * @param int|null $filePermission Optional file permissions (default (0644) are only for owner read/write)
      * @param int $splitType
+     * @throws \InvalidArgumentException
      */
     public function __construct($file, $level = Logger::DEBUG, $splitType = self::SPLIT_NO, $filePermission = null)
     {

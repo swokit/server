@@ -23,7 +23,7 @@ final class ModifyWatcher
     private $watchDirs = [];
 
     /** @var string */
-    private $dirMd5;
+    private $dirMd5 = '';
 
     /** @var string */
     private $md5String;
@@ -70,7 +70,7 @@ final class ModifyWatcher
      * @param string $idFile
      * @return $this
      */
-    public function setIdFile(string $idFile)
+    public function setIdFile(string $idFile): self
     {
         $this->idFile = $idFile;
 
@@ -147,7 +147,7 @@ final class ModifyWatcher
      * @param string|array $dirs
      * @return $this
      */
-    public function watchDir($dirs)
+    public function watchDir($dirs): self
     {
         $this->watchDirs = array_merge($this->watchDirs, (array)$dirs);
 
@@ -164,6 +164,7 @@ final class ModifyWatcher
 
     /**
      * @return bool
+     * @throws \RuntimeException
      */
     public function isChanged(): bool
     {
@@ -201,6 +202,7 @@ final class ModifyWatcher
 
     /**
      * @return string
+     * @throws \RuntimeException
      */
     public function calcMd5Hash(): string
     {
@@ -281,17 +283,17 @@ final class ModifyWatcher
     }
 
     /**
-     * @return string|null
+     * @return string[]
      */
-    public function getWatchDir()
+    public function getWatchDir(): array
     {
         return $this->watchDirs;
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getDirMd5()
+    public function getDirMd5(): string
     {
         return $this->dirMd5;
     }
