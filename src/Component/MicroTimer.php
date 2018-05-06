@@ -27,9 +27,9 @@ class MicroTimer
     /**
      * @return $this
      */
-    public function create()
+    public function create(): self
     {
-        Process::signal(SIGALRM, function () {
+        Process::signal(\SIGALRM, function () {
             $this->run();
         });
 

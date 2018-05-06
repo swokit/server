@@ -8,6 +8,7 @@
 
 namespace Inhere\Server\Traits;
 
+use Inhere\Server\Event\SwooleEvent;
 use Toolkit\PhpUtil\PhpHelper;
 
 /**
@@ -154,5 +155,64 @@ trait ServerEventManageTrait
     public static function countEvents(): int
     {
         return \count(self::$events);
+    }
+
+    /**
+     * @var array
+     */
+    protected static $swooleEvents = [
+        // 'event'  => 'callback method',
+        'pipeMessage' => 'onPipeMessage',
+
+        // Task 任务相关 (若配置了 task_worker_num 则必须注册这两个事件)
+        'task' => 'onTask',
+        'finish' => 'onFinish',
+    ];
+
+    /**
+     * @param array $swooleEvents
+     */
+    public function setSwooleEvents(array $swooleEvents)
+    {
+        self::$swooleEvents = \array_merge(self::$swooleEvents, $swooleEvents);
+    }
+
+    /**
+     * @return array
+     */
+    public function getSwooleEvents(): array
+    {
+        return self::$swooleEvents;
+    }
+
+    /**
+     * register a swoole Event Handler Callback
+     * @param string $event
+     * @param callable|string $handler
+     * @throws \InvalidArgumentException
+     */
+    public function onSwoole(string $event, $handler)
+    {
+        $this->setSwooleEvent($event, $handler);
+    }
+
+    /**
+     * @param string $event The event name
+     * @param string|\Closure $cb The callback name
+     * @throws \InvalidArgumentException
+     */
+    public function setSwooleEvent(string $event, $cb)
+    {
+        $event = \trim($event);
+
+        if (!$this->isSwooleEvent($event)) {
+            $supported = \implode(',', SwooleEvent::getAllEvents());
+
+            throw new \InvalidArgumentException(
+                "You want add a not supported swoole event: $event. supported: \n $supported"
+            );
+        }
+
+        self::$swooleEvents[$event] = $cb;
     }
 }

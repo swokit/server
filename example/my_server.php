@@ -8,7 +8,7 @@
 
 define('PROJECT_PATH', dirname(__DIR__));
 
-require dirname(__DIR__) . '/tests/boot.php';
+require dirname(__DIR__) . '/test/boot.php';
 
 // you can move config to a independent file.
 // $config = require PROJECT_PATH . '/config/server.php';

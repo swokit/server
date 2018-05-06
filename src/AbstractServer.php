@@ -12,13 +12,13 @@ use Inhere\Console\Utils\Show;
 use Inhere\Server\Event\ServerEvent;
 use Inhere\Server\Event\SwooleEvent;
 use Inhere\Server\Traits\ServerEventManageTrait;
+use Psr\Log\LoggerInterface;
 use Toolkit\PhpUtil\PhpException;
 use SwooleKit\Util\ServerUtil;
-use Inhere\Server\Traits\BasicSwooleEventTrait;
+use Inhere\Server\Traits\HandleSwooleEventTrait;
 use Inhere\Server\Traits\ServerCreateTrait;
 use Inhere\Server\Traits\ServerManageTrait;
 use Psr\Log\LogLevel as Logger;
-use Psr\Log\NullLogger;
 
 /**
  * Class AbstractServer
@@ -26,7 +26,7 @@ use Psr\Log\NullLogger;
  */
 abstract class AbstractServer implements ServerInterface
 {
-    use ServerEventManageTrait, BasicSwooleEventTrait, ServerCreateTrait, ServerManageTrait;
+    use ServerEventManageTrait, HandleSwooleEventTrait, ServerCreateTrait, ServerManageTrait;
 
     /** @var static */
     private static $instance;
@@ -34,54 +34,21 @@ abstract class AbstractServer implements ServerInterface
     /** @var array */
     private static $_stats = [];
 
-    /**
-     * @var array
-     */
-    protected $swooleEvents = [
-        // 'event'  => 'callback method',
-        'start' => 'onStart',
-        'shutdown' => 'onShutdown',
-
-        'managerStart' => 'onManagerStart',
-        'managerStop' => 'onManagerStop',
-
-        'workerStart' => 'onWorkerStart',
-        'workerStop' => 'onWorkerStop',
-        'workerExit' => 'onWorkerExit',
-        'workerError' => 'onWorkerError',
-
-        'pipeMessage' => 'onPipeMessage',
-
-        // Task 任务相关 (若配置了 task_worker_num 则必须注册这两个事件)
-        'task' => 'onTask',
-        'finish' => 'onFinish',
-    ];
-
     /** @var string Current server name */
     protected $name = 'server';
 
-    /**
-     * @var \Swoole\Server
-     */
+    /** @var \Swoole\Server */
     protected $server;
 
     /**
-     * @var \Psr\Log\LoggerInterface|mixed
+     * @var LoggerInterface|mixed
      */
     private $logger;
-
-    /** @var mixed */
-    private $errorHandler;
 
     /**
      * @var string
      */
     protected $pidFile;
-
-    /**
-     * @var bool
-     */
-    private $daemon;
 
     /** @var bool */
     private $bootstrapped = false;
@@ -89,7 +56,7 @@ abstract class AbstractServer implements ServerInterface
     /**
      * @var array
      */
-    protected $required = [
+    protected static $required = [
         'name', 'pidFile', 'rootPath'
     ];
 
@@ -104,98 +71,79 @@ abstract class AbstractServer implements ServerInterface
         'rootPath' => '',
         'pidFile' => '/tmp/swoole_server.pid',
 
-        // error handle
-        'error' => [
-            // the error handler class
-            'class' => '',
-            'exitOnHandled' => true,
-        ],
-
-        // 当前server的日志配置(不是swoole的日志)
-        'logger' => [
-            'name' => 'server_log',
-            'class' => '', // logger class
-            'file' => './tmp/logs/test_server.log',
-            'level' => Logger::DEBUG,
-            'bufferSize' => 0, // 1000,
-        ],
-
         // user options
         'options' => [],
-
-        // for main server
-        'server' => [
-            'host' => '0.0.0.0',
-            'port' => '8662',
-
-            // 运行模式
-            // SWOOLE_PROCESS 业务代码在Worker进程中执行 SWOOLE_BASE 业务代码在Reactor进程中直接执行
-            'mode' => 'process',
-            'type' => 'tcp', // http https tcp udp ws wss
-
-            // append register swoole events
-            'events' => [], // e.g [ 'onRequest', ]
-        ],
-
-        // for listen servers
-        'ports' => [
-            // 'tcp1' => [
-            //     'host' => '0.0.0.0',
-            //     'port' => '9661',
-            //     'type' => 'tcp',
-
-            //      setting event handler
-            //     'event_handler' => '', // e.g '\Inhere\Server\listeners\TcpListenHandler'
-            //     'events'   => [], // e.g [ 'onReceive', ]
-            // ],
-
-            // 'udp1' => [
-            //     'host' => '0.0.0.0',
-            //     'port' => '9660',
-            // ]
-        ],
-
-        // the swoole runtime setting
-        'swoole' => [
-            // 'user'    => '',
-
-            'worker_num' => 4,
-            // 启用 task worker, 必须为Server设置onTask和onFinish回调
-            'task_worker_num' => 2,
-
-            // 'reload_async' => true,
-            'daemonize' => 0,
-
-            // 'max_request' => 1000,
-
-            // 在1.7.15以上版本中，当设置dispatch_mode = 1/3时会自动去掉onConnect/onClose事件回调。
-            // see @link https://wiki.swoole.com/wiki/page/49.html
-            // allow: 1 2 3 7
-            // 'dispatch_mode' => 2,
-            // 'log_file' , // '/tmp/swoole.log', // 不设置log_file会打印到屏幕
-            'log_level' => 2,
-
-            // 使用SSL必须在编译swoole时加入--enable-openssl选项 并且配置下面两项
-            // 'ssl_cert_file' => __DIR__.'/config/ssl.crt',
-            // 'ssl_key_file' => __DIR__.'/config/ssl.key',
-        ]
     ];
 
     /**
-     * @var array
+     * @var array The main server settings
      */
-    protected $portsSettings = [];
+    protected $serverSettings = [
+        'type' => 'tcp', // http https tcp udp ws wss
+        // 运行模式
+        // SWOOLE_PROCESS 业务代码在Worker进程中执行 SWOOLE_BASE 业务代码在Reactor进程中直接执行
+        'mode' => 'process',
+
+        'host' => '127.0.0.1',
+        'port' => '8662',
+
+        // append register swoole events
+        'events' => [], // e.g [ 'request', ]
+    ];
+
+    /**
+     * @var array The attached port server config.
+     */
+    protected $portsSettings = [
+        // 'tcp1' => [
+        //     'host' => '0.0.0.0',
+        //     'port' => '9661',
+        //     'type' => 'tcp',
+
+        //      setting event handler
+        //     'event_handler' => '', // e.g '\Inhere\Server\listeners\TcpListenHandler'
+        //     'events'   => [], // e.g [ 'onReceive', ]
+        // ],
+
+        // 'udp1' => [
+        //     'host' => '0.0.0.0',
+        //     'port' => '9660',
+        // ]
+    ];
 
     /**
      * @var array The settings for swoole. ($server->set($this->settings))
      */
-    protected $settings = [];
+    protected $swooleSettings = [
+        // 'user'    => '',
+
+        'worker_num' => 1,
+        // 启用 task worker, 必须为Server设置onTask和onFinish回调
+        'task_worker_num' => 1,
+
+        // 'reload_async' => true,
+        'daemonize' => 0,
+
+        // 'max_request' => 1000,
+
+        // 在1.7.15以上版本中，当设置dispatch_mode = 1/3时会自动去掉onConnect/onClose事件回调。
+        // see @link https://wiki.swoole.com/wiki/page/49.html
+        // allow: 1 2 3 7
+        // 'dispatch_mode' => 2,
+        // 'log_file' , // '/tmp/swoole.log', // 不设置log_file会打印到屏幕
+        'log_level' => 2,
+
+        // 使用SSL必须在编译swoole时加入--enable-openssl选项 并且配置下面两项
+        // 'ssl_cert_file' => __DIR__.'/config/ssl.crt',
+        // 'ssl_key_file' => __DIR__.'/config/ssl.key',
+    ];
 
     /**
      * @param array $config
      * @return static
+     * @throws \InvalidArgumentException
      */
-    public static function make(array $config = [])
+    public static function create(array $config = [])
     {
         return new static($config);
     }
@@ -211,6 +159,7 @@ abstract class AbstractServer implements ServerInterface
     /**
      * AbstractServer constructor.
      * @param array $config
+     * @throws \InvalidArgumentException
      */
     public function __construct(array $config)
     {
@@ -221,52 +170,46 @@ abstract class AbstractServer implements ServerInterface
 
     /**
      * @param array $config
+     * @throws \InvalidArgumentException
      */
     protected function init(array $config)
     {
         // main server
         if (!empty($config['server'])) {
-            $this->config['server'] = array_merge($this->config['server'], $config['server']);
+            $this->serverSettings = \array_merge($this->serverSettings, $config['server']);
             unset($config['server']);
         }
 
         // listen servers
         if (!empty($config['ports'])) {
-            $this->config['ports'] = array_merge($this->config['ports'], $config['ports']);
+            $this->portsSettings = \array_merge($this->portsSettings, $config['ports']);
             unset($config['ports']);
         }
 
         // for swoole
         if (!empty($config['swoole'])) {
-            $this->config['swoole'] = array_merge($this->config['swoole'], $config['swoole']);
+            $this->swooleSettings = \array_merge($this->swooleSettings, $config['swoole']);
             unset($config['swoole']);
         }
 
         if ($config) {
-            $this->config = array_merge($this->config, $config);
+            $this->config = \array_merge($this->config, $config);
         }
 
         $this->validateConfig();
 
         $this->name = (string)$this->config['name'];
         $this->pidFile = (string)$this->config['pidFile'];
-        $this->daemon = (bool)$this->config['swoole']['daemonize'];
-
-        // create logger
-        $this->logger = $this->makeLogger($this->config['logger']);
-
-        // register error handler
-        $this->registerErrorHandler($this->config['error']);
 
         // register attach server from config
-        if ($attachServers = $this->config['ports']) {
-            foreach ((array)$attachServers as $name => $conf) {
+        if ($attachServers = $this->portsSettings) {
+            foreach ($attachServers as $name => $conf) {
                 $this->attachPortListener($name, $conf);
             }
         }
 
         // register main server event method
-        if ($methods = $this->config['server']['events']) {
+        if ($methods = $this->serverSettings['events']) {
             $this->setSwooleEvents($methods);
         }
     }
@@ -276,30 +219,11 @@ abstract class AbstractServer implements ServerInterface
      */
     protected function validateConfig()
     {
-        foreach ($this->required as $name) {
+        foreach (static::$required as $name) {
             if (empty($this->config[$name])) {
                 throw new \InvalidArgumentException("The '$name' is must setting in config.");
             }
         }
-    }
-
-    /**
-     * @param array $options
-     * @return \Psr\Log\LoggerInterface|mixed|null
-     */
-    protected function makeLogger(array $options)
-    {
-        return new NullLogger();
-    }
-
-    /**
-     * @param array $options
-     */
-    protected function registerErrorHandler(array $options)
-    {
-        // $errClass = Arr::remove($conf, 'class');
-        // $this->errorHandler = new $errClass($this->logger, $conf);
-        // $this->errorHandler->register();
     }
 
     /**
@@ -309,8 +233,7 @@ abstract class AbstractServer implements ServerInterface
     public function asDaemon($value = null): self
     {
         if (null !== $value) {
-            $this->daemon = (bool)$value;
-            $this->config['swoole']['daemonize'] = (bool)$value;
+            $this->swooleSettings['daemonize'] = (bool)$value;
         }
 
         return $this;
@@ -397,7 +320,8 @@ abstract class AbstractServer implements ServerInterface
         // $this->attachExtendServer();
 
         // register swoole events handler
-        $this->registerServerEvents();
+        $this->registerServerEvents(SwooleEvent::BASIC_EVENTS);
+        $this->registerServerEvents(self::$swooleEvents);
 
         // attach user's custom process
         $this->attachUserProcesses();
@@ -436,10 +360,21 @@ abstract class AbstractServer implements ServerInterface
     }
 
     /**
-     * @param \Throwable|\Exception $e (\Exception \Error)
+     * @param \Throwable $e (\Exception \Error)
      * @param string $catcher
      */
     public function handleException($e, $catcher)
+    {
+        $content = PhpException::toString($e, $this->isDebug(), $catcher);
+
+        $this->log($content, [], Logger::ERROR);
+    }
+
+    /**
+     * @param \Throwable $e (\Exception \Error)
+     * @param string $catcher
+     */
+    public function handleWorkerException($e, $catcher)
     {
         $content = PhpException::toString($e, $this->isDebug(), $catcher);
 
@@ -452,7 +387,7 @@ abstract class AbstractServer implements ServerInterface
      */
     protected function collectRuntimeContext(array $context): array
     {
-        return array_merge($context, [
+        return \array_merge($context, [
             'workerId' => $this->getWorkerId(),
             'workerPid' => $this->getWorkerPid(),
             'isTaskWorker' => $this->isTaskWorker(),
@@ -506,6 +441,14 @@ abstract class AbstractServer implements ServerInterface
     /**
      * @return array
      */
+    public function getServerSettings(): array
+    {
+        return $this->serverSettings;
+    }
+
+    /**
+     * @return array
+     */
     public function getPortsSettings(): array
     {
         return $this->portsSettings;
@@ -514,9 +457,9 @@ abstract class AbstractServer implements ServerInterface
     /**
      * @return array
      */
-    public function getSettings(): array
+    public function getSwooleSettings(): array
     {
-        return $this->settings;
+        return $this->swooleSettings;
     }
 
     /**
@@ -556,6 +499,73 @@ abstract class AbstractServer implements ServerInterface
         ];
     }
 
+    /*******************************************************************************
+     * some help method(from swoole)
+     ******************************************************************************/
+
+    /**
+     * 获取对端socket的IP地址和端口
+     * @param int $cid
+     * @return array
+     */
+    public function getPeerName(int $cid): array
+    {
+        $data = $this->getClientInfo($cid);
+
+        return [
+            'ip' => $data['remote_ip'] ?? '',
+            'port' => $data['remote_port'] ?? 0,
+        ];
+    }
+
+    /**
+     * @param int $cid
+     * @return array
+     * [
+     *  // 大于0 是webSocket(=2) 等于0 是 http/...
+     *  websocket_status => int [可选项] WebSocket连接状态，当服务器是Swoole\WebSocket\Server时会额外增加此项信息
+     *  from_id => int
+     *  server_fd => int 来自哪个server socket
+     *  server_port => int 来自哪个Server端口
+     *  remote_port => int 客户端连接的端口
+     *  remote_ip => string 客户端连接的ip
+     *  connect_time => int 连接到Server的时间，单位秒
+     *  last_time => int  最后一次发送数据的时间，单位秒
+     *  close_errno => int 连接关闭的错误码，如果连接异常关闭，close_errno的值是非零
+     * ]
+     */
+    public function getClientInfo(int $cid): array
+    {
+        // @link https://wiki.swoole.com/wiki/page/p-connection_info.html
+        return $this->server->getClientInfo($cid);
+    }
+
+    /**
+     * @return int
+     */
+    public function getErrorNo(): int
+    {
+        return $this->server->getLastError();
+    }
+
+    /**
+     * @return string
+     */
+    public function getErrorMsg(): string
+    {
+        $err = \error_get_last();
+
+        return $err['message'] ?? '';
+    }
+
+    /**
+     * @return resource
+     */
+    public function getSocket(): resource
+    {
+        return $this->server->getSocket();
+    }
+
     /**
      * @return array
      */
@@ -579,22 +589,6 @@ abstract class AbstractServer implements ServerInterface
     public function isBootstrapped(): bool
     {
         return $this->bootstrapped;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getErrorHandler()
-    {
-        return $this->errorHandler;
-    }
-
-    /**
-     * @param mixed $errorHandler
-     */
-    public function setErrorHandler($errorHandler)
-    {
-        $this->errorHandler = $errorHandler;
     }
 
     /**
@@ -628,7 +622,7 @@ abstract class AbstractServer implements ServerInterface
      */
     public function isDaemon(): bool
     {
-        return $this->daemon;
+        return (bool)$this->swooleSettings['daemonize'];
     }
 
     /**
@@ -648,37 +642,7 @@ abstract class AbstractServer implements ServerInterface
     }
 
     /**
-     * @param array $config
-     * @return AbstractServer
-     */
-    public function setSwoole(array $config): AbstractServer
-    {
-        $this->config['swoole'] = \array_merge($this->config['swoole'], $config);
-
-        return $this;
-    }
-
-    /**
-     * @param array $swooleEvents
-     * @return AbstractServer
-     */
-    public function setSwooleEvents(array $swooleEvents): AbstractServer
-    {
-        $this->swooleEvents = \array_merge($this->swooleEvents, $swooleEvents);
-
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getSwooleEvents(): array
-    {
-        return $this->swooleEvents;
-    }
-
-    /**
-     * @return mixed|\Psr\Log\LoggerInterface
+     * @return mixed|LoggerInterface
      */
     public function getLogger()
     {
@@ -686,9 +650,9 @@ abstract class AbstractServer implements ServerInterface
     }
 
     /**
-     * @param mixed|\Psr\Log\LoggerInterface $logger
+     * @param mixed|LoggerInterface $logger
      */
-    public function setLogger($logger)
+    public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }

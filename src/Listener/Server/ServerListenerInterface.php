@@ -8,7 +8,7 @@
 
 namespace Inhere\Server\Listener\Server;
 
-use Inhere\Server\Server;
+use Swoole\Server;
 
 /**
  * Interface ServerListenerInterface
@@ -18,6 +18,7 @@ interface ServerListenerInterface
 {
     /**
      * @param Server $server
+     * @param array $params
      */
-    public function handle(Server $server): void;
+    public function handle(Server $server, ...$params);
 }

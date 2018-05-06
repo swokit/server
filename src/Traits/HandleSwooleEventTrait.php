@@ -14,10 +14,10 @@ use SwooleKit\Util\ServerUtil;
 use Toolkit\Sys\ProcessUtil;
 
 /**
- * Trait BasicSwooleEventTrait
+ * Trait HandleSwooleEventTrait
  * @package Inhere\Server\Traits
  */
-trait BasicSwooleEventTrait
+trait HandleSwooleEventTrait
 {
     /** @var int */
     protected $workerId = -1;
@@ -109,14 +109,18 @@ trait BasicSwooleEventTrait
 
         ProcessUtil::setTitle("{$this->name}: {$taskMark}");
 
-        if ($server->taskworker) {
-            $this->fire(ServerEvent::TASK_PROCESS_STARTED, [$server, $workerId]);
-        } else {
-            $this->fire(ServerEvent::WORK_PROCESS_STARTED, [$server, $workerId]);
-        }
+        try {
+            if ($server->taskworker) {
+                $this->fire(ServerEvent::TASK_PROCESS_STARTED, [$server, $workerId]);
+            } else {
+                $this->fire(ServerEvent::WORK_PROCESS_STARTED, [$server, $workerId]);
+            }
 
-        // ServerHelper::setUserAndGroup();
-        $this->fire(ServerEvent::WORKER_STARTED, [$server, $workerId]);
+            // ServerHelper::setUserAndGroup();
+            $this->fire(ServerEvent::WORKER_STARTED, [$server, $workerId]);
+        } catch (\Throwable $e) {
+            $this->handleWorkerException($e, __METHOD__);
+        }
 
         // 此数组中的文件表示进程启动前就加载了，所以无法reload
         // Show::write('进程启动前就加载了，无法reload的文件：');
@@ -129,7 +133,7 @@ trait BasicSwooleEventTrait
      */
     public function onWorkerStop(Server $server, $workerId)
     {
-        // $this->fire(self::ON_WORKER_STOPPED, [$this, $workerId]);
+        $this->fire(ServerEvent::WORKER_STOPPED, [$server, $workerId]);
         $this->log("The swoole #<info>$workerId</info> worker process stopped. (PID:{$server->worker_pid})");
     }
 
@@ -139,8 +143,24 @@ trait BasicSwooleEventTrait
      */
     public function onWorkerExit(Server $server, $workerId)
     {
-        // $this->fire(self::ON_WORKER_EXITED, [$this, $workerId]);
+        $this->fire(ServerEvent::WORKER_EXITED, [$server, $workerId]);
         $this->log("The swoole #<info>$workerId</info> worker process exited. (PID:{$server->worker_pid})");
+    }
+
+    /**
+     * @param Server $server
+     * @param int $workerId
+     * @param int $workerPid
+     * @param int $exitCode
+     * @param int $signal
+     */
+    public function onWorkerError(Server $server, $workerId, int $workerPid, int $exitCode, int $signal)
+    {
+        $this->fire(ServerEvent::WORKER_ERROR, [$server, $workerId, $workerPid, $exitCode, $signal]);
+        $this->log("The swoole #<info>$workerId</info> worker process error. (PID:{$server->worker_pid})", [
+            'exitCode' => $exitCode,
+            'signal' => $signal,
+        ], 'error');
     }
 
     /**
@@ -152,27 +172,7 @@ trait BasicSwooleEventTrait
      */
     public function onPipeMessage(Server $server, $srcWorkerId, $data)
     {
-        $this->log("#{$server->worker_id} message from #$srcWorkerId: $data");
-    }
-
-    /**
-     * onConnect
-     * @param Server $server
-     * @param int $fd 客户端的唯一标识符. 一个自增数字，范围是 1 ～ 1600万
-     * @param int $fromId
-     */
-    public function onConnect($server, $fd, $fromId)
-    {
-        $this->log("onConnect: Has a new client [fd:$fd] connection to the main server.(fromId: $fromId,workerId: {$server->worker_id})");
-    }
-
-    /**
-     * @param Server $server
-     * @param $fd
-     */
-    public function onClose($server, $fd)
-    {
-        $this->log("onConnect: The client [fd:$fd] connection closed on the main server.(workerId: {$server->worker_id})");
+        $this->log("worker #{$server->worker_id} received message from #$srcWorkerId, data: $data");
     }
 
     ////////////////////// Task Event //////////////////////

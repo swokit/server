@@ -48,5 +48,7 @@ final class ServerEvent
     const WORKER_STARTED = 'workerStarted';
     const TASK_PROCESS_STARTED = 'taskProcessStarted';
     const WORK_PROCESS_STARTED = 'workProcessStarted';
+    const WORKER_ERROR = 'workerError';
     const WORKER_STOPPED = 'workerStopped';
+    const WORKER_EXITED = 'workerExited';
 }

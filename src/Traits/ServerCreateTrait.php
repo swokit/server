@@ -9,6 +9,7 @@
 namespace Inhere\Server\Traits;
 
 use Inhere\Server\Event\ServerEvent;
+use Inhere\Server\Event\SwooleEvent;
 use Swoole\Server;
 use Swoole\Process;
 use Swoole\Server\Port;
@@ -74,34 +75,34 @@ trait ServerCreateTrait
     private static $swooleProtocolEvents = [
         // TCP server callback
         'tcp' => [
-            'connect' => 'onConnect',
-            'receive' => 'onReceive',
-            'close' => 'onClose'
+            'connect',
+            'receive',
+            'close'
         ],
 
         // UDP server callback
         'udp' => [
-            'packet' => 'onPacket',
-            'close' => 'onClose'
+            'packet',
+            'close'
         ],
 
         // HTTP server callback
         'http' => [
-            'request' => 'onRequest'
+            'request'
         ],
 
         // Web Socket server callback
         'ws' => [
-            'open' => 'onOpen',
-            'close' => 'onClose',
-            'message' => 'onMessage',
-            'handShake' => 'onHandShake',
+            'open',
+            'close',
+            'message',
+            'handShake',
         ],
 
         // redis server callback
         'rds' => [
-            'task' => 'onTask',
-            'finish' => 'onFinish',
+            'task',
+            'finish',
         ],
     ];
 
@@ -123,7 +124,7 @@ trait ServerCreateTrait
     protected function createServer()
     {
         $server = null;
-        $opts = $this->config['main_server'];
+        $opts = $this->config['server'];
 
         $host = $opts['host'];
         $port = $opts['port'];
@@ -185,26 +186,33 @@ trait ServerCreateTrait
 
     /**
      * register Swoole Events
+     * @param array $events
      */
-    protected function registerServerEvents()
+    protected function registerServerEvents(array $events)
     {
         $eventInfo = [];
 
         // register event to swoole
-        foreach ($this->swooleEvents as $name => $cb) {
+        foreach ($events as $name => $cb) {
             // is a Closure callback, add by self::onSwoole()
-            if (\is_object($cb) && method_exists($cb, '__invoke')) {
+            if (\is_object($cb) && \method_exists($cb, '__invoke')) {
                 $eventInfo[] = [$name, \get_class($cb)];
                 $this->server->on($name, $cb);
 
-                // if use Custom Outside Handler
-            } elseif (method_exists($this, $cb)) {
-                $eventInfo[] = [$name, static::class . "->$cb"];
-                $this->server->on($name, [$this, $cb]);
+                continue;
+            }
 
-            } elseif (\function_exists($cb)) {
-                $eventInfo[] = [$name, $cb];
-                $this->server->on($name, $cb);
+            if (\is_string($cb)) {
+                $method = SwooleEvent::getHandler($cb);
+
+                if ($method && \method_exists($this, $method)) {
+                    $eventInfo[] = [$name, static::class . "->$method"];
+                    $this->server->on($name, [$this, $method]);
+
+                } elseif (\function_exists($cb)) {
+                    $eventInfo[] = [$name, $cb];
+                    $this->server->on($name, $cb);
+                }
             }
         }
 
@@ -384,21 +392,23 @@ trait ServerCreateTrait
      * attach add listen port to main server.
      * @param $name
      * @param \Closure|array|PortListenerInterface $config
+     * @throws \InvalidArgumentException
      */
     public function attachListener(string $name, $config)
     {
-        $this->attachPortListener($name, $config);
+        $this->attachPort($name, $config);
     }
 
     /**
      * attach add listen port to main server.
      * @param string $name
      * @param \Closure|array|PortListenerInterface $config
+     * @throws \InvalidArgumentException
      */
-    public function attachPortListener(string $name, $config)
+    public function attachPort(string $name, $config)
     {
         if (isset($this->attachedNames[strtolower($name)])) {
-            throw new \RuntimeException("The add listen port server [$name] has been exists!");
+            throw new \InvalidArgumentException("The add listen port server [$name] has been exists!");
         }
 
         if (\is_array($config)) {

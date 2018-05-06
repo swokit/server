@@ -52,6 +52,18 @@ final class SwooleEvent
     const HANDSHAKE = 'handshake';
     const MESSAGE = 'message';
 
+    // basic events
+    const BASIC_EVENTS = [
+        'start',
+        'shutdown',
+        'managerStart',
+        'managerStop',
+        'workerStart',
+        'workerStop',
+        'workerExit',
+        'workerError'
+    ];
+
     /**
      * @var array
      */
@@ -91,6 +103,15 @@ final class SwooleEvent
         'open' => 'onOpen',
         'handShake' => 'onHandshake'
     ];
+
+    /**
+     * @param string $event
+     * @return string|null
+     */
+    public static function getHandler(string $event)
+    {
+        return self::DEFAULT_HANDLERS[$event] ?? null;
+    }
 
     /**
      * @param string $event

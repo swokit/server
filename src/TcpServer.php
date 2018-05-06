@@ -6,10 +6,9 @@
  * Time: 16:04
  */
 
-namespace Inhere\Server\BuiltIn;
+namespace Inhere\Server;
 
-use Inhere\Server\Server;
-use Swoole\Server as SwServer;
+use Swoole\Server;
 
 /*
 Tcp config:
@@ -31,30 +30,44 @@ Tcp config:
 
 /**
  * Class TcpServerHandler
- * @package Inhere\Server\BuiltIn
+ * @package Inhere\Server
  */
-class TcpServer extends Server
+class TcpServer extends AbstractServer
 {
     /**
-     * {@inheritDoc}
+     * @param array $config
+     * @throws \InvalidArgumentException
      */
-    public function onConnect(SwServer $server, $fd)
+    protected function init(array $config)
     {
-        $this->log("Has a new client [FD:$fd] connection.");
+        parent::init($config);
+
+        $this->serverSettings['type'] = self::PROTOCOL_TCP;
+    }
+
+    /**
+     * onConnect
+     * @param Server $server
+     * @param int $fd 客户端的唯一标识符. 一个自增数字，范围是 1 ～ 1600万
+     * @param int $fromId
+     */
+    public function onConnect(Server $server, int $fd, int $fromId)
+    {
+        $this->log("onConnect: Has a new client [fd:$fd] connection to the main server.(fromId: $fromId,workerId: {$server->worker_id})");
     }
 
     /**
      * 接收到数据
-     *     使用 `fd` 保存客户端IP，`from_id` 保存 `from_fd` 和 `port`
-     * @param  SwServer $server
+     *   使用 `fd` 保存客户端IP，`from_id` 保存 `from_fd` 和 `port`
+     * @param  Server $server
      * @param  int $fd
      * @param  int $fromId
      * @param  mixed $data
      */
-    public function onReceive(SwServer $server, $fd, $fromId, $data)
+    public function onReceive(Server $server, $fd, $fromId, $data)
     {
         $data = trim($data);
-        $this->log("Receive data [$data] from client [FD:$fd].");
+        $this->log("Receive data [$data] from client [FD:$fd]. fromId: $fromId");
         $server->send($fd, "I have been received your message.\n");
 
         // 群发收到的消息
@@ -64,7 +77,7 @@ class TcpServer extends Server
         // example 1 add task
         // $taskId = $server->task($data);
         // 需swoole-1.8.6或更高版本
-        // $server->task("task data", -1, function (SwServer $server, $task_id, $data) {
+        // $server->task("task data", -1, function (Server $server, $task_id, $data) {
         //     echo "Task Callback: ";
         //     var_dump($task_id, $data);
         // });
@@ -79,8 +92,12 @@ class TcpServer extends Server
         // }
     }
 
-    public function onClose(SwServer $server, $fd)
+    /**
+     * @param Server $server
+     * @param $fd
+     */
+    public function onClose($server, $fd)
     {
-        $this->log("The client [FD:$fd] connection closed.");
+        $this->log("onClose: The client [fd:$fd] connection closed on the main server.(workerId: {$server->worker_id})");
     }
 }
