@@ -8,13 +8,14 @@
 
 namespace Inhere\Server;
 
-use Inhere\Server\Event\SwooleEvent;
+use Inhere\Console\Utils\Show;
+use Swoole\Coroutine;
 
 /**
  * Class GeneralServer
  * @package Inhere\Server
  */
-class GeneralServer extends AbstractServer
+class GenericServer extends AbstractServer
 {
     /*******************************************************************************
      * start server logic
