@@ -6,16 +6,16 @@
  * Time: 15:20
  */
 
-namespace Inhere\Server\Traits;
+namespace SwoKit\Server\Traits;
 
 use Swoole\Server;
 use Inhere\Console\Utils\Show;
 use Toolkit\Sys\ProcessUtil;
-use SwooleKit\Util\ServerUtil;
+use SwoKit\Util\ServerUtil;
 
 /**
  * Class ServerManageTrait
- * @package Inhere\Server\Traits
+ * @package SwoKit\Server\Traits
  * @property Server $server
  */
 trait ServerManageTrait

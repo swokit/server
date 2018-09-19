@@ -6,7 +6,7 @@
  * Time: 下午11:38
  */
 
-namespace Inhere\Server\Component;
+namespace SwoKit\Server\Component;
 
 use Swoole\Process;
 
@@ -14,7 +14,7 @@ use Swoole\Process;
  * Class MicroTimer - a Microsecond timer
  *
  * @link https://wiki.swoole.com/wiki/page/p-alarm.html
- * @package Inhere\Server\Component
+ * @package SwoKit\Server\Component
  *
  * ```php
  * $t = new MicroTimer;

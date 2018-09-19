@@ -6,7 +6,7 @@
  * Time: 10:23
  */
 
-namespace Inhere\Server\Func;
+namespace SwoKit\Server\Func;
 
 use Swoole\Coroutine;
 

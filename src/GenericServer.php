@@ -6,14 +6,14 @@
  * Time: 01:05
  */
 
-namespace Inhere\Server;
+namespace SwoKit\Server;
 
 use Inhere\Console\Utils\Show;
 use Swoole\Coroutine;
 
 /**
  * Class GeneralServer
- * @package Inhere\Server
+ * @package SwoKit\Server
  */
 class GenericServer extends AbstractServer
 {

@@ -4,12 +4,12 @@
 
 ## 相关组件
 
-> More please see https://github.com/swoole-kit
+> More please see https://github.com/swokit
 
 ## install
 
 ```bash
-composer require inhere/server
+composer require swokit/server
 ```
 
 ## run flow

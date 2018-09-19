@@ -6,7 +6,7 @@
  * Time: 10:14
  */
 
-namespace Inhere\Server;
+namespace SwoKit\Server;
 
 use Swoole\Redis\Server;
 

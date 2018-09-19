@@ -6,26 +6,26 @@
  * Time: 下午7:02
  */
 
-namespace Inhere\Server\Traits;
+namespace SwoKit\Server\Traits;
 
-use Inhere\Server\Event\ServerEvent;
-use Inhere\Server\Event\SwooleEvent;
+use SwoKit\Server\Event\ServerEvent;
+use SwoKit\Server\Event\SwooleEvent;
 use Swoole\Server;
 use Swoole\Process;
 use Swoole\Server\Port;
 use Inhere\Console\Utils\Show;
 use Toolkit\Sys\ProcessUtil;
 use Toolkit\ArrUtil\Arr;
-use Inhere\Server\ServerInterface;
+use SwoKit\Server\ServerInterface;
 use Swoole\Http\Server as HttpServer;
 use Swoole\Redis\Server as RedisServer;
 use Swoole\Websocket\Server as WebSocketServer;
-use Inhere\Server\Component\HotReloading;
-use Inhere\Server\Listener\Port\PortListenerInterface;
+use SwoKit\Server\Component\HotReloading;
+use SwoKit\Server\Listener\Port\PortListenerInterface;
 
 /**
  * Class ServerCreateTrait
- * @package Inhere\Server\Traits
+ * @package SwoKit\Server\Traits
  * @property Server $server
  */
 trait ServerCreateTrait

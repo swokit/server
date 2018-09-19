@@ -6,11 +6,11 @@
  * Time: 17:27
  */
 
-namespace Inhere\Server\Component;
+namespace SwoKit\Server\Component;
 
 /**
  * Class DeferredResult
- * @package Inhere\Server\Component
+ * @package SwoKit\Server\Component
  */
 class DeferredResult
 {

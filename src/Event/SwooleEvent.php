@@ -6,11 +6,11 @@
  * Time: 00:01
  */
 
-namespace Inhere\Server\Event;
+namespace SwoKit\Server\Event;
 
 /**
  * Class SwooleEvent
- * @package Inhere\Server\Event
+ * @package SwoKit\Server\Event
  */
 final class SwooleEvent
 {

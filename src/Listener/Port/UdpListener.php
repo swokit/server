@@ -6,13 +6,13 @@
  * Time: 15:23
  */
 
-namespace Inhere\Server\Listener\Port;
+namespace SwoKit\Server\Listener\Port;
 
 use Swoole\Server as SwServer;
 
 /**
  * Class UdpListener
- * @package Inhere\Server\Listener\Port
+ * @package SwoKit\Server\Listener\Port
  */
 class UdpListener extends PortListener implements UdpListenerInterface
 {

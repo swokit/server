@@ -6,7 +6,7 @@
  * Time: 10:20
  */
 
-namespace Inhere\Server\Console\Controllers;
+namespace SwoKit\Server\Console\Controllers;
 
 use Inhere\Console\Controller;
 
@@ -27,7 +27,7 @@ class ServerController extends Controller
     }
 
     /**
-     * @return \Inhere\Server\Server|mixed
+     * @return \SwoKit\Server\Server|mixed
      */
     protected function createServer()
     {

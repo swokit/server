@@ -6,11 +6,11 @@
  * Time: 21:20
  */
 
-namespace Inhere\Server\Exception;
+namespace SwoKit\Server\Exception;
 
 /**
  * Class RuntimeException
- * @package Inhere\Server\Exception
+ * @package SwoKit\Server\Exception
  */
 class RuntimeException extends \Exception
 {

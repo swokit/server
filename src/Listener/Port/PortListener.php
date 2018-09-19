@@ -6,17 +6,17 @@
  * Time: 15:20
  */
 
-namespace Inhere\Server\Listener\Port;
+namespace SwoKit\Server\Listener\Port;
 
 use Inhere\Console\Utils\Show;
 use Toolkit\Traits\Config\OptionsTrait;
-use Inhere\Server\ServerInterface;
+use SwoKit\Server\ServerInterface;
 use Monolog\Logger;
 use Swoole\Server;
 
 /**
  * Class BaseListener
- * @package Inhere\Server\Listener\Port
+ * @package SwoKit\Server\Listener\Port
  */
 abstract class PortListener implements PortListenerInterface
 {

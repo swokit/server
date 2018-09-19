@@ -6,9 +6,9 @@
  * Time: 16:17
  */
 
-namespace Inhere\Server\Traits;
+namespace SwoKit\Server\Traits;
 
-use Inhere\Server\Event\SwooleEvent;
+use SwoKit\Server\Event\SwooleEvent;
 use Toolkit\PhpUtil\PhpHelper;
 
 /**

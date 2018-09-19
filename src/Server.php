@@ -6,10 +6,10 @@
  * Time: 12:41
  */
 
-namespace Inhere\Server;
+namespace SwoKit\Server;
 
 use Inhere\Console\Utils\Show;
-use Inhere\Server\Component\FileLogHandler;
+use SwoKit\Server\Component\FileLogHandler;
 use Monolog\Handler\FingersCrossedHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
@@ -17,7 +17,7 @@ use Swoole\Coroutine;
 
 /**
  * Class Server - Server Manager
- * @package Inhere\Server
+ * @package SwoKit\Server
  * Running processes:
  *
  * ```

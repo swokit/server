@@ -1,9 +1,9 @@
 {
-  "name": "inhere/server",
+  "name": "swokit/server",
   "type": "library",
   "description": "a php server manager powered by swoole",
   "keywords": [ "library", "server", "swoole", "http", "webSocket", "tcp", "udp" ],
-  "homepage": "https://github.com/inhere/php-server",
+  "homepage": "https://github.com/swokit/server",
   "license": "MIT",
   "authors": [
     {
@@ -15,7 +15,7 @@
   "require": {
     "php": ">7.0.0",
     "inhere/console": "dev-master",
-    "swoole-kit/utils": "~1.0"
+    "swokit/utils": "~1.0"
   },
   "autoload": {
     "files": [

@@ -6,23 +6,23 @@
  * Time: 00:09
  */
 
-namespace Inhere\Server;
+namespace SwoKit\Server;
 
 use Inhere\Console\Utils\Show;
-use Inhere\Server\Event\ServerEvent;
-use Inhere\Server\Event\SwooleEvent;
-use Inhere\Server\Traits\ServerEventManageTrait;
+use SwoKit\Server\Event\ServerEvent;
+use SwoKit\Server\Event\SwooleEvent;
+use SwoKit\Server\Traits\ServerEventManageTrait;
 use Psr\Log\LoggerInterface;
 use Toolkit\PhpUtil\PhpException;
-use SwooleKit\Util\ServerUtil;
-use Inhere\Server\Traits\HandleSwooleEventTrait;
-use Inhere\Server\Traits\ServerCreateTrait;
-use Inhere\Server\Traits\ServerManageTrait;
+use SwoKit\Util\ServerUtil;
+use SwoKit\Server\Traits\HandleSwooleEventTrait;
+use SwoKit\Server\Traits\ServerCreateTrait;
+use SwoKit\Server\Traits\ServerManageTrait;
 use Psr\Log\LogLevel as Logger;
 
 /**
  * Class AbstractServer
- * @package Inhere\Server
+ * @package SwoKit\Server
  */
 abstract class AbstractServer implements ServerInterface
 {
@@ -101,7 +101,7 @@ abstract class AbstractServer implements ServerInterface
         //     'type' => 'tcp',
 
         //      setting event handler
-        //     'event_handler' => '', // e.g '\Inhere\Server\listeners\TcpListenHandler'
+        //     'event_handler' => '', // e.g '\SwoKit\Server\listeners\TcpListenHandler'
         //     'events'   => [], // e.g [ 'onReceive', ]
         // ],
 

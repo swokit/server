@@ -6,9 +6,9 @@
  * Time: 10:58
  */
 
-namespace Inhere\Server\Console\Controllers;
+namespace SwoKit\Server\Console\Controllers;
 
-use Inhere\Server\TaskServer;
+use SwoKit\Server\TaskServer;
 
 /**
  * Class TaskServerController

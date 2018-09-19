@@ -6,7 +6,7 @@
  * Time: 16:04
  */
 
-namespace Inhere\Server;
+namespace SwoKit\Server;
 
 use Swoole\Server;
 
@@ -23,14 +23,14 @@ Tcp config:
         'mode' => 'process',
 
         // use outside's event handler
-        'event_handler' => '', // e.g \Inhere\Server\handlers\TcpServerHandler::class
+        'event_handler' => '', // e.g \SwoKit\Server\handlers\TcpServerHandler::class
         'event_list'   => [], // e.g [ 'onReceive', ]
     ],
 */
 
 /**
  * Class TcpServerHandler
- * @package Inhere\Server
+ * @package SwoKit\Server
  */
 class TcpServer extends AbstractServer
 {
