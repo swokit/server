@@ -8,7 +8,7 @@
 
 namespace SwoKit\Server\Console\Controllers;
 
-use SwoKit\Server\TaskServer;
+use SwoKit\Server\RedisServer;
 
 /**
  * Class TaskServerController
@@ -20,12 +20,12 @@ class TaskServerController extends ServerController
     protected static $description = 'some operation for application task server';
 
     /**
-     * @return TaskServer|mixed
+     * @return RedisServer|mixed
      */
     protected function createServer()
     {
         $config = require BASE_PATH . '/config/server/task.php';
 
-        return new TaskServer($config);
+        return new RedisServer($config);
     }
 }

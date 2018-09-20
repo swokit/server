@@ -9,8 +9,8 @@
 namespace SwoKit\Server\Traits;
 
 use SwoKit\Server\Event\ServerEvent;
-use Swoole\Server;
 use SwoKit\Util\ServerUtil;
+use Swoole\Server;
 use Toolkit\Sys\ProcessUtil;
 
 /**
@@ -25,7 +25,7 @@ trait HandleSwooleEventTrait
     /** @var int */
     protected $workerPid = 0;
 
-    /** @var bool  */
+    /** @var bool */
     protected $taskWorker = false;
 
     /**************************************************************************
@@ -66,7 +66,7 @@ trait HandleSwooleEventTrait
      */
     public function onStart(Server $server)
     {
-        $this->fire(ServerEvent::SHUTDOWN, [$server]);
+        $this->fire(ServerEvent::STARTED, [$server]);
 
         $masterPid = $server->master_pid;
         $rootPath = $this->config('rootPath');

@@ -19,13 +19,9 @@ use Swoole\Server;
 class UdpServer extends AbstractServer
 {
     /**
-     * @param array $config
-     * @throws \InvalidArgumentException
      */
-    protected function init(array $config)
+    protected function init()
     {
-        parent::init($config);
-
         $this->serverSettings['type'] = self::PROTOCOL_TCP;
     }
 

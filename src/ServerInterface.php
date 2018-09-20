@@ -7,6 +7,7 @@
  */
 
 namespace SwoKit\Server;
+
 use Monolog\Logger;
 
 /**

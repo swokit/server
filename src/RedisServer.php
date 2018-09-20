@@ -16,7 +16,7 @@ use Swoole\Redis\Server;
  * @property \Swoole\Redis\Server $server
  * @link https://wiki.swoole.com/wiki/page/p-redis_server.html
  */
-class TaskServer extends AbstractServer
+class RedisServer extends AbstractServer
 {
     /**
      * @var string
@@ -24,8 +24,7 @@ class TaskServer extends AbstractServer
     private $dataFile;
 
     /**
-     * @var array
-     * [name => callback]
+     * @var array [name => callback]
      */
     private $commands = [];
 
@@ -44,13 +43,9 @@ class TaskServer extends AbstractServer
     }
 
     /**
-     * @param array $config
-     * @throws \InvalidArgumentException
      */
-    protected function init(array $config)
+    protected function init()
     {
-        parent::init($config);
-
         $this->serverSettings['type'] = self::PROTOCOL_RDS;
         $this->dataFile = $this->config['dataFile'];
     }
@@ -75,7 +70,7 @@ class TaskServer extends AbstractServer
     /**
      * @param string $command
      * @param $callback
-     * @return TaskServer
+     * @return RedisServer
      */
     public function addCommand(string $command, $callback): self
     {

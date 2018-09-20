@@ -8,10 +8,10 @@
 
 namespace SwoKit\Server\Traits;
 
-use Swoole\Server;
 use Inhere\Console\Utils\Show;
-use Toolkit\Sys\ProcessUtil;
 use SwoKit\Util\ServerUtil;
+use Swoole\Server;
+use Toolkit\Sys\ProcessUtil;
 
 /**
  * Class ServerManageTrait
@@ -93,7 +93,6 @@ trait ServerManageTrait
     {
         Show::write(sprintf('Swoole server manager tool, Version <comment>%s</comment> Update time %s', self::VERSION, self::UPDATE_TIME));
     }
-
 
     /**
      * 使当前worker进程停止运行，并立即触发onWorkerStop回调函数

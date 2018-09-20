@@ -35,7 +35,7 @@ final class ServerEvent
     const PORT_CREATED = 'portCreated';
 
     const BOOTSTRAPPED = 'bootstrapped';
-    const BEFORE_SERVER_START = 'beforeServerStart';
+    const BEFORE_SWOOLE_START = 'beforeSwooleStart';
 
     // # 2. running ...
     // # 2.1 master/manager running ...

@@ -9,16 +9,16 @@
 namespace SwoKit\Server;
 
 use Inhere\Console\Utils\Show;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel as Logger;
 use SwoKit\Server\Event\ServerEvent;
 use SwoKit\Server\Event\SwooleEvent;
-use SwoKit\Server\Traits\ServerEventManageTrait;
-use Psr\Log\LoggerInterface;
-use Toolkit\PhpUtil\PhpException;
-use SwoKit\Util\ServerUtil;
 use SwoKit\Server\Traits\HandleSwooleEventTrait;
 use SwoKit\Server\Traits\ServerCreateTrait;
+use SwoKit\Server\Traits\ServerEventManageTrait;
 use SwoKit\Server\Traits\ServerManageTrait;
-use Psr\Log\LogLevel as Logger;
+use SwoKit\Util\ServerUtil;
+use Toolkit\PhpUtil\PhpException;
 
 /**
  * Class AbstractServer
@@ -57,7 +57,7 @@ abstract class AbstractServer implements ServerInterface
      * @var array
      */
     protected static $required = [
-        'name', 'pidFile', 'rootPath'
+        'name', 'rootPath'
     ];
 
     /**
@@ -69,8 +69,8 @@ abstract class AbstractServer implements ServerInterface
         'name' => 'server',
         'debug' => false,
         'rootPath' => '',
-        'pidFile' => '/tmp/swoole_server.pid',
-
+        // eg '/var/run/swoole_server.pid'
+        'pidFile' => '',
         // user options
         'options' => [],
     ];
@@ -165,14 +165,16 @@ abstract class AbstractServer implements ServerInterface
     {
         self::$instance = $this;
 
-        $this->init($config);
+        $this->parseConfig($config);
+
+        $this->init();
     }
 
     /**
      * @param array $config
      * @throws \InvalidArgumentException
      */
-    protected function init(array $config)
+    protected function parseConfig(array $config)
     {
         // main server
         if (!empty($config['server'])) {
@@ -196,15 +198,10 @@ abstract class AbstractServer implements ServerInterface
             $this->config = \array_merge($this->config, $config);
         }
 
-        $this->validateConfig();
-
-        $this->name = (string)$this->config['name'];
-        $this->pidFile = (string)$this->config['pidFile'];
-
-        // register attach server from config
-        if ($attachServers = $this->portsSettings) {
-            foreach ($attachServers as $name => $conf) {
-                $this->attachPortListener($name, $conf);
+        // collect attach port server from config
+        if ($attachPorts = $this->portsSettings) {
+            foreach ($attachPorts as $name => $conf) {
+                $this->attachListener($name, $conf);
             }
         }
 
@@ -212,6 +209,10 @@ abstract class AbstractServer implements ServerInterface
         if ($methods = $this->serverSettings['events']) {
             $this->setSwooleEvents($methods);
         }
+    }
+
+    protected function init()
+    {
     }
 
     /**
@@ -243,6 +244,17 @@ abstract class AbstractServer implements ServerInterface
      * swoole server start
      *************************************************************************/
 
+    protected function prepareStart()
+    {
+        $this->name = (string)$this->config['name'];
+
+        if (!$pidFile = $this->config['pidFile']) {
+            $this->config['pidFile'] = '/var/run/swoole_' . $this->name . '.pid';
+        }
+
+        $this->pidFile = $pidFile;
+    }
+
     /**
      * Do start server
      * @param null|bool $daemon
@@ -251,6 +263,8 @@ abstract class AbstractServer implements ServerInterface
     public function start($daemon = null)
     {
         ServerUtil::checkRuntimeEnv();
+
+        $this->validateConfig();
 
         if ($pid = ServerUtil::getPidFromFile($this->pidFile, true)) {
             Show::error("The swoole server({$this->name}) have been started. (PID:{$pid})", -1);
@@ -268,7 +282,7 @@ abstract class AbstractServer implements ServerInterface
             // display some messages
             $this->showStartStatus();
 
-            // $this->fire(self::ON_SERVER_START, [$this]);
+            $this->fire(ServerEvent::BEFORE_SWOOLE_START, [$this]);
             $this->beforeServerStart();
 
             // start server
@@ -554,14 +568,13 @@ abstract class AbstractServer implements ServerInterface
     public function getErrorMsg(): string
     {
         $err = \error_get_last();
-
         return $err['message'] ?? '';
     }
 
     /**
      * @return resource
      */
-    public function getSocket(): resource
+    public function getSocket()
     {
         return $this->server->getSocket();
     }

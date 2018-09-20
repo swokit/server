@@ -8,20 +8,20 @@
 
 namespace SwoKit\Server\Traits;
 
+use Inhere\Console\Utils\Show;
+use SwoKit\Server\Component\HotReloading;
 use SwoKit\Server\Event\ServerEvent;
 use SwoKit\Server\Event\SwooleEvent;
-use Swoole\Server;
-use Swoole\Process;
-use Swoole\Server\Port;
-use Inhere\Console\Utils\Show;
-use Toolkit\Sys\ProcessUtil;
-use Toolkit\ArrUtil\Arr;
+use SwoKit\Server\Listener\Port\PortListenerInterface;
 use SwoKit\Server\ServerInterface;
 use Swoole\Http\Server as HttpServer;
+use Swoole\Process;
 use Swoole\Redis\Server as RedisServer;
+use Swoole\Server;
+use Swoole\Server\Port;
 use Swoole\Websocket\Server as WebSocketServer;
-use SwoKit\Server\Component\HotReloading;
-use SwoKit\Server\Listener\Port\PortListenerInterface;
+use Toolkit\ArrUtil\Arr;
+use Toolkit\Sys\ProcessUtil;
 
 /**
  * Class ServerCreateTrait
@@ -111,13 +111,6 @@ trait ServerCreateTrait
      **********************************************************************************/
 
     /**
-     * before create Server
-     */
-    public function beforeCreateServer()
-    {
-    }
-
-    /**
      * create Main Server
      * @inheritdoc
      */
@@ -129,21 +122,21 @@ trait ServerCreateTrait
         $host = $opts['host'];
         $port = $opts['port'];
         $mode = $opts['mode'] === self::MODE_BASE ? SWOOLE_BASE : SWOOLE_PROCESS;
-        $type = strtolower($opts['type']);
+        $type = \strtolower($opts['type']);
 
-        $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_HTTP];
+        $protoEvents = self::$swooleProtocolEvents[self::PROTOCOL_HTTP];
 
         // create swoole server
         // 使用SSL必须在编译swoole时加入--enable-openssl选项,并且配置证书文件
         switch ($type) {
             case self::PROTOCOL_TCP:
                 $server = new Server($host, $port, $mode, SWOOLE_SOCK_TCP);
-                $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_TCP];
+                $protoEvents = self::$swooleProtocolEvents[self::PROTOCOL_TCP];
                 break;
 
             case self::PROTOCOL_UDP:
                 $server = new Server($host, $port, $mode, SWOOLE_SOCK_UDP);
-                $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_TCP];
+                $protoEvents = self::$swooleProtocolEvents[self::PROTOCOL_TCP];
                 break;
 
             case self::PROTOCOL_HTTP:
@@ -157,18 +150,18 @@ trait ServerCreateTrait
 
             case self::PROTOCOL_RDS:
                 $server = new RedisServer($host, $port, $mode);
-                $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_RDS];
+                $protoEvents = self::$swooleProtocolEvents[self::PROTOCOL_RDS];
                 break;
 
             case self::PROTOCOL_WS:
                 $server = new WebSocketServer($host, $port, $mode);
-                $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_WS];
+                $protoEvents = self::$swooleProtocolEvents[self::PROTOCOL_WS];
                 break;
 
             case self::PROTOCOL_WSS:
                 $this->checkEnvWhenEnableSSL();
                 $server = new WebSocketServer($host, $port, $mode, SWOOLE_SOCK_TCP | SWOOLE_SSL);
-                $protocolEvents = self::$swooleProtocolEvents[self::PROTOCOL_WS];
+                $protoEvents = self::$swooleProtocolEvents[self::PROTOCOL_WS];
                 break;
 
             default:
@@ -178,10 +171,10 @@ trait ServerCreateTrait
         }
 
         $this->server = $server;
-        $this->server->set($this->config['swoole']);
+        $this->server->set($this->swooleSettings);
 
         $this->log("The main server was created successfully. Listening on <cyan>$type://{$host}:{$port}</cyan>");
-        $this->setSwooleEvents($protocolEvents);
+        $this->setSwooleEvents($protoEvents);
     }
 
     /**
@@ -198,7 +191,6 @@ trait ServerCreateTrait
             if (\is_object($cb) && \method_exists($cb, '__invoke')) {
                 $eventInfo[] = [$name, \get_class($cb)];
                 $this->server->on($name, $cb);
-
                 continue;
             }
 
@@ -208,7 +200,6 @@ trait ServerCreateTrait
                 if ($method && \method_exists($this, $method)) {
                     $eventInfo[] = [$name, static::class . "->$method"];
                     $this->server->on($name, [$this, $method]);
-
                 } elseif (\function_exists($cb)) {
                     $eventInfo[] = [$name, $cb];
                     $this->server->on($name, $cb);
@@ -336,7 +327,6 @@ trait ServerCreateTrait
 
             $this->log("The <info>hot-reload</info> worker process success started. (PID:{$pid}, SVR_PID:$svrPid, Watched:<info>{$options['dirs']}</info>)");
 
-
             $kit = new HotReloading($svrPid);
             $kit
                 ->addWatches($dirs, $this->config['rootPath'])
@@ -385,6 +375,7 @@ trait ServerCreateTrait
             $this->log("Attach the port listen server <info>$name</info>$info to the main server");
         }
 
+        $this->attachedListeners = []; // reset.
         $this->fire(ServerEvent::PORT_CREATED, [$this]);
     }
 
@@ -425,11 +416,7 @@ trait ServerCreateTrait
                     'The event handler must implement of ' . PortListenerInterface::class
                 );
             }
-
-        } elseif ($config instanceof \Closure) {
-            $cb = $config;
-
-        } elseif ($config instanceof PortListenerInterface) {
+        } elseif ($config instanceof \Closure || $config instanceof PortListenerInterface) {
             $cb = $config;
 
         } else {

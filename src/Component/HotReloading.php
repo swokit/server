@@ -28,6 +28,7 @@ $kit
     })
     ->run();
 */
+
 use Inhere\Exceptions\NotFoundException;
 
 /**

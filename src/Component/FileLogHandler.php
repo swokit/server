@@ -8,11 +8,11 @@
 
 namespace SwoKit\Server\Component;
 
-use Swoole\Async;
+use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
 use SwoKit\Server\Server;
+use Swoole\Async;
 use Toolkit\PhpUtil\PhpHelper;
-use Monolog\Handler\AbstractProcessingHandler;
 
 /**
  * Class FileLogHandler

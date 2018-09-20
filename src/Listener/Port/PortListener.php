@@ -9,10 +9,10 @@
 namespace SwoKit\Server\Listener\Port;
 
 use Inhere\Console\Utils\Show;
-use Toolkit\Traits\Config\OptionsTrait;
-use SwoKit\Server\ServerInterface;
 use Monolog\Logger;
+use SwoKit\Server\ServerInterface;
 use Swoole\Server;
+use Toolkit\Traits\Config\OptionsTrait;
 
 /**
  * Class BaseListener

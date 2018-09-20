@@ -12,8 +12,7 @@ use Swoole\Server;
 
 /*
 Tcp config:
-
-    'main_server' => [
+    'server' => [
         'host' => '0.0.0.0',
         'port' => '8662',
         'type' => 'tcp', // tcp udp
@@ -34,14 +33,8 @@ Tcp config:
  */
 class TcpServer extends AbstractServer
 {
-    /**
-     * @param array $config
-     * @throws \InvalidArgumentException
-     */
-    protected function init(array $config)
+    protected function init()
     {
-        parent::init($config);
-
         $this->serverSettings['type'] = self::PROTOCOL_TCP;
     }
 

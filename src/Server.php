@@ -9,14 +9,14 @@
 namespace SwoKit\Server;
 
 use Inhere\Console\Utils\Show;
-use SwoKit\Server\Component\FileLogHandler;
 use Monolog\Handler\FingersCrossedHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
+use SwoKit\Server\Component\FileLogHandler;
 use Swoole\Coroutine;
 
 /**
- * Class Server - Server Manager
+ * Class Server - Generic Server
  * @package SwoKit\Server
  * Running processes:
  *
@@ -60,8 +60,8 @@ class Server extends AbstractServer
      */
     protected function showInformation()
     {
-        $swOpts = $this->config['swoole'];
-        $main = $this->config['main_server'];
+        $swOpts = $this->swooleSettings;
+        $main = $this->serverSettings;
         $panelData = [
             'System Info' => [
                 'PHP Version' => PHP_VERSION,
@@ -93,7 +93,6 @@ class Server extends AbstractServer
             'Server Log' => $this->config['log'],
         ];
 
-
         // 'Server Information'
         Show::mList($panelData, [
             'ucfirst' => false,
@@ -108,9 +107,4 @@ class Server extends AbstractServer
     {
         Show::notice('Sorry, The function un-completed!', 0);
     }
-
-    /*******************************************************************************
-     * getter/setter methods
-     ******************************************************************************/
-
 }
