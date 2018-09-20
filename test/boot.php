@@ -12,13 +12,18 @@ date_default_timezone_set('Asia/Shanghai');
 
 spl_autoload_register(function($class)
 {
-    $inhereDir = dirname(__DIR__, 2);
-    $vendorDir = dirname($inhereDir);
+    $swokitDir = dirname(__DIR__, 2);
+    $inhereDir = dirname($swokitDir) . '/inhere';
+    $vendorDir = dirname($swokitDir);
 
     $map = [
         'Psr\\Log\\' => $vendorDir . '/psr/log/Psr/Log',
         'Inhere\\Console\\' => $inhereDir . '/console/src',
-        'Inhere\\Server\\' => dirname(__DIR__) . '/src',
+        'Toolkit\\Cli\\' => $vendorDir . '/toolkit/toolkit/libs/cli-utils/src',
+        'Toolkit\\Sys\\' => $vendorDir . '/toolkit/toolkit/libs/sys-utils/src',
+        'Toolkit\\PhpUtil\\' => $vendorDir . '/toolkit/toolkit/libs/php-utils/src',
+        'SwoKit\\Util\\' => $swokitDir . '/utils/src',
+        'SwoKit\\Server\\' => dirname(__DIR__) . '/src',
     ];
 
     foreach ($map as $np => $dir) {
@@ -32,6 +37,8 @@ spl_autoload_register(function($class)
         }
     }
 });
+
+include dirname(__DIR__) . '/src/Helper/functions.php';
 
 function include_file($file) {
     include $file;

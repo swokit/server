@@ -94,7 +94,10 @@ class HotReloading
      */
     protected $watchedFiles = [];
 
-
+    /**
+     * @param $mPid
+     * @return HotReloading
+     */
     public static function make($mPid)
     {
         return new self($mPid);
@@ -233,22 +236,22 @@ class HotReloading
      */
     public function addWatch($target, $root = true)
     {
-        //
+        // empty
         if (!$target) {
             return false;
         }
 
-        //目录/文件不存在
-        if (!file_exists($target)) {
+        // 目录/文件不存在
+        if (!\file_exists($target)) {
             throw new \RuntimeException("[$target] is not a directory or file.");
         }
 
-        //避免重复监听
+        // 避免重复监听
         if (isset($this->watchedFiles[$target])) {
             return false;
         }
 
-        $wd = inotify_add_watch($this->inotify, $target, $this->eventMask);
+        $wd = \inotify_add_watch($this->inotify, $target, $this->eventMask);
         $this->watchedFiles[$target] = $wd;
 
         if (!is_dir($target)) {

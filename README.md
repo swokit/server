@@ -16,20 +16,64 @@ composer require swokit/server
 
 ```text
 
-php bin/server ->
+new server -> parse config -> 
 
 ```
 
-## simple run
+## quick run
 
-- create a instance
+- create a TCP server
 
-```
-$server = new TcpServer($config);
+```php
+$server = new TcpServer([
+    'rootPath' => __DIR__,
+    'server' => [
+        'port' => 12091
+    ]
+]);
 
 ....
 
-$server->run();
+$server->start();
+```
+
+## config refer
+
+```php
+$config = [
+    'debug' => true,
+    'name' => 'demo',
+    'rootPath' => __DIR__,
+    'pidFile' => __DIR__ . '/logs/test_server.pid',
+
+    // main server
+    'server' => [
+        'type' => 'tcp', // http https tcp udp ws wss rds
+        'port' => 9501,
+    ],
+
+    // attach port server by config
+    'ports' => [
+        'port1' => [
+            'host' => '0.0.0.0',
+            'port' => '9761',
+            'type' => 'udp',
+
+            // must setting the handler class in config.
+            'listener' => \Inhere\Server\Listener\Port\UdpListener::class,
+        ]
+    ],
+    
+    // for swoole
+    'swoole' => [
+        'user'    => 'www-data',
+        'worker_num'    => 4,
+        'task_worker_num' => 2,
+        'daemonize'     => false,
+        'max_request'   => 10000,
+        // 'log_file' => PROJECT_PATH . '/temp/logs/my_swoole_server.log',
+    ]
+];
 ```
 
 ## 注意事项

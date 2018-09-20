@@ -6,12 +6,12 @@
  * Time: 21:40
  */
 
-require dirname(__DIR__) . '/tests/boot.php';
+require dirname(__DIR__) . '/test/boot.php';
 
-$cdc = new \Inhere\Server\Component\CheckDirChanged();
+$cdc = new \Swokit\Server\Component\ModifyWatcher();
 $ret = $cdc
     ->setIdFile(__DIR__ . '/dir.id')
-    ->setWatchDir(dirname(__DIR__))
+    ->watchDir(dirname(__DIR__))
     ->isChanged();
 
 // d41d8cd98f00b204e9800998ecf8427e

@@ -18,11 +18,10 @@ use Swoole\Server;
  */
 class UdpServer extends AbstractServer
 {
-    /**
-     */
-    protected function init()
+    public function __construct(array $config)
     {
-        $this->serverSettings['type'] = self::PROTOCOL_TCP;
+        $config['server']['type'] = self::PROTOCOL_UDP;
+        parent::__construct($config);
     }
 
     /**

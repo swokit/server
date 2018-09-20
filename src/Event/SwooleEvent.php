@@ -67,6 +67,22 @@ final class SwooleEvent
     /**
      * @var array
      */
+    const BASIC_HANDLERS = [
+        // basic
+        'start' => 'onStart',
+        'shutdown' => 'onShutdown',
+        'managerStart' => 'onManagerStart',
+        'managerStop' => 'onManagerStop',
+        // worker
+        'workerStart' => 'onWorkerStart',
+        'workerStop' => 'onWorkerStop',
+        'workerExit' => 'onWorkerExit',
+        'workerError' => 'onWorkerError',
+    ];
+
+    /**
+     * @var array
+     */
     const DEFAULT_HANDLERS = [
         // basic
         'start' => 'onStart',
@@ -99,8 +115,8 @@ final class SwooleEvent
         'request' => 'onRequest',
 
         // webSocket server
-        'message' => 'onMessage',
         'open' => 'onOpen',
+        'message' => 'onMessage',
         'handShake' => 'onHandshake'
     ];
 
@@ -110,7 +126,7 @@ final class SwooleEvent
      */
     public static function getHandler(string $event)
     {
-        return self::DEFAULT_HANDLERS[$event] ?? null;
+        return self::DEFAULT_HANDLERS[$event] ?? $event;
     }
 
     /**

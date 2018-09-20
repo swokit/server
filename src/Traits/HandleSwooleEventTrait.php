@@ -20,6 +20,9 @@ use Toolkit\Sys\ProcessUtil;
 trait HandleSwooleEventTrait
 {
     /** @var int */
+    protected $masterPid = 0;
+
+    /** @var int */
     protected $workerId = -1;
 
     /** @var int */
@@ -68,7 +71,7 @@ trait HandleSwooleEventTrait
     {
         $this->fire(ServerEvent::STARTED, [$server]);
 
-        $masterPid = $server->master_pid;
+        $this->masterPid = $masterPid = $server->master_pid;
         $rootPath = $this->config('rootPath');
         $rootPath = $rootPath ? " (at $rootPath)" : '';
 
@@ -92,8 +95,7 @@ trait HandleSwooleEventTrait
     }
 
     /**
-     * on Worker Start
-     *   应当在onWorkerStart中创建连接对象
+     * on Worker Start 应当在onWorkerStart中创建连接对象
      * @link https://wiki.swoole.com/wiki/page/325.html
      * @param  Server $server
      * @param  int $workerId The worker index id in the all workers.
@@ -256,5 +258,13 @@ trait HandleSwooleEventTrait
     public function setWorkerPid(int $workerPid)
     {
         $this->workerPid = $workerPid;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMasterPid(): int
+    {
+        return $this->masterPid;
     }
 }

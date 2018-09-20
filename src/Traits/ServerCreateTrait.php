@@ -117,7 +117,7 @@ trait ServerCreateTrait
     protected function createServer()
     {
         $server = null;
-        $opts = $this->config['server'];
+        $opts = $this->serverSettings;
 
         $host = $opts['host'];
         $port = $opts['port'];
@@ -195,8 +195,11 @@ trait ServerCreateTrait
             }
 
             if (\is_string($cb)) {
-                $method = SwooleEvent::getHandler($cb);
+                if (\is_int($name)) {
+                    $name = $cb;
+                }
 
+                $method = SwooleEvent::getHandler($cb);
                 if ($method && \method_exists($this, $method)) {
                     $eventInfo[] = [$name, static::class . "->$method"];
                     $this->server->on($name, [$this, $method]);
@@ -278,6 +281,7 @@ trait ServerCreateTrait
         $this->fire(ServerEvent::BEFORE_PROCESS_CREATE, [$this, $name]);
 
         $process = new Process(function (Process $p) use ($callback, $name) {
+            $this->workerPid = $this->server->worker_pid = $p->pid;
             ProcessUtil::setTitle("swoole: {$name} ({$this->name})");
 
             $this->fire(ServerEvent::PROCESS_STARTED, [$this, $name]);

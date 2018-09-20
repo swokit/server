@@ -37,7 +37,7 @@ abstract class AbstractServer implements ServerInterface
     /** @var string Current server name */
     protected $name = 'server';
 
-    /** @var \Swoole\Server */
+    /** @var \Swoole\Server|\Swoole\Http\Server|\Swoole\WebSocket\Server */
     protected $server;
 
     /**
@@ -116,14 +116,11 @@ abstract class AbstractServer implements ServerInterface
      */
     protected $swooleSettings = [
         // 'user'    => '',
-
         'worker_num' => 1,
         // 启用 task worker, 必须为Server设置onTask和onFinish回调
         'task_worker_num' => 1,
-
         // 'reload_async' => true,
         'daemonize' => 0,
-
         // 'max_request' => 1000,
 
         // 在1.7.15以上版本中，当设置dispatch_mode = 1/3时会自动去掉onConnect/onClose事件回调。
@@ -248,25 +245,25 @@ abstract class AbstractServer implements ServerInterface
     {
         $this->name = (string)$this->config['name'];
 
-        if (!$pidFile = $this->config['pidFile']) {
+        if (!$this->config['pidFile']) {
             $this->config['pidFile'] = '/var/run/swoole_' . $this->name . '.pid';
         }
 
-        $this->pidFile = $pidFile;
+        $this->pidFile = $this->config['pidFile'];
     }
 
     /**
      * Do start server
      * @param null|bool $daemon
-     * @throws \Throwable
      */
     public function start($daemon = null)
     {
         ServerUtil::checkRuntimeEnv();
 
         $this->validateConfig();
+        $this->prepareStart();
 
-        if ($pid = ServerUtil::getPidFromFile($this->pidFile, true)) {
+        if ($pid = $this->getPidFromFile(true)) {
             Show::error("The swoole server({$this->name}) have been started. (PID:{$pid})", -1);
         }
 
@@ -418,6 +415,16 @@ abstract class AbstractServer implements ServerInterface
      * @param mixed $default
      * @return mixed
      */
+    public function get(string $key, $default = null)
+    {
+        return $this->config[$key] ?? $default;
+    }
+
+    /**
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
     public function config(string $key, $default = null)
     {
         return $this->config[$key] ?? $default;
@@ -439,16 +446,16 @@ abstract class AbstractServer implements ServerInterface
         // if on Daemon, don't output log.
         if (!$this->isDaemon()) {
             list($ts, $ms) = explode('.', sprintf('%.4f', microtime(true)));
-            $ms = str_pad($ms, 4, 0);
-            $time = date('Y-m-d H:i:s', $ts);
-            $json = $context ? ' ' . \json_encode($context, JSON_UNESCAPED_SLASHES) : '';
+            $ms = \str_pad($ms, 4, 0);
+            $time = \date('Y-m-d H:i:s', $ts);
+            $json = $context ? ' ' . \json_encode($context, \JSON_UNESCAPED_SLASHES) : '';
             // $type = Logger::getLevelName($type);
 
             Show::write(sprintf('[%s.%s] [%s.%s] %s %s', $time, $ms, $this->name, strtoupper($type), $msg, $json));
         }
 
         if ($this->logger) {
-            $this->logger->$type(strip_tags($msg), $context);
+            $this->logger->$type(\strip_tags($msg), $context);
         }
     }
 
@@ -477,6 +484,14 @@ abstract class AbstractServer implements ServerInterface
     }
 
     /**
+     * @return \Swoole\Server|\Swoole\Http\Server|\Swoole\WebSocket\Server
+     */
+    public function getServer()
+    {
+        return $this->server;
+    }
+
+    /**
      * checkEnvWhenEnableSSL
      */
     protected function checkEnvWhenEnableSSL()
@@ -489,7 +504,7 @@ abstract class AbstractServer implements ServerInterface
         }
 
         // check ssl config
-        if (!$this->config['swoole']['ssl_cert_file'] || !$this->config['swoole']['ssl_key_file']) {
+        if (!$this->swooleSettings['ssl_cert_file'] || !$this->swooleSettings['ssl_key_file']) {
             Show::error(
                 "If you want use SSL(https), must config the 'swoole.ssl_cert_file' and 'swoole.ssl_key_file'",
                 1
@@ -608,7 +623,7 @@ abstract class AbstractServer implements ServerInterface
      * @param bool $checkRunning
      * @return int
      */
-    public function getPidFromFile($checkRunning = false): int
+    public function getPidFromFile(bool $checkRunning = false): int
     {
         return ServerUtil::getPidFromFile($this->pidFile, $checkRunning);
     }
