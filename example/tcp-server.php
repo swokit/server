@@ -8,7 +8,7 @@
 
 require dirname(__DIR__) . '/test/boot.php';
 
-$tcp = new \SwoKit\Server\TcpServer([
+$tcp = new \Swokit\Server\TcpServer([
     'debug' => true,
     'name' => 'demo-tcp',
     'rootPath' => __DIR__,
@@ -21,6 +21,6 @@ $tcp = new \SwoKit\Server\TcpServer([
     ],
 ]);
 
-$tcp->addProcess('hot-reload', \SwoKit\Server\Func\fileWatcherProcess(__DIR__. '/logs/file-change.key',[__DIR__ . '/example']));
+$tcp->addProcess('hot-reload', \Swokit\Server\Func\fileWatcherProcess(__DIR__ . '/logs/file-change.key', [__DIR__ . '/example']));
 
 $tcp->start();

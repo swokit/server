@@ -6,13 +6,13 @@
  * Time: 9:21
  */
 
-namespace SwoKit\Server;
+namespace Swokit\Server;
 
 use Monolog\Logger;
 
 /**
  * Interface ServerInterface
- * @package SwoKit\Server
+ * @package Swokit\Server
  * @property \Swoole\Server|\Swoole\Websocket\Server $server
  */
 interface ServerInterface

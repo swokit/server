@@ -5,7 +5,7 @@ namespace Inhere\Server;
 /*
  * Sometime too hot the eye of heaven shines
  */
-use swoole_websocket_server;
+
 use Tadpole\Stat;
 
 class WebSocketServer1

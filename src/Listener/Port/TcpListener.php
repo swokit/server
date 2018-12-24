@@ -6,13 +6,13 @@
  * Time: 15:20
  */
 
-namespace SwoKit\Server\Listener\Port;
+namespace Swokit\Server\Listener\Port;
 
 use Swoole\Server as SwServer;
 
 /**
  * Class TcpListener
- * @package SwoKit\Server\Listener\Port
+ * @package Swokit\Server\Listener\Port
  */
 class TcpListener extends PortListener implements TcpListenerInterface
 {

@@ -37,7 +37,7 @@ class RpcClient
         if (!$client) {
             exit("{$errNo} : {$errStr} \n");
         }
-        
+
         //传递调用的类名
         $class = basename($this->urlInfo['path']);
         $proto = "Rpc-Class: {$class};" . PHP_EOL;

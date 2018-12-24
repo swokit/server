@@ -6,13 +6,13 @@
  * Time: 20:56
  */
 
-namespace SwoKit\Server\Component;
+namespace Swokit\Server\Component;
 
 use Toolkit\Sys\Sys;
 
 /**
  * Class FilesWatcher - Check Dir's files modified by md5_file()
- * @package SwoKit\Server\Component
+ * @package Swokit\Server\Component
  */
 final class ModifyWatcher
 {

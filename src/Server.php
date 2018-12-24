@@ -6,18 +6,18 @@
  * Time: 12:41
  */
 
-namespace SwoKit\Server;
+namespace Swokit\Server;
 
 use Inhere\Console\Utils\Show;
 use Monolog\Handler\FingersCrossedHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
-use SwoKit\Server\Component\FileLogHandler;
+use Swokit\Server\Component\FileLogHandler;
 use Swoole\Coroutine;
 
 /**
  * Class Server - Generic Server
- * @package SwoKit\Server
+ * @package Swokit\Server
  * Running processes:
  *
  * ```

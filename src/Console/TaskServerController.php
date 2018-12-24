@@ -6,9 +6,9 @@
  * Time: 10:58
  */
 
-namespace SwoKit\Server\Console\Controllers;
+namespace Swokit\Server\Console\Controllers;
 
-use SwoKit\Server\RedisServer;
+use Swokit\Server\RedisServer;
 
 /**
  * Class TaskServerController

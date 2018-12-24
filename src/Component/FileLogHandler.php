@@ -6,11 +6,11 @@
  * Time: 16:45
  */
 
-namespace SwoKit\Server\Component;
+namespace Swokit\Server\Component;
 
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
-use SwoKit\Server\Server;
+use Swokit\Server\Server;
 use Swoole\Async;
 use Toolkit\PhpUtil\PhpHelper;
 

@@ -2,7 +2,15 @@
   "name": "swokit/server",
   "type": "library",
   "description": "a php server manager powered by swoole",
-  "keywords": [ "library", "server", "swoole", "http", "webSocket", "tcp", "udp" ],
+  "keywords": [
+    "library",
+    "server",
+    "swoole",
+    "http",
+    "webSocket",
+    "tcp",
+    "udp"
+  ],
   "homepage": "https://github.com/swokit/server",
   "license": "MIT",
   "authors": [
@@ -22,7 +30,7 @@
       "src/Helper/functions.php"
     ],
     "psr-4": {
-      "Inhere\\Server\\" : "src/"
+      "Inhere\\Server\\": "src/"
     }
   },
   "suggest": {

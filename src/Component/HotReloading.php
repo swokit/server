@@ -6,7 +6,7 @@
  * Time: 17:50
  */
 
-namespace SwoKit\Server\Component;
+namespace Swokit\Server\Component;
 
 /*
 // 单独使用
@@ -33,7 +33,7 @@ use Inhere\Exceptions\NotFoundException;
 
 /**
  * Class HotReloading
- * @package SwoKit\Server
+ * @package Swokit\Server
  */
 class HotReloading
 {

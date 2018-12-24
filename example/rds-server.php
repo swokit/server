@@ -11,7 +11,7 @@ use Swoole\Redis\Server;
 require dirname(__DIR__) . '/test/boot.php';
 
 // implement a simple redis server.
-$rdsServer = \SwoKit\Server\RedisServer::create([]);
+$rdsServer = \Swokit\Server\RedisServer::create([]);
 
 $rdsServer->addCommand('get', function (Server $server, $fd, $data) {
     if (\count($data) === 0) {

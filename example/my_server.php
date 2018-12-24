@@ -18,7 +18,7 @@ $config = [
     'pidFile' => __DIR__ . '/logs/test_server.pid',
 
     'logger' => [
-        'name'     => 'slim_server',
+        'name' => 'slim_server',
         'basePath' => __DIR__ . '/logs/test_server',
         'logThreshold' => 0,
     ],
@@ -49,11 +49,11 @@ $config = [
     ],
 
     'swoole' => [
-        'user'    => 'www-data',
-        'worker_num'    => 4,
+        'user' => 'www-data',
+        'worker_num' => 4,
         'task_worker_num' => 2,
-        'daemonize'     => false,
-        'max_request'   => 10000,
+        'daemonize' => false,
+        'max_request' => 10000,
         // 'log_file' => PROJECT_PATH . '/temp/logs/slim_server_swoole.log',
     ]
 ];

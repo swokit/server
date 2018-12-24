@@ -10,8 +10,7 @@ ini_set('display_errors', 'On');
 error_reporting(E_ALL | E_STRICT);
 date_default_timezone_set('Asia/Shanghai');
 
-spl_autoload_register(function($class)
-{
+spl_autoload_register(function ($class) {
     $swokitDir = dirname(__DIR__, 2);
     $inhereDir = dirname($swokitDir) . '/inhere';
     $vendorDir = dirname($swokitDir);
@@ -22,8 +21,8 @@ spl_autoload_register(function($class)
         'Toolkit\\Cli\\' => $vendorDir . '/toolkit/toolkit/libs/cli-utils/src',
         'Toolkit\\Sys\\' => $vendorDir . '/toolkit/toolkit/libs/sys-utils/src',
         'Toolkit\\PhpUtil\\' => $vendorDir . '/toolkit/toolkit/libs/php-utils/src',
-        'SwoKit\\Util\\' => $swokitDir . '/utils/src',
-        'SwoKit\\Server\\' => dirname(__DIR__) . '/src',
+        'Swokit\\Util\\' => $swokitDir . '/utils/src',
+        'Swokit\\Server\\' => dirname(__DIR__) . '/src',
     ];
 
     foreach ($map as $np => $dir) {
@@ -40,6 +39,7 @@ spl_autoload_register(function($class)
 
 include dirname(__DIR__) . '/src/Helper/functions.php';
 
-function include_file($file) {
+function include_file($file)
+{
     include $file;
 }

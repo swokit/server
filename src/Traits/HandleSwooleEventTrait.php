@@ -6,16 +6,16 @@
  * Time: 19:28
  */
 
-namespace SwoKit\Server\Traits;
+namespace Swokit\Server\Traits;
 
-use SwoKit\Server\Event\ServerEvent;
-use SwoKit\Util\ServerUtil;
+use Swokit\Server\Event\ServerEvent;
+use Swokit\Util\ServerUtil;
 use Swoole\Server;
 use Toolkit\Sys\ProcessUtil;
 
 /**
  * Trait HandleSwooleEventTrait
- * @package SwoKit\Server\Traits
+ * @package Swokit\Server\Traits
  */
 trait HandleSwooleEventTrait
 {

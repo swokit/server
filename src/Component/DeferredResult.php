@@ -6,11 +6,11 @@
  * Time: 17:27
  */
 
-namespace SwoKit\Server\Component;
+namespace Swokit\Server\Component;
 
 /**
  * Class DeferredResult
- * @package SwoKit\Server\Component
+ * @package Swokit\Server\Component
  */
 class DeferredResult
 {

@@ -6,11 +6,11 @@
  * Time: 23:01
  */
 
-namespace SwoKit\Server\Listener\Server;
+namespace Swokit\Server\Listener\Server;
 
 /**
  * Class AbstractListener
- * @package SwoKit\Server\Listener\Server
+ * @package Swokit\Server\Listener\Server
  */
 abstract class AbstractListener implements ServerListenerInterface
 {

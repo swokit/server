@@ -6,14 +6,14 @@
  * Time: 下午7:02
  */
 
-namespace SwoKit\Server\Traits;
+namespace Swokit\Server\Traits;
 
 use Inhere\Console\Utils\Show;
-use SwoKit\Server\Component\HotReloading;
-use SwoKit\Server\Event\ServerEvent;
-use SwoKit\Server\Event\SwooleEvent;
-use SwoKit\Server\Listener\Port\PortListenerInterface;
-use SwoKit\Server\ServerInterface;
+use Swokit\Server\Component\HotReloading;
+use Swokit\Server\Event\ServerEvent;
+use Swokit\Server\Event\SwooleEvent;
+use Swokit\Server\Listener\Port\PortListenerInterface;
+use Swokit\Server\ServerInterface;
 use Swoole\Http\Server as HttpServer;
 use Swoole\Process;
 use Swoole\Redis\Server as RedisServer;
@@ -25,7 +25,7 @@ use Toolkit\Sys\ProcessUtil;
 
 /**
  * Class ServerCreateTrait
- * @package SwoKit\Server\Traits
+ * @package Swokit\Server\Traits
  * @property Server $server
  */
 trait ServerCreateTrait

@@ -6,13 +6,13 @@
  * Time: 9:27
  */
 
-namespace SwoKit\Server\Listener\Server;
+namespace Swokit\Server\Listener\Server;
 
 use Swoole\Server;
 
 /**
  * Interface ServerListenerInterface
- * @package SwoKit\Server\Listener\Server
+ * @package Swokit\Server\Listener\Server
  */
 interface ServerListenerInterface
 {
