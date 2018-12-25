@@ -6,11 +6,11 @@
  * Time: 9:56
  */
 
-namespace Inhere\Server\examples;
+namespace Swokit\Server\examples;
 
 /**
  * Class RpcClient
- * @package Inhere\Server\examples
+ * @package Swokit\Server\examples
  * ```
  * $cli = new RpcClient('http://127.0.0.1:8888/test');
  * echo $cli->hehe();

@@ -44,7 +44,7 @@ $config = [
             'type' => 'udp',
 
             // must setting the handler class in config.
-            'listener' => \Inhere\Server\Listener\Port\UdpListener::class,
+            'listener' => \Swokit\Server\Listener\Port\UdpListener::class,
         ]
     ],
 
@@ -58,10 +58,10 @@ $config = [
     ]
 ];
 
-// $mgr = new \Inhere\Server\Extend\WebSocketServer($config);
-$mgr = new \Inhere\Server\Server($config);
+// $mgr = new \Swokit\Server\Extend\WebSocketServer($config);
+$mgr = new \Swokit\Server\Server($config);
 
-$mgr->attachListener('port2', new \Inhere\Server\Listener\Port\UdpListener([
+$mgr->attachListener('port2', new \Swokit\Server\Listener\Port\UdpListener([
     'host' => '0.0.0.0',
     'port' => '9762',
 ]));

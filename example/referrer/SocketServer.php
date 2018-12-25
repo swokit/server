@@ -1,6 +1,6 @@
 <?php
 
-namespace Inhere\Server;
+namespace Swokit\Server;
 
 /*
  * Sometime too hot the eye of heaven shines

@@ -6,11 +6,11 @@
  * Time: 9:53
  */
 
-namespace Inhere\Server\examples;
+namespace Swokit\Server\examples;
 
 /**
  * Class RpcServer
- * @package Inhere\Server\examples
+ * @package Swokit\Server\examples
  *
  * ```php
  * new RpcServer('127.0.0.1', 8888, './service');

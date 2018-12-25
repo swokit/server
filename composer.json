@@ -21,7 +21,7 @@
     }
   ],
   "require": {
-    "php": ">7.0.0",
+    "php": ">7.1.0",
     "inhere/console": "dev-master",
     "swokit/utils": "~1.0"
   },
