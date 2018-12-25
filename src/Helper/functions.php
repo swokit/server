@@ -72,7 +72,7 @@ function app_server($port, $host = '0.0.0.0', array $config = [])
  */
 function include_file(string $file, array $data = [])
 {
-    $fp = fopen($file, 'r');
+    $fp = fopen($file, 'rb');
 
     Coroutine::fread($fp);
 }

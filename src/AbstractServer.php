@@ -37,7 +37,9 @@ abstract class AbstractServer implements ServerInterface
     /** @var string Current server name */
     protected $name = 'server';
 
-    /** @var \Swoole\Server|\Swoole\Http\Server|\Swoole\WebSocket\Server */
+    /**
+     * @var \Swoole\Server|\Swoole\Http\Server|\Swoole\WebSocket\Server
+     */
     protected $server;
 
     /**
@@ -492,6 +494,22 @@ abstract class AbstractServer implements ServerInterface
     }
 
     /**
+     * @param array $serverSettings
+     */
+    public function setServerSettings(array $serverSettings): void
+    {
+        $this->serverSettings = \array_merge($this->serverSettings, $serverSettings);
+    }
+
+    /**
+     * @param array $swooleSettings
+     */
+    public function setSwooleSettings(array $swooleSettings): void
+    {
+        $this->swooleSettings = \array_merge($this->swooleSettings, $swooleSettings);
+    }
+
+    /**
      * checkEnvWhenEnableSSL
      */
     protected function checkEnvWhenEnableSSL()
@@ -540,7 +558,6 @@ abstract class AbstractServer implements ServerInterface
     public function getPeerName(int $cid): array
     {
         $data = $this->getClientInfo($cid);
-
         return [
             'ip' => $data['remote_ip'] ?? '',
             'port' => $data['remote_port'] ?? 0,
