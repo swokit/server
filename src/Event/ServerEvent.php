@@ -19,36 +19,36 @@ final class ServerEvent
      ************************************************************/
 
     // # 1. start ...
-    const BEFORE_RUN = 'beforeRun';
-    const BEFORE_BOOTSTRAP = 'beforeBootstrap';
+    public const BEFORE_RUN = 'beforeRun';
+    public const BEFORE_BOOTSTRAP = 'beforeBootstrap';
 
-    const BEFORE_SERVER_CREATE = 'beforeServerCreate';
-    const SERVER_CREATED = 'serverCreated';
+    public const BEFORE_SERVER_CREATE = 'beforeServerCreate';
+    public const SERVER_CREATED = 'serverCreated';
 
     // ## 1.1 user process ...
-    const BEFORE_PROCESS_CREATE = 'beforeProcessCreate';
-    const PROCESS_CREATED = 'processCreated';
-    const PROCESS_STARTED = 'processStarted';
+    public const BEFORE_PROCESS_CREATE = 'beforeProcessCreate';
+    public const PROCESS_CREATED = 'processCreated';
+    public const PROCESS_STARTED = 'processStarted';
 
     // ## 1.2 port ...
-    const BEFORE_PORT_CREATE = 'beforePortCreate';
-    const PORT_CREATED = 'portCreated';
+    public const BEFORE_PORT_CREATE = 'beforePortCreate';
+    public const PORT_CREATED = 'portCreated';
 
-    const BOOTSTRAPPED = 'bootstrapped';
-    const BEFORE_SWOOLE_START = 'beforeSwooleStart';
+    public const BOOTSTRAPPED = 'bootstrapped';
+    public const BEFORE_SWOOLE_START = 'beforeSwooleStart';
 
     // # 2. running ...
     // # 2.1 master/manager running ...
-    const STARTED = 'started';
-    const SHUTDOWN = 'shutdown';
-    const MANAGER_STARTED = 'managerStarted';
-    const MANAGER_STOPPED = 'managerStopped';
+    public const STARTED = 'started';
+    public const SHUTDOWN = 'shutdown';
+    public const MANAGER_STARTED = 'managerStarted';
+    public const MANAGER_STOPPED = 'managerStopped';
 
     // # 2.2 worker running ...
-    const WORKER_STARTED = 'workerStarted';
-    const TASK_PROCESS_STARTED = 'taskProcessStarted';
-    const WORK_PROCESS_STARTED = 'workProcessStarted';
-    const WORKER_ERROR = 'workerError';
-    const WORKER_STOPPED = 'workerStopped';
-    const WORKER_EXITED = 'workerExited';
+    public const WORKER_STARTED = 'workerStarted';
+    public const TASK_PROCESS_STARTED = 'taskProcessStarted';
+    public const WORK_PROCESS_STARTED = 'workProcessStarted';
+    public const WORKER_ERROR = 'workerError';
+    public const WORKER_STOPPED = 'workerStopped';
+    public const WORKER_EXITED = 'workerExited';
 }
