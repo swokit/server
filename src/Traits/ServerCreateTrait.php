@@ -278,13 +278,13 @@ trait ServerCreateTrait
      */
     public function createProcess(string $name, \Closure $callback)
     {
-        $this->fire(ServerEvent::BEFORE_PROCESS_CREATE, [$this, $name]);
+        $this->fire(ServerEvent::PROCESS_CREATE, $this, $name);
 
         $process = new Process(function (Process $p) use ($callback, $name) {
             $this->workerPid = $this->server->worker_pid = $p->pid;
             ProcessUtil::setTitle("swoole: {$name} ({$this->name})");
 
-            $this->fire(ServerEvent::PROCESS_STARTED, [$this, $name]);
+            $this->fire(ServerEvent::PROCESS_STARTED, $this, $name);
             $callback($p, $this);
 
             // 群发收到的消息
@@ -294,7 +294,7 @@ trait ServerCreateTrait
         // addProcess 添加的用户进程中无法使用task投递任务，
         // 请使用 $server->sendMessage() 接口与工作进程通信
         $this->server->addProcess($process);
-        $this->fire(ServerEvent::PROCESS_CREATED, [$this, $name]);
+        $this->fire(ServerEvent::PROCESS_CREATED, $this, $name);
     }
 
     /**
@@ -356,7 +356,7 @@ trait ServerCreateTrait
      */
     protected function createListenServers(Server $server)
     {
-        $this->fire(ServerEvent::BEFORE_PORT_CREATE, [$this]);
+        $this->fire(ServerEvent::PORT_CREATE, $this);
 
         foreach ($this->attachedListeners as $name => $cb) {
             $info = '';

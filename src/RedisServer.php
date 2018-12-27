@@ -16,7 +16,7 @@ use Swoole\Redis\Server;
  * @property \Swoole\Redis\Server $server
  * @link https://wiki.swoole.com/wiki/page/p-redis_server.html
  */
-class RedisServer extends AbstractServer
+class RedisServer extends BaseServer
 {
     /**
      * @var string

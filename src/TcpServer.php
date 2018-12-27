@@ -8,6 +8,7 @@
 
 namespace Swokit\Server;
 
+use Swokit\Server\Face\TcpHandlerInterface;
 use Swoole\Server;
 
 /*
@@ -28,11 +29,16 @@ Tcp config:
 */
 
 /**
- * Class TcpServerHandler
+ * Class TcpServer
  * @package Swokit\Server
  */
-class TcpServer extends AbstractServer
+class TcpServer extends BaseServer
 {
+    /**
+     * @var TcpHandlerInterface
+     */
+    private $handler;
+
     public function __construct(array $config)
     {
         $config['server']['type'] = self::PROTOCOL_TCP;
@@ -48,6 +54,10 @@ class TcpServer extends AbstractServer
     public function onConnect(Server $server, int $fd, int $fromId)
     {
         $this->log("onConnect: Has a new client [fd:$fd] connection to the main server.(fromId: $fromId,workerId: {$server->worker_id})");
+
+        if ($this->handler) {
+            $this->handler->onConnect($server, $fd, $fromId);
+        }
     }
 
     /**
@@ -58,11 +68,16 @@ class TcpServer extends AbstractServer
      * @param  int $fromId
      * @param  mixed $data
      */
-    public function onReceive(Server $server, $fd, $fromId, $data)
+    public function onReceive(Server $server, int $fd, int $fromId, string $data)
     {
-        $data = trim($data);
+        $data = \trim($data);
         $this->log("Receive data [$data] from client [FD:$fd]. fromId: $fromId");
-        $server->send($fd, "I have been received your message.\n");
+
+        if ($this->handler) {
+            $this->handler->onReceive($server, $fd, $fromId, $data);
+        } else {
+            $server->send($fd, "I have been received your message.\n");
+        }
 
         // 群发收到的消息
         // $this->reloadWorker->write($data);
@@ -88,10 +103,15 @@ class TcpServer extends AbstractServer
 
     /**
      * @param Server $server
-     * @param $fd
+     * @param int $fd
+     * @param int $reactorId
      */
-    public function onClose($server, $fd)
+    public function onClose(Server $server, int $fd, int $reactorId)
     {
         $this->log("onClose: The client [fd:$fd] connection closed on the main server.(workerId: {$server->worker_id})");
+
+        if ($this->handler) {
+            $this->handler->onClose($server, $fd);
+        }
     }
 }

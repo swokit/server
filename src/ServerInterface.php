@@ -17,32 +17,32 @@ use Monolog\Logger;
  */
 interface ServerInterface
 {
-    const VERSION = '0.1.1';
+    public const VERSION = '0.1.1';
 
-    const UPDATE_TIME = '2017-02-17';
+    public const UPDATE_TIME = '2017-02-17';
 
     // 运行模式
     // SWOOLE_PROCESS 业务代码在Worker进程中执行
     // SWOOLE_BASE    业务代码在Reactor进程中直接执行
-    const MODE_BASE = 'base';
-    const MODE_PROCESS = 'process';
+    public const MODE_BASE = 'base';
+    public const MODE_PROCESS = 'process';
 
     /**
      * the main server allow socket protocol type:
      * tcp udp http https(http + ssl) ws wss(webSocket + ssl)
      */
-    const PROTOCOL_TCP = 'tcp';
-    const PROTOCOL_UDP = 'udp';
-    const PROTOCOL_HTTP = 'http';
-    const PROTOCOL_HTTPS = 'https';
-    const PROTOCOL_RDS = 'rds';  // redis
-    const PROTOCOL_WS = 'ws';  // webSocket
-    const PROTOCOL_WSS = 'wss'; // webSocket ssl
+    public const PROTOCOL_TCP = 'tcp';
+    public const PROTOCOL_UDP = 'udp';
+    public const PROTOCOL_HTTP = 'http';
+    public const PROTOCOL_HTTPS = 'https';
+    public const PROTOCOL_RDS = 'rds';  // redis
+    public const PROTOCOL_WS = 'ws';  // webSocket
+    public const PROTOCOL_WSS = 'wss'; // webSocket ssl
 
     /**
      * @var array
      */
-    const SWOOLE_EVENTS = [
+    public const SWOOLE_EVENTS = [
         // basic
         'start', 'shutdown', 'workerStart', 'workerStop', 'workerExit', 'workerError', 'managerStart', 'managerStop',
         // special

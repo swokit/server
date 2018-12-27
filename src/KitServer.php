@@ -16,14 +16,15 @@ use Swokit\Server\Component\FileLogHandler;
 use Swoole\Coroutine;
 
 /**
- * Class Server - Generic Server
+ * Class KitServer - Generic Server Kit
  * @package Swokit\Server
  * Running processes:
  *
  * ```
  * ```
+ *
  */
-class Server extends AbstractServer
+class KitServer extends BaseServer
 {
     /**
      * @param array $opts
@@ -61,7 +62,7 @@ class Server extends AbstractServer
     protected function showInformation()
     {
         $swOpts = $this->swooleSettings;
-        $main = $this->serverSettings;
+        $settings = $this->serverSettings;
         $panelData = [
             'System Info' => [
                 'PHP Version' => PHP_VERSION,
@@ -78,10 +79,10 @@ class Server extends AbstractServer
                 'max_request' => $swOpts['max_request'],
             ],
             'Main Server' => [
-                'type' => $main['type'],
-                'mode' => $main['mode'],
-                'host' => $main['host'],
-                'port' => $main['port'],
+                'type' => $settings['type'],
+                'mode' => $settings['mode'],
+                'host' => $settings['host'],
+                'port' => $settings['port'],
                 'class' => static::class,
             ],
             'Project Config' => [

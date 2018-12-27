@@ -60,5 +60,5 @@ $serv->on('WorkerStart', function($serv, $workerId) {
 
 ## 参考
 
-附录：[Linux信号列表](linux-signal-list.md)
+附录：[Linux信号列表](../extra/linux-signal-list.md)
 

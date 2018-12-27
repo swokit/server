@@ -10,7 +10,7 @@ namespace Swokit\Server\Component;
 
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
-use Swokit\Server\Server;
+use Swokit\Server\KitServer;
 use Swoole\Async;
 use Toolkit\PhpUtil\PhpHelper;
 
@@ -20,9 +20,9 @@ use Toolkit\PhpUtil\PhpHelper;
  */
 class FileLogHandler extends AbstractProcessingHandler
 {
-    const SPLIT_NO = 0;
-    const SPLIT_DAY = 1;
-    const SPLIT_HOUR = 2;
+    public const SPLIT_NO = 0;
+    public const SPLIT_DAY = 1;
+    public const SPLIT_HOUR = 2;
 
     protected $file;
     private $errorMessage;
@@ -36,7 +36,7 @@ class FileLogHandler extends AbstractProcessingHandler
     private $splitType;
 
     /**
-     * @var Server
+     * @var KitServer
      */
     protected $server;
 
@@ -67,9 +67,9 @@ class FileLogHandler extends AbstractProcessingHandler
     }
 
     /**
-     * @param Server $server
+     * @param KitServer $server
      */
-    public function setServer(Server $server)
+    public function setServer(KitServer $server)
     {
         $this->server = $server;
     }

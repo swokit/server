@@ -27,7 +27,7 @@ class ServerController extends Controller
     }
 
     /**
-     * @return \Swokit\Server\Server|mixed
+     * @return \Swokit\Server\KitServer|mixed
      */
     protected function createServer()
     {

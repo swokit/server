@@ -14,46 +14,46 @@ namespace Swokit\Server\Event;
  */
 final class SwooleEvent
 {
-    const START = 'start';
-    const SHUTDOWN = 'shutdown';
+    public const START = 'start';
+    public const SHUTDOWN = 'shutdown';
 
-    const MANAGER_START = 'managerStart';
-    const MANAGER_STOP = 'managerStop';
+    public const MANAGER_START = 'managerStart';
+    public const MANAGER_STOP = 'managerStop';
 
-    const WORKER_START = 'workerStart';
-    const WORKER_STOP = 'workerStop';
-    const WORKER_EXIT = 'workerExit';
-    const WORKER_ERROR = 'workerError';
+    public const WORKER_START = 'workerStart';
+    public const WORKER_STOP = 'workerStop';
+    public const WORKER_EXIT = 'workerExit';
+    public const WORKER_ERROR = 'workerError';
 
-    const PIPE_MESSAGE = 'pipeMessage';
+    public const PIPE_MESSAGE = 'pipeMessage';
 
-    const BUFFER_FULL = 'bufferFull';
-    const BUFFER_EMPTY = 'bufferEmpty';
+    public const BUFFER_FULL = 'bufferFull';
+    public const BUFFER_EMPTY = 'bufferEmpty';
 
-    const CONNECT = 'connect';
-    const RECEIVE = 'receive';
-    const CLOSE = 'close';
+    public const CONNECT = 'connect';
+    public const RECEIVE = 'receive';
+    public const CLOSE = 'close';
 
     /**
      * for task
      */
-    const TASK = 'task';
-    const FINISH = 'finish';
+    public const TASK = 'task';
+    public const FINISH = 'finish';
 
     /**
      * for http server
      */
-    const REQUEST = 'request';
+    public const REQUEST = 'request';
 
     /**
      * for websocket server
      */
-    const OPEN = 'open';
-    const HANDSHAKE = 'handshake';
-    const MESSAGE = 'message';
+    public const OPEN = 'open';
+    public const HANDSHAKE = 'handshake';
+    public const MESSAGE = 'message';
 
     // basic events
-    const BASIC_EVENTS = [
+    public const BASIC_EVENTS = [
         'start',
         'shutdown',
         'managerStart',
@@ -67,7 +67,7 @@ final class SwooleEvent
     /**
      * @var array
      */
-    const BASIC_HANDLERS = [
+    public const BASIC_HANDLERS = [
         // basic
         'start' => 'onStart',
         'shutdown' => 'onShutdown',
@@ -83,7 +83,7 @@ final class SwooleEvent
     /**
      * @var array
      */
-    const DEFAULT_HANDLERS = [
+    public const DEFAULT_HANDLERS = [
         // basic
         'start' => 'onStart',
         'shutdown' => 'onShutdown',

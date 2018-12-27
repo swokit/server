@@ -42,7 +42,7 @@ trait HandleSwooleEventTrait
     public function onManagerStart(Server $server)
     {
         // $server->manager_pid;
-        $this->fire(ServerEvent::MANAGER_STARTED, [$server]);
+        $this->fire(ServerEvent::MANAGER_STARTED, $server);
 
         // file_put_contents($this->pidFile, ',' . $server->manager_pid, FILE_APPEND);
         ServerUtil::createPidFile($server->manager_pid, $this->pidFile);
@@ -57,7 +57,7 @@ trait HandleSwooleEventTrait
      */
     public function onManagerStop(Server $server)
     {
-        $this->fire(ServerEvent::MANAGER_STOPPED, [$server]);
+        $this->fire(ServerEvent::MANAGER_STOPPED, $server);
         $this->log("The manager process stopped. (PID {$server->manager_pid})");
 
         ServerUtil::removePidFile($this->pidFile);
@@ -69,7 +69,7 @@ trait HandleSwooleEventTrait
      */
     public function onStart(Server $server)
     {
-        $this->fire(ServerEvent::STARTED, [$server]);
+        $this->fire(ServerEvent::STARTED, $server);
 
         $this->masterPid = $masterPid = $server->master_pid;
         $rootPath = $this->config('rootPath');
@@ -87,7 +87,7 @@ trait HandleSwooleEventTrait
      */
     public function onShutdown(Server $server)
     {
-        $this->fire(ServerEvent::SHUTDOWN, [$server]);
+        $this->fire(ServerEvent::SHUTDOWN, $server);
 
         $this->log("The swoole master process(PID: <info>{$server->master_pid})</info> stopped.");
 
@@ -113,13 +113,13 @@ trait HandleSwooleEventTrait
 
         try {
             if ($server->taskworker) {
-                $this->fire(ServerEvent::TASK_PROCESS_STARTED, [$server, $workerId]);
+                $this->fire(ServerEvent::TASK_PROCESS_STARTED, $server, $workerId);
             } else {
-                $this->fire(ServerEvent::WORK_PROCESS_STARTED, [$server, $workerId]);
+                $this->fire(ServerEvent::WORK_PROCESS_STARTED, $server, $workerId);
             }
 
             // ServerHelper::setUserAndGroup();
-            $this->fire(ServerEvent::WORKER_STARTED, [$server, $workerId]);
+            $this->fire(ServerEvent::WORKER_STARTED, $server, $workerId);
         } catch (\Throwable $e) {
             $this->handleWorkerException($e, __METHOD__);
         }
@@ -135,7 +135,7 @@ trait HandleSwooleEventTrait
      */
     public function onWorkerStop(Server $server, $workerId)
     {
-        $this->fire(ServerEvent::WORKER_STOPPED, [$server, $workerId]);
+        $this->fire(ServerEvent::WORKER_STOPPED, $server, $workerId);
         $this->log("The swoole #<info>$workerId</info> worker process stopped. (PID:{$server->worker_pid})");
     }
 
@@ -145,7 +145,7 @@ trait HandleSwooleEventTrait
      */
     public function onWorkerExit(Server $server, $workerId)
     {
-        $this->fire(ServerEvent::WORKER_EXITED, [$server, $workerId]);
+        $this->fire(ServerEvent::WORKER_EXITED, $server, $workerId);
         $this->log("The swoole #<info>$workerId</info> worker process exited. (PID:{$server->worker_pid})");
     }
 
@@ -172,7 +172,7 @@ trait HandleSwooleEventTrait
      * @param  int $srcWorkerId
      * @param  mixed $data
      */
-    public function onPipeMessage(Server $server, $srcWorkerId, $data)
+    public function onPipeMessage(Server $server, int $srcWorkerId, string $data)
     {
         $this->log("worker #{$server->worker_id} received message from #$srcWorkerId, data: $data");
     }
@@ -180,13 +180,14 @@ trait HandleSwooleEventTrait
     ////////////////////// Task Event //////////////////////
 
     /**
-     * 处理异步任务( onTask )
+     * 处理异步任务(在 task worker 进程内被调用)
      * @param  Server $server
      * @param  int $taskId
      * @param  int $fromId
      * @param  mixed $data
+     * @return mixed
      */
-    public function onTask(Server $server, $taskId, $fromId, $data)
+    public function onTask(Server $server, int $taskId, $fromId, $data)
     {
         $this->log('task worker received a new task', [
             'taskId' => $taskId,
@@ -194,17 +195,18 @@ trait HandleSwooleEventTrait
             'workerId' => $server->worker_id,
             'data' => $data
         ], 'debug');
+
         // 返回任务执行的结果(finish操作是可选的，也可以不返回任何结果)
-        // $server->finish("$data -> OK");
+        return 'OK';
     }
 
     /**
-     * 处理异步任务的结果
+     * task worker处理异步任务的结果
      * @param  Server $server
      * @param  int $taskId
      * @param  mixed $data
      */
-    public function onFinish(Server $server, $taskId, $data)
+    public function onFinish(Server $server, int $taskId, $data)
     {
         $this->log("task finished on the task worker. status: $data", [
             'taskId' => $taskId,

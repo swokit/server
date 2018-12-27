@@ -38,7 +38,7 @@ use Inhere\Exceptions\NotFoundException;
 class HotReloading
 {
     /**
-     * @var resource
+     * @var int|resource
      */
     protected $inotify;
 
@@ -122,8 +122,8 @@ class HotReloading
 
     protected function addWatchEvent()
     {
-        swoole_event_add($this->inotify, function ($ifd) {
-            if (!$events = inotify_read($this->inotify)) {
+        \swoole_event_add($this->inotify, function ($ifd) {
+            if (!$events = \inotify_read($this->inotify)) {
                 return;
             }
 
@@ -332,6 +332,6 @@ class HotReloading
 
     public function putLog($log)
     {
-        echo "[" . date('Y-m-d H:i:s') . "]\t" . $log . "\n";
+        echo '[' . date('Y-m-d H:i:s') . "]\t" . $log . "\n";
     }
 }

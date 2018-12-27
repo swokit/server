@@ -8,7 +8,7 @@
 
 namespace Swokit\Server\Func;
 
-use Swokit\Server\AbstractServer;
+use Swokit\Server\BaseServer;
 use Swokit\Server\Component\ModifyWatcher;
 use Swoole\Coroutine;
 use Swoole\Process;
@@ -16,7 +16,7 @@ use Swoole\Timer;
 
 function hotReloadProcess(string $dirs, bool $onlyReloadTask = false): \Closure
 {
-    return function (Process $process, AbstractServer $mgr) use ($dirs, $onlyReloadTask) {
+    return function (Process $process, BaseServer $mgr) use ($dirs, $onlyReloadTask) {
         $pid = $process->pid;
         $svrPid = $mgr->getMasterPid();
         $dirsArr = \array_map('trim', explode(',', $dirs));
@@ -40,7 +40,7 @@ function hotReloadProcess(string $dirs, bool $onlyReloadTask = false): \Closure
 
 function fileWatcherProcess(string $keyFile, array $dirs): \Closure
 {
-    return function (Process $process, AbstractServer $mgr) use ($keyFile, $dirs) {
+    return function (Process $process, BaseServer $mgr) use ($keyFile, $dirs) {
         $pid = $process->pid;
         $svrPid = $mgr->getMasterPid();
 

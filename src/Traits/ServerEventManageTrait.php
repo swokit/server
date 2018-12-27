@@ -48,7 +48,7 @@ trait ServerEventManageTrait
      * @param callable|mixed $handler
      * @param bool $once
      */
-    public function on(string $event, $handler, $once = false)
+    public function on(string $event, $handler, bool $once = false)
     {
         if (self::isSupportedEvent($event)) {
             self::$eventHandlers[$event][] = $handler;
@@ -68,10 +68,10 @@ trait ServerEventManageTrait
 
     /**
      * trigger event
-     * @param $event
-     * @param array $args
+     * @param string $event
+     * @param array ...$args
      */
-    public function fire(string $event, array $args = [])
+    public function fire(string $event, ...$args)
     {
         if (!isset(self::$events[$event])) {
             return;

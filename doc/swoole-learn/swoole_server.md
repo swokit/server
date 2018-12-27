@@ -43,7 +43,7 @@ swoole_server->set函数用于设置swoole_server运行时的各项参数。服�
 
 > swoole_server->set只能在swoole_server->start前调用
 
-配置项说明请看[swoole_server_config.md](swoole_server_config.md)
+配置项说明请看[swoole_server_config.md](swoole_server-config.md)
 
 ### swoole_server->on
 
