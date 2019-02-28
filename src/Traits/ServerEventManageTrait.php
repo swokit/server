@@ -44,21 +44,21 @@ trait ServerEventManageTrait
 
     /**
      * register a event handler
-     * @param $event
+     * @param                $event
      * @param callable|mixed $handler
-     * @param bool $once
+     * @param bool           $once
      */
     public function on(string $event, $handler, bool $once = false): void
     {
         if (self::isSupportedEvent($event)) {
             self::$eventHandlers[$event][] = $handler;
-            self::$events[$event] = $once;
+            self::$events[$event]          = $once;
         }
     }
 
     /**
      * register a once event handler
-     * @param $event
+     * @param          $event
      * @param callable $handler
      */
     public function once($event, callable $handler): void
@@ -69,7 +69,7 @@ trait ServerEventManageTrait
     /**
      * trigger event
      * @param string $event
-     * @param array ...$args
+     * @param array  ...$args
      */
     public function fire(string $event, ...$args): void
     {
@@ -165,8 +165,8 @@ trait ServerEventManageTrait
         'pipeMessage' => 'onPipeMessage',
 
         // Task 任务相关 (若配置了 task_worker_num 则必须注册这两个事件)
-        'task' => 'onTask',
-        'finish' => 'onFinish',
+        'task'        => 'onTask',
+        'finish'      => 'onFinish',
     ];
 
     /**
@@ -187,7 +187,7 @@ trait ServerEventManageTrait
 
     /**
      * register a swoole Event Handler Callback
-     * @param string $event
+     * @param string          $event
      * @param callable|string $handler
      * @throws \InvalidArgumentException
      */
@@ -197,7 +197,7 @@ trait ServerEventManageTrait
     }
 
     /**
-     * @param string $event The event name
+     * @param string          $event The event name
      * @param string|\Closure $cb The callback name
      * @throws \InvalidArgumentException
      */

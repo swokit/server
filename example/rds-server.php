@@ -39,7 +39,7 @@ $rdsServer->addCommand('set', function (Server $server, $fd, $data) {
         );
     }
 
-    $key = $data[0];
+    $key                = $data[0];
     $server->data[$key] = $data[1];
 
     $server->send($fd, Server::format(Server::STATUS, 'OK'));
@@ -109,7 +109,7 @@ $rdsServer->addCommand('hSet', function (Server $server, $fd, $data) {
     $field = $data[1];
     $value = $data[2];
 
-    $count = !isset($server->data[$key][$field]) ? 1 : 0;
+    $count                      = !isset($server->data[$key][$field]) ? 1 : 0;
     $server->data[$key][$field] = $value;
     $server->send($fd, Server::format(Server::INT, $count));
 });

@@ -20,7 +20,7 @@ interface UdpHandlerInterface
      * handle receive data on swoole event: onPacket
      * @param Server $server
      * @param string $data
-     * @param array $client
+     * @param array  $client
      * @return mixed
      */
     public function onPacket(Server $server, string $data, array $client);

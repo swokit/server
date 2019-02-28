@@ -74,14 +74,14 @@ trait ServerCreateTrait
      */
     private static $swooleProtocolEvents = [
         // TCP server callback
-        'tcp' => [
+        'tcp'  => [
             'connect',
             'receive',
             'close'
         ],
 
         // UDP server callback
-        'udp' => [
+        'udp'  => [
             'packet',
             'close'
         ],
@@ -92,7 +92,7 @@ trait ServerCreateTrait
         ],
 
         // Web Socket server callback
-        'ws' => [
+        'ws'   => [
             'open',
             'close',
             'message',
@@ -100,7 +100,7 @@ trait ServerCreateTrait
         ],
 
         // redis server callback
-        'rds' => [
+        'rds'  => [
             'task',
             'finish',
         ],
@@ -117,7 +117,7 @@ trait ServerCreateTrait
     protected function createServer(): void
     {
         $server = null;
-        $opts = $this->serverSettings;
+        $opts   = $this->serverSettings;
 
         $host = $opts['host'];
         $port = $opts['port'];
@@ -130,12 +130,12 @@ trait ServerCreateTrait
         // 使用SSL必须在编译swoole时加入--enable-openssl选项,并且配置证书文件
         switch ($type) {
             case self::PROTOCOL_TCP:
-                $server = new Server($host, $port, $mode, SWOOLE_SOCK_TCP);
+                $server      = new Server($host, $port, $mode, SWOOLE_SOCK_TCP);
                 $protoEvents = self::$swooleProtocolEvents[self::PROTOCOL_TCP];
                 break;
 
             case self::PROTOCOL_UDP:
-                $server = new Server($host, $port, $mode, SWOOLE_SOCK_UDP);
+                $server      = new Server($host, $port, $mode, SWOOLE_SOCK_UDP);
                 $protoEvents = self::$swooleProtocolEvents[self::PROTOCOL_TCP];
                 break;
 
@@ -149,18 +149,18 @@ trait ServerCreateTrait
                 break;
 
             case self::PROTOCOL_RDS:
-                $server = new RedisServer($host, $port, $mode);
+                $server      = new RedisServer($host, $port, $mode);
                 $protoEvents = self::$swooleProtocolEvents[self::PROTOCOL_RDS];
                 break;
 
             case self::PROTOCOL_WS:
-                $server = new WebSocketServer($host, $port, $mode);
+                $server      = new WebSocketServer($host, $port, $mode);
                 $protoEvents = self::$swooleProtocolEvents[self::PROTOCOL_WS];
                 break;
 
             case self::PROTOCOL_WSS:
                 $this->checkEnvWhenEnableSSL();
-                $server = new WebSocketServer($host, $port, $mode, SWOOLE_SOCK_TCP | SWOOLE_SSL);
+                $server      = new WebSocketServer($host, $port, $mode, SWOOLE_SOCK_TCP | SWOOLE_SSL);
                 $protoEvents = self::$swooleProtocolEvents[self::PROTOCOL_WS];
                 break;
 
@@ -212,7 +212,7 @@ trait ServerCreateTrait
 
         Show::table($eventInfo, 'Registered events to the server', [
             'showBorder' => 0,
-            'columns' => ['event name', 'swoole event handler']
+            'columns'    => ['event name', 'swoole event handler']
         ]);
     }
 
@@ -263,17 +263,17 @@ trait ServerCreateTrait
     }
 
     /**
-     * @param string $name
+     * @param string   $name
      * @param \Closure $callback
      */
     public function addProcess(string $name, \Closure $callback): void
     {
-        $this->processNames[$name] = true;
+        $this->processNames[$name]     = true;
         $this->processCallbacks[$name] = $callback;
     }
 
     /**
-     * @param string $name
+     * @param string   $name
      * @param \Closure $callback
      */
     public function createProcess(string $name, \Closure $callback): void
@@ -311,7 +311,7 @@ trait ServerCreateTrait
             return false;
         }
 
-        $mgr = $this;
+        $mgr     = $this;
         $options = [
             'dirs' => $reload,
             // 'masterPid' => $this->server->master_pid
@@ -325,9 +325,9 @@ trait ServerCreateTrait
             ProcessUtil::setTitle("swoole: hot-reload ({$mgr->name})");
 
             // $pid = $process->pid;
-            $svrPid = $mgr->server->master_pid;
+            $svrPid         = $mgr->server->master_pid;
             $onlyReloadTask = isset($options['only_reload_task']) ? (bool)$options['only_reload_task'] : false;
-            $dirs = array_map('trim', explode(',', $options['dirs']));
+            $dirs           = array_map('trim', explode(',', $options['dirs']));
 
             $this->log("The <info>hot-reload</info> worker process success started. (PID:{$pid}, SVR_PID:$svrPid, Watched:<info>{$options['dirs']}</info>)");
 
@@ -365,7 +365,7 @@ trait ServerCreateTrait
                 $port = $cb($server, $this);
             } else {
                 /**
-                 * @var ServerInterface $this
+                 * @var ServerInterface       $this
                  * @var PortListenerInterface $cb
                  */
                 $port = $cb->attachTo($this, $server);
@@ -385,7 +385,7 @@ trait ServerCreateTrait
 
     /**
      * attach add listen port to main server.
-     * @param $name
+     * @param                                      $name
      * @param \Closure|array|PortListenerInterface $config
      * @throws \InvalidArgumentException
      */
@@ -396,7 +396,7 @@ trait ServerCreateTrait
 
     /**
      * attach add listen port to main server.
-     * @param string $name
+     * @param string                               $name
      * @param \Closure|array|PortListenerInterface $config
      * @throws \InvalidArgumentException
      */
@@ -427,7 +427,7 @@ trait ServerCreateTrait
             throw new \InvalidArgumentException('The 2th argument type only allow [array|\Closure|InterfacePortListener].');
         }
 
-        $this->attachedNames[$name] = true;
+        $this->attachedNames[$name]     = true;
         $this->attachedListeners[$name] = $cb;
     }
 

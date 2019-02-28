@@ -48,8 +48,8 @@ class TcpServer extends BaseServer
     /**
      * onConnect
      * @param Server $server
-     * @param int $fd 客户端的唯一标识符. 一个自增数字，范围是 1 ～ 1600万
-     * @param int $fromId
+     * @param int    $fd 客户端的唯一标识符. 一个自增数字，范围是 1 ～ 1600万
+     * @param int    $fromId
      */
     public function onConnect(Server $server, int $fd, int $fromId): void
     {
@@ -64,9 +64,9 @@ class TcpServer extends BaseServer
      * 接收到数据
      *   使用 `fd` 保存客户端IP，`from_id` 保存 `from_fd` 和 `port`
      * @param  Server $server
-     * @param  int $fd
-     * @param  int $fromId
-     * @param  mixed $data
+     * @param  int    $fd
+     * @param  int    $fromId
+     * @param  mixed  $data
      */
     public function onReceive(Server $server, int $fd, int $fromId, string $data): void
     {
@@ -103,8 +103,8 @@ class TcpServer extends BaseServer
 
     /**
      * @param Server $server
-     * @param int $fd
-     * @param int $reactorId
+     * @param int    $fd
+     * @param int    $reactorId
      */
     public function onClose(Server $server, int $fd, int $reactorId): void
     {

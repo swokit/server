@@ -16,13 +16,13 @@ spl_autoload_register(function ($class) {
     $vendorDir = dirname($swokitDir);
 
     $map = [
-        'Psr\\Log\\' => $vendorDir . '/psr/log/Psr/Log',
-        'Inhere\\Console\\' => $inhereDir . '/console/src',
-        'Toolkit\\Cli\\' => $vendorDir . '/toolkit/toolkit/libs/cli-utils/src',
-        'Toolkit\\Sys\\' => $vendorDir . '/toolkit/toolkit/libs/sys-utils/src',
+        'Psr\\Log\\'         => $vendorDir . '/psr/log/Psr/Log',
+        'Inhere\\Console\\'  => $inhereDir . '/console/src',
+        'Toolkit\\Cli\\'     => $vendorDir . '/toolkit/toolkit/libs/cli-utils/src',
+        'Toolkit\\Sys\\'     => $vendorDir . '/toolkit/toolkit/libs/sys-utils/src',
         'Toolkit\\PhpUtil\\' => $vendorDir . '/toolkit/toolkit/libs/php-utils/src',
-        'Swokit\\Util\\' => $swokitDir . '/utils/src',
-        'Swokit\\Server\\' => dirname(__DIR__) . '/src',
+        'Swokit\\Util\\'     => $swokitDir . '/utils/src',
+        'Swokit\\Server\\'   => dirname(__DIR__) . '/src',
     ];
 
     foreach ($map as $np => $dir) {

@@ -14,30 +14,30 @@ namespace Swokit\Server\Event;
  */
 final class SwooleEvent
 {
-    public const START = 'start';
+    public const START    = 'start';
     public const SHUTDOWN = 'shutdown';
 
     public const MANAGER_START = 'managerStart';
-    public const MANAGER_STOP = 'managerStop';
+    public const MANAGER_STOP  = 'managerStop';
 
     public const WORKER_START = 'workerStart';
-    public const WORKER_STOP = 'workerStop';
-    public const WORKER_EXIT = 'workerExit';
+    public const WORKER_STOP  = 'workerStop';
+    public const WORKER_EXIT  = 'workerExit';
     public const WORKER_ERROR = 'workerError';
 
     public const PIPE_MESSAGE = 'pipeMessage';
 
-    public const BUFFER_FULL = 'bufferFull';
+    public const BUFFER_FULL  = 'bufferFull';
     public const BUFFER_EMPTY = 'bufferEmpty';
 
     public const CONNECT = 'connect';
     public const RECEIVE = 'receive';
-    public const CLOSE = 'close';
+    public const CLOSE   = 'close';
 
     /**
      * for task
      */
-    public const TASK = 'task';
+    public const TASK   = 'task';
     public const FINISH = 'finish';
 
     /**
@@ -48,9 +48,9 @@ final class SwooleEvent
     /**
      * for websocket server
      */
-    public const OPEN = 'open';
+    public const OPEN      = 'open';
     public const HANDSHAKE = 'handshake';
-    public const MESSAGE = 'message';
+    public const MESSAGE   = 'message';
 
     // basic events
     public const BASIC_EVENTS = [
@@ -69,15 +69,15 @@ final class SwooleEvent
      */
     public const BASIC_HANDLERS = [
         // basic
-        'start' => 'onStart',
-        'shutdown' => 'onShutdown',
+        'start'        => 'onStart',
+        'shutdown'     => 'onShutdown',
         'managerStart' => 'onManagerStart',
-        'managerStop' => 'onManagerStop',
+        'managerStop'  => 'onManagerStop',
         // worker
-        'workerStart' => 'onWorkerStart',
-        'workerStop' => 'onWorkerStop',
-        'workerExit' => 'onWorkerExit',
-        'workerError' => 'onWorkerError',
+        'workerStart'  => 'onWorkerStart',
+        'workerStop'   => 'onWorkerStop',
+        'workerExit'   => 'onWorkerExit',
+        'workerError'  => 'onWorkerError',
     ];
 
     /**
@@ -85,39 +85,39 @@ final class SwooleEvent
      */
     public const DEFAULT_HANDLERS = [
         // basic
-        'start' => 'onStart',
-        'shutdown' => 'onShutdown',
+        'start'        => 'onStart',
+        'shutdown'     => 'onShutdown',
         'managerStart' => 'onManagerStart',
-        'managerStop' => 'onManagerStop',
+        'managerStop'  => 'onManagerStop',
 
         // worker
-        'workerStart' => 'onWorkerStart',
-        'workerStop' => 'onWorkerStop',
-        'workerExit' => 'onWorkerExit',
-        'workerError' => 'onWorkerError',
+        'workerStart'  => 'onWorkerStart',
+        'workerStop'   => 'onWorkerStop',
+        'workerExit'   => 'onWorkerExit',
+        'workerError'  => 'onWorkerError',
 
         // special
-        'pipeMessage' => 'onPipeMessage',
-        'bufferFull' => 'onBufferFull',
-        'bufferEmpty' => 'onBufferEmpty',
+        'pipeMessage'  => 'onPipeMessage',
+        'bufferFull'   => 'onBufferFull',
+        'bufferEmpty'  => 'onBufferEmpty',
 
         // tcp/udp
-        'connect' => 'onConnect',
-        'receive' => 'onReceive',
-        'packet' => 'onPacket',
-        'close' => 'onClose',
+        'connect'      => 'onConnect',
+        'receive'      => 'onReceive',
+        'packet'       => 'onPacket',
+        'close'        => 'onClose',
 
         // task
-        'task' => 'onTask',
-        'finish' => 'onFinish',
+        'task'         => 'onTask',
+        'finish'       => 'onFinish',
 
         // http server
-        'request' => 'onRequest',
+        'request'      => 'onRequest',
 
         // webSocket server
-        'open' => 'onOpen',
-        'message' => 'onMessage',
-        'handShake' => 'onHandshake'
+        'open'         => 'onOpen',
+        'message'      => 'onMessage',
+        'handShake'    => 'onHandshake'
     ];
 
     /**

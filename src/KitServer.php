@@ -61,37 +61,37 @@ class KitServer extends BaseServer
      */
     protected function showInformation(): void
     {
-        $swOpts = $this->swooleSettings;
-        $settings = $this->serverSettings;
+        $swOpts    = $this->swooleSettings;
+        $settings  = $this->serverSettings;
         $panelData = [
-            'System Info' => [
-                'PHP Version' => PHP_VERSION,
+            'System Info'    => [
+                'PHP Version'    => PHP_VERSION,
                 'Operate System' => PHP_OS,
             ],
-            'Swoole Info' => [
-                'version' => SWOOLE_VERSION,
+            'Swoole Info'    => [
+                'version'   => SWOOLE_VERSION,
                 'coroutine' => class_exists(Coroutine::class, false),
             ],
-            'Swoole Config' => [
-                'dispatch_mode' => $swOpts['dispatch_mode'],
-                'worker_num' => $swOpts['worker_num'],
+            'Swoole Config'  => [
+                'dispatch_mode'   => $swOpts['dispatch_mode'],
+                'worker_num'      => $swOpts['worker_num'],
                 'task_worker_num' => $swOpts['task_worker_num'],
-                'max_request' => $swOpts['max_request'],
+                'max_request'     => $swOpts['max_request'],
             ],
-            'Main Server' => [
-                'type' => $settings['type'],
-                'mode' => $settings['mode'],
-                'host' => $settings['host'],
-                'port' => $settings['port'],
+            'Main Server'    => [
+                'type'  => $settings['type'],
+                'mode'  => $settings['mode'],
+                'host'  => $settings['host'],
+                'port'  => $settings['port'],
                 'class' => static::class,
             ],
             'Project Config' => [
-                'name' => $this->name,
-                'path' => $this->config['rootPath'],
+                'name'        => $this->name,
+                'path'        => $this->config['rootPath'],
                 'auto_reload' => $this->config['auto_reload'],
-                'pidFile' => $this->config['pidFile'],
+                'pidFile'     => $this->config['pidFile'],
             ],
-            'Server Log' => $this->config['log'],
+            'Server Log'     => $this->config['log'],
         ];
 
         // 'Server Information'

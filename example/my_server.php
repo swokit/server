@@ -13,35 +13,35 @@ require dirname(__DIR__) . '/test/boot.php';
 // you can move config to a independent file.
 // $config = require PROJECT_PATH . '/config/server.php';
 $config = [
-    'debug' => true,
-    'name' => 'demo',
+    'debug'   => true,
+    'name'    => 'demo',
     'pidFile' => __DIR__ . '/logs/test_server.pid',
 
     'logger' => [
-        'name' => 'slim_server',
-        'basePath' => __DIR__ . '/logs/test_server',
+        'name'         => 'slim_server',
+        'basePath'     => __DIR__ . '/logs/test_server',
         'logThreshold' => 0,
     ],
 
     'auto_reload' => 'src,config',
 
     // for current main server/ outside extend server.
-    'options' => [
+    'options'     => [
 
     ],
 
     // main server
-    'server' => [
+    'server'      => [
         'type' => 'tcp', // http https tcp udp ws wss rds
         'port' => 9501,
     ],
 
     // attach port server by config
-    'ports' => [
+    'ports'       => [
         'port1' => [
-            'host' => '0.0.0.0',
-            'port' => '9761',
-            'type' => 'udp',
+            'host'     => '0.0.0.0',
+            'port'     => '9761',
+            'type'     => 'udp',
 
             // must setting the handler class in config.
             'listener' => \Swokit\Server\Listener\Port\UdpListener::class,
@@ -49,11 +49,11 @@ $config = [
     ],
 
     'swoole' => [
-        'user' => 'www-data',
-        'worker_num' => 4,
+        'user'            => 'www-data',
+        'worker_num'      => 4,
         'task_worker_num' => 2,
-        'daemonize' => false,
-        'max_request' => 10000,
+        'daemonize'       => false,
+        'max_request'     => 10000,
         // 'log_file' => PROJECT_PATH . '/temp/logs/slim_server_swoole.log',
     ]
 ];

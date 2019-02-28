@@ -18,7 +18,7 @@ interface ServerListenerInterface
 {
     /**
      * @param Server $server
-     * @param array $params
+     * @param array  $params
      */
     public function handle(Server $server, ...$params);
 }

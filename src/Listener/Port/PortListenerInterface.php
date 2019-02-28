@@ -19,7 +19,7 @@ interface PortListenerInterface
 {
     /**
      * @param ServerInterface $mgr
-     * @param Server $server
+     * @param Server          $server
      * @return \Swoole\Server\Port
      */
     public function attachTo(ServerInterface $mgr, Server $server);

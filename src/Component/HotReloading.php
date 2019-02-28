@@ -108,8 +108,8 @@ class HotReloading
      */
     public function __construct($serverPid)
     {
-        $this->pid = (int)$serverPid;
-        $this->inotify = inotify_init();
+        $this->pid       = (int)$serverPid;
+        $this->inotify   = inotify_init();
         $this->eventMask = IN_MODIFY | IN_DELETE | IN_CREATE | IN_MOVE;
 
         $this->addWatchEvent();
@@ -147,7 +147,7 @@ class HotReloading
                 if (!$this->reloading) {
                     $this->putLog("After {$this->afterNSeconds} seconds reload the server");
                     //有事件发生了，进行重启
-                    swoole_timer_after($this->afterNSeconds * 1000, array($this, 'reload'));
+                    swoole_timer_after($this->afterNSeconds * 1000, [$this, 'reload']);
                     $this->reloading = true;
                 }
             }
@@ -212,7 +212,7 @@ class HotReloading
 
     /**
      * add Watches
-     * @param array $dirs
+     * @param array  $dirs
      * @param string $basePath
      * @return $this
      * @throws \RuntimeException
@@ -230,7 +230,7 @@ class HotReloading
 
     /**
      * @param string $target The file or dir path
-     * @param bool $root
+     * @param bool   $root
      * @return bool
      * @throws \RuntimeException
      */
@@ -251,7 +251,7 @@ class HotReloading
             return false;
         }
 
-        $wd = \inotify_add_watch($this->inotify, $target, $this->eventMask);
+        $wd                          = \inotify_add_watch($this->inotify, $target, $this->eventMask);
         $this->watchedFiles[$target] = $wd;
 
         if (!is_dir($target)) {
@@ -280,7 +280,7 @@ class HotReloading
             $fileType = strrchr($f, '.');
 
             if (isset($this->watchedTypes[$fileType])) {
-                $wd = inotify_add_watch($this->inotify, $path, $this->eventMask);
+                $wd                        = inotify_add_watch($this->inotify, $path, $this->eventMask);
                 $this->watchedFiles[$path] = $wd;
             }
         }

@@ -72,8 +72,8 @@ trait HandleSwooleEventTrait
         $this->fire(ServerEvent::STARTED, $server);
 
         $this->masterPid = $masterPid = $server->master_pid;
-        $rootPath = $this->config('rootPath');
-        $rootPath = $rootPath ? " (at $rootPath)" : '';
+        $rootPath        = $this->config('rootPath');
+        $rootPath        = $rootPath ? " (at $rootPath)" : '';
 
         // save master process id to file.
         ProcessUtil::setTitle(sprintf('%s: master%s', $this->name, $rootPath));
@@ -98,14 +98,14 @@ trait HandleSwooleEventTrait
      * on Worker Start 应当在onWorkerStart中创建连接对象
      * @link https://wiki.swoole.com/wiki/page/325.html
      * @param  Server $server
-     * @param  int $workerId The worker index id in the all workers.
+     * @param  int    $workerId The worker index id in the all workers.
      */
     public function onWorkerStart(Server $server, $workerId): void
     {
-        $this->workerId = $workerId;
-        $this->workerPid = $server->worker_pid;
+        $this->workerId   = $workerId;
+        $this->workerPid  = $server->worker_pid;
         $this->taskWorker = (bool)$server->taskworker;
-        $taskMark = $server->taskworker ? 'task process' : 'work process';
+        $taskMark         = $server->taskworker ? 'task process' : 'work process';
 
         $this->log("The #<cyan>{$workerId}</cyan> {$taskMark} process success started. (PID:{$server->worker_pid})");
 
@@ -131,7 +131,7 @@ trait HandleSwooleEventTrait
 
     /**
      * @param Server $server
-     * @param int $workerId
+     * @param int    $workerId
      */
     public function onWorkerStop(Server $server, $workerId): void
     {
@@ -141,7 +141,7 @@ trait HandleSwooleEventTrait
 
     /**
      * @param Server $server
-     * @param int $workerId
+     * @param int    $workerId
      */
     public function onWorkerExit(Server $server, $workerId): void
     {
@@ -151,17 +151,17 @@ trait HandleSwooleEventTrait
 
     /**
      * @param Server $server
-     * @param int $workerId
-     * @param int $workerPid
-     * @param int $exitCode
-     * @param int $signal
+     * @param int    $workerId
+     * @param int    $workerPid
+     * @param int    $exitCode
+     * @param int    $signal
      */
     public function onWorkerError(Server $server, $workerId, int $workerPid, int $exitCode, int $signal): void
     {
         $this->fire(ServerEvent::WORKER_ERROR, [$server, $workerId, $workerPid, $exitCode, $signal]);
         $this->log("The swoole #<info>$workerId</info> worker process error. (PID:{$server->worker_pid})", [
             'exitCode' => $exitCode,
-            'signal' => $signal,
+            'signal'   => $signal,
         ], 'error');
     }
 
@@ -169,8 +169,8 @@ trait HandleSwooleEventTrait
      * onPipeMessage
      *  能接收到 `$server->sendMessage()` 发送的消息
      * @param  Server $server
-     * @param  int $srcWorkerId
-     * @param  mixed $data
+     * @param  int    $srcWorkerId
+     * @param  mixed  $data
      */
     public function onPipeMessage(Server $server, int $srcWorkerId, string $data): void
     {
@@ -182,18 +182,18 @@ trait HandleSwooleEventTrait
     /**
      * 处理异步任务(在 task worker 进程内被调用)
      * @param  Server $server
-     * @param  int $taskId
-     * @param  int $fromId
-     * @param  mixed $data
+     * @param  int    $taskId
+     * @param  int    $fromId
+     * @param  mixed  $data
      * @return mixed
      */
     public function onTask(Server $server, int $taskId, $fromId, $data)
     {
         $this->log('task worker received a new task', [
-            'taskId' => $taskId,
-            'fromId' => $fromId,
+            'taskId'   => $taskId,
+            'fromId'   => $fromId,
             'workerId' => $server->worker_id,
-            'data' => $data
+            'data'     => $data
         ], 'debug');
 
         // 返回任务执行的结果(finish操作是可选的，也可以不返回任何结果)
@@ -203,13 +203,13 @@ trait HandleSwooleEventTrait
     /**
      * task worker处理异步任务的结果
      * @param  Server $server
-     * @param  int $taskId
-     * @param  mixed $data
+     * @param  int    $taskId
+     * @param  mixed  $data
      */
     public function onFinish(Server $server, int $taskId, $data): void
     {
         $this->log("task finished on the task worker. status: $data", [
-            'taskId' => $taskId,
+            'taskId'   => $taskId,
             'workerId' => $server->worker_id,
         ], 'debug');
     }

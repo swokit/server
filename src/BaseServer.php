@@ -59,7 +59,8 @@ abstract class BaseServer implements ServerInterface
      * @var array
      */
     protected static $required = [
-        'name', 'rootPath'
+        'name',
+        'rootPath'
     ];
 
     /**
@@ -68,13 +69,13 @@ abstract class BaseServer implements ServerInterface
      */
     protected $config = [
         // basic config
-        'name' => 'server',
-        'debug' => false,
+        'name'     => 'server',
+        'debug'    => false,
         'rootPath' => '',
         // eg '/var/run/swoole_server.pid'
-        'pidFile' => '',
+        'pidFile'  => '',
         // user options
-        'options' => [],
+        'options'  => [],
     ];
 
     /**
@@ -86,8 +87,8 @@ abstract class BaseServer implements ServerInterface
         // SWOOLE_PROCESS 业务代码在Worker进程中执行 SWOOLE_BASE 业务代码在Reactor进程中直接执行
         'mode' => 'process',
 
-        'host' => '127.0.0.1',
-        'port' => '8662',
+        'host'   => '127.0.0.1',
+        'port'   => '8662',
 
         // append register swoole events
         'events' => [], // e.g [ 'request', ]
@@ -118,11 +119,11 @@ abstract class BaseServer implements ServerInterface
      */
     protected $swooleSettings = [
         // 'user'    => '',
-        'worker_num' => 1,
+        'worker_num'      => 1,
         // 启用 task worker, 必须为Server设置onTask和onFinish回调
         'task_worker_num' => 1,
         // 'reload_async' => true,
-        'daemonize' => 0,
+        'daemonize'       => 0,
         // 'max_request' => 1000,
 
         // 在1.7.15以上版本中，当设置dispatch_mode = 1/3时会自动去掉onConnect/onClose事件回调。
@@ -130,7 +131,7 @@ abstract class BaseServer implements ServerInterface
         // allow: 1 2 3 7
         // 'dispatch_mode' => 2,
         // 'log_file' , // '/tmp/swoole.log', // 不设置log_file会打印到屏幕
-        'log_level' => 2,
+        'log_level'       => 2,
 
         // 使用SSL必须在编译swoole时加入--enable-openssl选项 并且配置下面两项
         // 'ssl_cert_file' => __DIR__.'/config/ssl.crt',
@@ -374,7 +375,7 @@ abstract class BaseServer implements ServerInterface
 
     /**
      * @param \Throwable $e (\Exception \Error)
-     * @param string $catcher
+     * @param string     $catcher
      */
     public function handleException($e, $catcher): void
     {
@@ -385,7 +386,7 @@ abstract class BaseServer implements ServerInterface
 
     /**
      * @param \Throwable $e (\Exception \Error)
-     * @param string $catcher
+     * @param string     $catcher
      */
     public function handleWorkerException($e, $catcher): void
     {
@@ -401,8 +402,8 @@ abstract class BaseServer implements ServerInterface
     protected function collectRuntimeContext(array $context): array
     {
         return \array_merge($context, [
-            'workerId' => $this->getWorkerId(),
-            'workerPid' => $this->getWorkerPid(),
+            'workerId'     => $this->getWorkerId(),
+            'workerPid'    => $this->getWorkerPid(),
             'isTaskWorker' => $this->isTaskWorker(),
             'isUserWorker' => $this->isUserWorker(),
         ]);
@@ -414,7 +415,7 @@ abstract class BaseServer implements ServerInterface
 
     /**
      * @param string $key
-     * @param mixed $default
+     * @param mixed  $default
      * @return mixed
      */
     public function get(string $key, $default = null)
@@ -424,7 +425,7 @@ abstract class BaseServer implements ServerInterface
 
     /**
      * @param string $key
-     * @param mixed $default
+     * @param mixed  $default
      * @return mixed
      */
     public function config(string $key, $default = null)
@@ -434,7 +435,7 @@ abstract class BaseServer implements ServerInterface
 
     /**
      * @param string $format
-     * @param mixed ...$args
+     * @param mixed  ...$args
      */
     public function logf(string $format, ...$args): void
     {
@@ -442,8 +443,8 @@ abstract class BaseServer implements ServerInterface
     }
 
     /**
-     * @param string $msg
-     * @param array $context
+     * @param string     $msg
+     * @param array      $context
      * @param int|string $type
      */
     public function log(string $msg, array $context = [], $type = 'info'): void
@@ -457,7 +458,7 @@ abstract class BaseServer implements ServerInterface
         // if on Daemon, don't output log.
         if (!$this->isDaemon()) {
             [$ts, $ms] = explode('.', sprintf('%.4f', microtime(true)));
-            $ms = \str_pad($ms, 4, 0);
+            $ms   = \str_pad($ms, 4, 0);
             $time = \date('Y-m-d H:i:s', $ts);
             $json = $context ? ' ' . \json_encode($context, \JSON_UNESCAPED_SLASHES) : '';
             // $type = Logger::getLevelName($type);
@@ -568,7 +569,7 @@ abstract class BaseServer implements ServerInterface
     {
         $data = $this->getClientInfo($cid);
         return [
-            'ip' => $data['remote_ip'] ?? '',
+            'ip'   => $data['remote_ip'] ?? '',
             'port' => $data['remote_port'] ?? 0,
         ];
     }
@@ -656,7 +657,7 @@ abstract class BaseServer implements ServerInterface
 
     /**
      * @param string $name
-     * @param $value
+     * @param        $value
      */
     public static function addStat(string $name, $value): void
     {

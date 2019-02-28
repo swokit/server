@@ -9,18 +9,19 @@
 require dirname(__DIR__) . '/test/boot.php';
 
 $tcp = new \Swokit\Server\TcpServer([
-    'debug' => true,
-    'name' => 'demo-tcp',
+    'debug'    => true,
+    'name'     => 'demo-tcp',
     'rootPath' => __DIR__,
-    'pidFile' => __DIR__ . '/logs/demo-tcp.pid',
-    'server' => [
+    'pidFile'  => __DIR__ . '/logs/demo-tcp.pid',
+    'server'   => [
         'port' => 12091
     ],
-    'swoole' => [
+    'swoole'   => [
         'log_file' => __DIR__ . '/logs/swoole_tcp_server.log',
     ],
 ]);
 
-$tcp->addProcess('hot-reload', \Swokit\Server\Func\fileWatcherProcess(__DIR__ . '/logs/file-change.key', [__DIR__ . '/example']));
+$tcp->addProcess('hot-reload',
+    \Swokit\Server\Func\fileWatcherProcess(__DIR__ . '/logs/file-change.key', [__DIR__ . '/example']));
 
 $tcp->start();

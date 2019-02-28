@@ -214,7 +214,7 @@ final class ModifyWatcher
             $this->collectDirMd5($dir);
         }
 
-        $this->dirMd5 = md5($this->md5String);
+        $this->dirMd5    = md5($this->md5String);
         $this->md5String = null;
 
         if ($this->idFile) {

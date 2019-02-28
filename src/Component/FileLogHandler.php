@@ -20,8 +20,8 @@ use Toolkit\PhpUtil\PhpHelper;
  */
 class FileLogHandler extends AbstractProcessingHandler
 {
-    public const SPLIT_NO = 0;
-    public const SPLIT_DAY = 1;
+    public const SPLIT_NO   = 0;
+    public const SPLIT_DAY  = 1;
     public const SPLIT_HOUR = 2;
 
     protected $file;
@@ -41,10 +41,10 @@ class FileLogHandler extends AbstractProcessingHandler
     protected $server;
 
     /**
-     * @param string $file
+     * @param string   $file
      * @param bool|int $level The minimum logging level at which this handler will be triggered
      * @param int|null $filePermission Optional file permissions (default (0644) are only for owner read/write)
-     * @param int $splitType
+     * @param int      $splitType
      * @throws \InvalidArgumentException
      */
     public function __construct($file, $level = Logger::DEBUG, $splitType = self::SPLIT_NO, $filePermission = null)
@@ -58,7 +58,7 @@ class FileLogHandler extends AbstractProcessingHandler
         }
 
         $this->filePermission = $filePermission;
-        $this->splitType = $splitType;
+        $this->splitType      = $splitType;
 
         // fix it
         if ($this->splitType && !\in_array($this->splitType, [self::SPLIT_DAY, self::SPLIT_HOUR], true)) {
@@ -86,14 +86,14 @@ class FileLogHandler extends AbstractProcessingHandler
         $this->errorMessage = null;
 
         $info = pathinfo($this->file);
-        $dir = $info['dirname'];
+        $dir  = $info['dirname'];
         $name = $info['filename'] ?? 'unknown';
-        $ext = $info['extension'] ?? 'log';
+        $ext  = $info['extension'] ?? 'log';
 
         // e.g {/var/logs}/{sws}_{20170927_18}.{log}
         $file = sprintf('%s/%s_%s.%s', $dir, $name, $this->getFilenameSuffix(), $ext);
 
-        set_error_handler(array($this, 'customErrorHandler'));
+        set_error_handler([$this, 'customErrorHandler']);
         if ($this->filePermission !== null) {
             @chmod($file, $this->filePermission);
         }
@@ -136,7 +136,7 @@ class FileLogHandler extends AbstractProcessingHandler
      */
     public function close(): void
     {
-        $this->file = null;
+        $this->file   = null;
         $this->server = null;
     }
 
@@ -182,11 +182,12 @@ class FileLogHandler extends AbstractProcessingHandler
         $dir = $this->getDirFromStream($this->file);
         if (null !== $dir && !is_dir($dir)) {
             $this->errorMessage = null;
-            set_error_handler(array($this, 'customErrorHandler'));
+            set_error_handler([$this, 'customErrorHandler']);
             $status = mkdir($dir, 0777, true);
             restore_error_handler();
             if (false === $status) {
-                throw new \UnexpectedValueException(sprintf('There is no existing directory at "%s" and its not buildable: ' . $this->errorMessage, $dir));
+                throw new \UnexpectedValueException(sprintf('There is no existing directory at "%s" and its not buildable: ' . $this->errorMessage,
+                    $dir));
             }
         }
         $this->dirCreated = true;

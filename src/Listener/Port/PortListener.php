@@ -37,10 +37,10 @@ abstract class PortListener implements PortListenerInterface
      * @var array
      */
     protected $options = [
-        'enable' => true,
-        'host' => '127.0.0.1',
-        'port' => 0,
-        'events' => [
+        'enable'  => true,
+        'host'    => '127.0.0.1',
+        'port'    => 0,
+        'events'  => [
             'onConnect'
         ],
         'setting' => [],
@@ -77,7 +77,7 @@ abstract class PortListener implements PortListenerInterface
 
     /**
      * @param ServerInterface $mgr
-     * @param Server $server
+     * @param Server          $server
      * @return \Swoole\Server\Port
      */
     public function attachTo(ServerInterface $mgr, Server $server)
@@ -113,8 +113,8 @@ abstract class PortListener implements PortListenerInterface
      * output log message
      * @see ServerInterface::log()
      * @param  string $msg
-     * @param  array $data
-     * @param int $level
+     * @param  array  $data
+     * @param int     $level
      */
     public function log($msg, array $data = [], $level = Logger::INFO): void
     {
@@ -143,7 +143,7 @@ abstract class PortListener implements PortListenerInterface
      */
     public function createPortServer(Server $server)
     {
-        $type = $this->type;
+        $type    = $this->type;
         $allowed = [ServerInterface::PROTOCOL_TCP, ServerInterface::PROTOCOL_UDP];
 
         if (!\in_array($type, $allowed, true)) {

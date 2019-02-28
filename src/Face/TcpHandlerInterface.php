@@ -19,8 +19,8 @@ interface TcpHandlerInterface
     /**
      * handle logic on swoole event: onConnect
      * @param Server $server
-     * @param int $fd
-     * @param int $fromId
+     * @param int    $fd
+     * @param int    $fromId
      * @return mixed
      */
     public function onConnect(Server $server, int $fd, int $fromId);
@@ -28,9 +28,9 @@ interface TcpHandlerInterface
     /**
      * handle receive data on swoole event: onReceive
      * @param Server $server
-     * @param int $fd
-     * @param int $fromId
-     * @param $data
+     * @param int    $fd
+     * @param int    $fromId
+     * @param        $data
      * @return mixed
      */
     public function onReceive(Server $server, int $fd, int $fromId, $data);
@@ -38,7 +38,7 @@ interface TcpHandlerInterface
     /**
      * handle receive data on swoole event: onClose
      * @param Server $server
-     * @param int $fd
+     * @param int    $fd
      * @return mixed
      */
     public function onClose(Server $server, int $fd);

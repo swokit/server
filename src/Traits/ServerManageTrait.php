@@ -91,7 +91,8 @@ trait ServerManageTrait
 
     public function version(): void
     {
-        Show::write(sprintf('Swoole server manager tool, Version <comment>%s</comment> Update time %s', self::VERSION, self::UPDATE_TIME));
+        Show::write(sprintf('Swoole server manager tool, Version <comment>%s</comment> Update time %s', self::VERSION,
+            self::UPDATE_TIME));
     }
 
     /**

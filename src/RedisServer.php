@@ -47,7 +47,7 @@ class RedisServer extends BaseServer
     protected function init(): void
     {
         $this->serverSettings['type'] = self::PROTOCOL_RDS;
-        $this->dataFile = $this->config['dataFile'];
+        $this->dataFile               = $this->config['dataFile'];
     }
 
     /**
@@ -69,7 +69,7 @@ class RedisServer extends BaseServer
 
     /**
      * @param string $command
-     * @param $callback
+     * @param        $callback
      * @return RedisServer
      */
     public function addCommand(string $command, $callback): self
@@ -105,7 +105,7 @@ class RedisServer extends BaseServer
 
     /**
      * @param Server $server
-     * @param int $workerId
+     * @param int    $workerId
      */
     public function onWorkerStart(Server $server, $workerId): void
     {
