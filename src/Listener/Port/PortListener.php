@@ -70,7 +70,7 @@ abstract class PortListener implements PortListenerInterface
         $this->init();
     }
 
-    protected function init()
+    protected function init(): void
     {
         // something ... ...
     }
@@ -90,7 +90,7 @@ abstract class PortListener implements PortListenerInterface
     /**
      * @param ServerInterface $mgr
      */
-    public function setMgr(ServerInterface $mgr)
+    public function setMgr(ServerInterface $mgr): void
     {
         $this->mgr = $mgr;
     }
@@ -116,7 +116,7 @@ abstract class PortListener implements PortListenerInterface
      * @param  array $data
      * @param int $level
      */
-    public function log($msg, array $data = [], $level = Logger::INFO)
+    public function log($msg, array $data = [], $level = Logger::INFO): void
     {
         $this->mgr->log($msg, $data, $level);
     }
@@ -124,7 +124,7 @@ abstract class PortListener implements PortListenerInterface
     /**
      * @param \Closure $closure
      */
-    public function beforeCreate(\Closure $closure)
+    public function beforeCreate(\Closure $closure): void
     {
         $this->onBeforeCreate = $closure;
     }
@@ -132,7 +132,7 @@ abstract class PortListener implements PortListenerInterface
     /**
      * @param \Closure $closure
      */
-    public function afterCreate(\Closure $closure)
+    public function afterCreate(\Closure $closure): void
     {
         $this->onAfterCreate = $closure;
     }
@@ -172,7 +172,7 @@ abstract class PortListener implements PortListenerInterface
     /**
      * register Swoole Port Events
      */
-    public function registerPortEvents()
+    public function registerPortEvents(): void
     {
         foreach ((array)$this->options['events'] as $event => $method) {
             // ['onConnect'] --> 'Connect', 'onConnect

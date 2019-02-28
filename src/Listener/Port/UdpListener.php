@@ -28,7 +28,7 @@ class UdpListener extends PortListener implements UdpListenerInterface
      * @param  string $data 收到的数据内容，可能是文本或者二进制内容
      * @param  array $clientInfo 客户端信息包括address/port/server_socket 3项数据
      */
-    public function onPacket(SwServer $server, $data, array $clientInfo)
+    public function onPacket(SwServer $server, $data, array $clientInfo): void
     {
         // $fd = unpack('L', pack('N', ip2long($addr['address'])))[1];
         // $reactor_id = ($addr['server_socket'] << 16) + $addr['port']

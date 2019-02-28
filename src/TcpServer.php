@@ -51,7 +51,7 @@ class TcpServer extends BaseServer
      * @param int $fd 客户端的唯一标识符. 一个自增数字，范围是 1 ～ 1600万
      * @param int $fromId
      */
-    public function onConnect(Server $server, int $fd, int $fromId)
+    public function onConnect(Server $server, int $fd, int $fromId): void
     {
         $this->log("onConnect: Has a new client [fd:$fd] connection to the main server.(fromId: $fromId,workerId: {$server->worker_id})");
 
@@ -68,7 +68,7 @@ class TcpServer extends BaseServer
      * @param  int $fromId
      * @param  mixed $data
      */
-    public function onReceive(Server $server, int $fd, int $fromId, string $data)
+    public function onReceive(Server $server, int $fd, int $fromId, string $data): void
     {
         $data = \trim($data);
         $this->log("Receive data [$data] from client [FD:$fd]. fromId: $fromId");
@@ -106,7 +106,7 @@ class TcpServer extends BaseServer
      * @param int $fd
      * @param int $reactorId
      */
-    public function onClose(Server $server, int $fd, int $reactorId)
+    public function onClose(Server $server, int $fd, int $reactorId): void
     {
         $this->log("onClose: The client [fd:$fd] connection closed on the main server.(workerId: {$server->worker_id})");
 

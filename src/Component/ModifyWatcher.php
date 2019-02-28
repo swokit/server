@@ -227,7 +227,7 @@ final class ModifyWatcher
     /**
      * @param string $watchDir
      */
-    private function collectDirMd5(string $watchDir)
+    private function collectDirMd5(string $watchDir): void
     {
         $files = scandir($watchDir, 0);
 
@@ -277,7 +277,7 @@ final class ModifyWatcher
     /**
      * @return string|null
      */
-    public function getIdFile()
+    public function getIdFile(): ?string
     {
         return $this->idFile;
     }

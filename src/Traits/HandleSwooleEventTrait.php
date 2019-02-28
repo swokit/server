@@ -39,7 +39,7 @@ trait HandleSwooleEventTrait
      * on Manager Start
      * @param  Server $server
      */
-    public function onManagerStart(Server $server)
+    public function onManagerStart(Server $server): void
     {
         // $server->manager_pid;
         $this->fire(ServerEvent::MANAGER_STARTED, $server);
@@ -55,7 +55,7 @@ trait HandleSwooleEventTrait
      * on Manager Stop
      * @param  Server $server
      */
-    public function onManagerStop(Server $server)
+    public function onManagerStop(Server $server): void
     {
         $this->fire(ServerEvent::MANAGER_STOPPED, $server);
         $this->log("The manager process stopped. (PID {$server->manager_pid})");
@@ -67,7 +67,7 @@ trait HandleSwooleEventTrait
      * on Master Start
      * @param  Server $server
      */
-    public function onStart(Server $server)
+    public function onStart(Server $server): void
     {
         $this->fire(ServerEvent::STARTED, $server);
 
@@ -85,7 +85,7 @@ trait HandleSwooleEventTrait
      * on Master Stop
      * @param  Server $server
      */
-    public function onShutdown(Server $server)
+    public function onShutdown(Server $server): void
     {
         $this->fire(ServerEvent::SHUTDOWN, $server);
 
@@ -100,7 +100,7 @@ trait HandleSwooleEventTrait
      * @param  Server $server
      * @param  int $workerId The worker index id in the all workers.
      */
-    public function onWorkerStart(Server $server, $workerId)
+    public function onWorkerStart(Server $server, $workerId): void
     {
         $this->workerId = $workerId;
         $this->workerPid = $server->worker_pid;
@@ -133,7 +133,7 @@ trait HandleSwooleEventTrait
      * @param Server $server
      * @param int $workerId
      */
-    public function onWorkerStop(Server $server, $workerId)
+    public function onWorkerStop(Server $server, $workerId): void
     {
         $this->fire(ServerEvent::WORKER_STOPPED, $server, $workerId);
         $this->log("The swoole #<info>$workerId</info> worker process stopped. (PID:{$server->worker_pid})");
@@ -143,7 +143,7 @@ trait HandleSwooleEventTrait
      * @param Server $server
      * @param int $workerId
      */
-    public function onWorkerExit(Server $server, $workerId)
+    public function onWorkerExit(Server $server, $workerId): void
     {
         $this->fire(ServerEvent::WORKER_EXITED, $server, $workerId);
         $this->log("The swoole #<info>$workerId</info> worker process exited. (PID:{$server->worker_pid})");
@@ -156,7 +156,7 @@ trait HandleSwooleEventTrait
      * @param int $exitCode
      * @param int $signal
      */
-    public function onWorkerError(Server $server, $workerId, int $workerPid, int $exitCode, int $signal)
+    public function onWorkerError(Server $server, $workerId, int $workerPid, int $exitCode, int $signal): void
     {
         $this->fire(ServerEvent::WORKER_ERROR, [$server, $workerId, $workerPid, $exitCode, $signal]);
         $this->log("The swoole #<info>$workerId</info> worker process error. (PID:{$server->worker_pid})", [
@@ -172,7 +172,7 @@ trait HandleSwooleEventTrait
      * @param  int $srcWorkerId
      * @param  mixed $data
      */
-    public function onPipeMessage(Server $server, int $srcWorkerId, string $data)
+    public function onPipeMessage(Server $server, int $srcWorkerId, string $data): void
     {
         $this->log("worker #{$server->worker_id} received message from #$srcWorkerId, data: $data");
     }
@@ -206,7 +206,7 @@ trait HandleSwooleEventTrait
      * @param  int $taskId
      * @param  mixed $data
      */
-    public function onFinish(Server $server, int $taskId, $data)
+    public function onFinish(Server $server, int $taskId, $data): void
     {
         $this->log("task finished on the task worker. status: $data", [
             'taskId' => $taskId,
@@ -233,7 +233,7 @@ trait HandleSwooleEventTrait
     /**
      * @param int $workerId
      */
-    public function setWorkerId(int $workerId)
+    public function setWorkerId(int $workerId): void
     {
         $this->workerId = $workerId;
     }
@@ -257,7 +257,7 @@ trait HandleSwooleEventTrait
     /**
      * @param int $workerPid
      */
-    public function setWorkerPid(int $workerPid)
+    public function setWorkerPid(int $workerPid): void
     {
         $this->workerPid = $workerPid;
     }

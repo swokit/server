@@ -8,7 +8,7 @@
 
 namespace Swokit\Server;
 
-use Inhere\Console\Utils\Show;
+use Inhere\Console\Util\Show;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel as Logger;
 use Swokit\Server\Event\ServerEvent;
@@ -173,7 +173,7 @@ abstract class BaseServer implements ServerInterface
      * @param array $config
      * @throws \InvalidArgumentException
      */
-    protected function parseConfig(array $config)
+    protected function parseConfig(array $config): void
     {
         // main server
         if (!empty($config['server'])) {
@@ -210,14 +210,14 @@ abstract class BaseServer implements ServerInterface
         }
     }
 
-    protected function init()
+    protected function init(): void
     {
     }
 
     /**
      * @throws \InvalidArgumentException
      */
-    protected function validateConfig()
+    protected function validateConfig(): void
     {
         foreach (static::$required as $name) {
             if (empty($this->config[$name])) {
@@ -243,7 +243,7 @@ abstract class BaseServer implements ServerInterface
      * swoole server start
      *************************************************************************/
 
-    protected function prepareStart()
+    protected function prepareStart(): void
     {
         $this->name = (string)$this->config['name'];
 
@@ -258,7 +258,7 @@ abstract class BaseServer implements ServerInterface
      * Do start server
      * @param null|bool $daemon
      */
-    public function start($daemon = null)
+    public function start($daemon = null): void
     {
         ServerUtil::checkRuntimeEnv();
 
@@ -291,18 +291,18 @@ abstract class BaseServer implements ServerInterface
         }
     }
 
-    protected function beforeServerStart()
+    protected function beforeServerStart(): void
     {
     }
 
-    protected function beforeBootstrap()
+    protected function beforeBootstrap(): void
     {
     }
 
     /**
      * before create Server
      */
-    public function beforeCreateServer()
+    public function beforeCreateServer(): void
     {
     }
 
@@ -310,7 +310,7 @@ abstract class BaseServer implements ServerInterface
      * bootstrap start
      * @throws \RuntimeException
      */
-    protected function bootstrap()
+    protected function bootstrap(): void
     {
         $this->bootstrapped = false;
 
@@ -353,16 +353,16 @@ abstract class BaseServer implements ServerInterface
      * afterCreateServer
      * @throws \RuntimeException
      */
-    protected function afterCreateServer()
+    protected function afterCreateServer(): void
     {
     }
 
-    protected function afterBootstrap()
+    protected function afterBootstrap(): void
     {
         // do something ...
     }
 
-    protected function showStartStatus()
+    protected function showStartStatus(): void
     {
         // output a message before start
         if ($this->isDaemon()) {
@@ -376,7 +376,7 @@ abstract class BaseServer implements ServerInterface
      * @param \Throwable $e (\Exception \Error)
      * @param string $catcher
      */
-    public function handleException($e, $catcher)
+    public function handleException($e, $catcher): void
     {
         $content = PhpException::toString($e, $this->isDebug(), $catcher);
 
@@ -387,7 +387,7 @@ abstract class BaseServer implements ServerInterface
      * @param \Throwable $e (\Exception \Error)
      * @param string $catcher
      */
-    public function handleWorkerException($e, $catcher)
+    public function handleWorkerException($e, $catcher): void
     {
         $content = PhpException::toString($e, $this->isDebug(), $catcher);
 
@@ -436,7 +436,7 @@ abstract class BaseServer implements ServerInterface
      * @param string $format
      * @param mixed ...$args
      */
-    public function logf(string $format, ...$args)
+    public function logf(string $format, ...$args): void
     {
         $this->log(\sprintf($format, ...$args));
     }
@@ -446,7 +446,7 @@ abstract class BaseServer implements ServerInterface
      * @param array $context
      * @param int|string $type
      */
-    public function log(string $msg, array $context = [], $type = 'info')
+    public function log(string $msg, array $context = [], $type = 'info'): void
     {
         if (!$this->isDebug()) {
             return;
@@ -456,7 +456,7 @@ abstract class BaseServer implements ServerInterface
 
         // if on Daemon, don't output log.
         if (!$this->isDaemon()) {
-            list($ts, $ms) = explode('.', sprintf('%.4f', microtime(true)));
+            [$ts, $ms] = explode('.', sprintf('%.4f', microtime(true)));
             $ms = \str_pad($ms, 4, 0);
             $time = \date('Y-m-d H:i:s', $ts);
             $json = $context ? ' ' . \json_encode($context, \JSON_UNESCAPED_SLASHES) : '';
@@ -521,7 +521,7 @@ abstract class BaseServer implements ServerInterface
     /**
      * checkEnvWhenEnableSSL
      */
-    protected function checkEnvWhenEnableSSL()
+    protected function checkEnvWhenEnableSSL(): void
     {
         if (!\defined('SWOOLE_SSL')) {
             Show::error(
@@ -658,7 +658,7 @@ abstract class BaseServer implements ServerInterface
      * @param string $name
      * @param $value
      */
-    public static function addStat(string $name, $value)
+    public static function addStat(string $name, $value): void
     {
         self::$_stats[$name] = $value;
     }
@@ -706,7 +706,7 @@ abstract class BaseServer implements ServerInterface
     /**
      * @param mixed|LoggerInterface $logger
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }

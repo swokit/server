@@ -21,7 +21,7 @@ class TcpListener extends PortListener implements TcpListenerInterface
     /**
      * {@inheritDoc}
      */
-    public function onConnect(SwServer $server, $fd)
+    public function onConnect(SwServer $server, $fd): void
     {
         $this->mgr->log("Has a new client [FD:$fd] connection.");
     }
@@ -34,7 +34,7 @@ class TcpListener extends PortListener implements TcpListenerInterface
      * @param  int $fromId
      * @param  mixed $data
      */
-    public function onReceive(SwServer $server, $fd, $fromId, $data)
+    public function onReceive(SwServer $server, $fd, $fromId, $data): void
     {
         $data = trim($data);
         $this->log("Receive data [$data] from client [FD:$fd].");
@@ -49,7 +49,7 @@ class TcpListener extends PortListener implements TcpListenerInterface
     /**
      * {@inheritDoc}
      */
-    public function onClose(SwServer $server, $fd)
+    public function onClose(SwServer $server, $fd): void
     {
         $this->mgr->log("The client [FD:$fd] connection closed.");
     }

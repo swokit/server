@@ -23,7 +23,7 @@ interface TcpListenerInterface //extends InterfacePortListener
      * @param  int $fd 客户端的唯一标识符. 一个自增数字，范围是 1 ～ 1600万
      *                          发送数据/关闭连接时需要此参数
      */
-    public function onConnect(SwServer $server, $fd);
+    public function onConnect(SwServer $server, $fd): void;
 
     /**
      * 接收到数据
@@ -33,7 +33,7 @@ interface TcpListenerInterface //extends InterfacePortListener
      * @param  int $fromId
      * @param  mixed $data
      */
-    public function onReceive(SwServer $server, $fd, $fromId, $data);
+    public function onReceive(SwServer $server, $fd, $fromId, $data): void;
 
     /**
      * onClose
@@ -41,6 +41,6 @@ interface TcpListenerInterface //extends InterfacePortListener
      * @param  SwServer $server
      * @param  int $fd 客户端的唯一标识符. 一个自增数字，范围是 1 ～ 1600万
      */
-    public function onClose(SwServer $server, $fd);
+    public function onClose(SwServer $server, $fd): void;
 
 }

@@ -42,7 +42,7 @@ class ServerController extends Controller
      *  -d, --daemon  run app server on the background
      * @throws \Throwable
      */
-    public function startCommand()
+    public function startCommand(): void
     {
         $daemon = $this->getSameOpt(['d', 'daemon']);
 
@@ -55,7 +55,7 @@ class ServerController extends Controller
      *  -d, --daemon  run app server on the background
      * @throws \Throwable
      */
-    public function restartCommand()
+    public function restartCommand(): void
     {
         $daemon = $this->input->getSameOpt(['d', 'daemon']);
 
@@ -67,7 +67,7 @@ class ServerController extends Controller
      * @options
      *  -t, --task BOOL    Only reload task worker
      */
-    public function reloadCommand()
+    public function reloadCommand(): void
     {
         $onlyTask = $this->input->getSameOpt(['task']);
 
@@ -77,7 +77,7 @@ class ServerController extends Controller
     /**
      * stop the swoole application server
      */
-    public function stopCommand()
+    public function stopCommand(): void
     {
         $this->createServer()->stop();
     }

@@ -39,7 +39,7 @@ class MicroTimer
     /**
      * @param int $uSecond
      */
-    public function start(int $uSecond)
+    public function start(int $uSecond): void
     {
         Process::alarm($uSecond);
     }
@@ -47,7 +47,7 @@ class MicroTimer
     /**
      *
      */
-    protected function run()
+    protected function run(): void
     {
         static $i = 0;
         echo "#{$i}\talarm\n";
@@ -61,7 +61,7 @@ class MicroTimer
     /**
      * @param bool $exit
      */
-    public function clear($exit = false)
+    public function clear($exit = false): void
     {
         Process::alarm(-1);
 

@@ -9,7 +9,7 @@
 namespace Swokit\Server\Func;
 
 use Swokit\Server\BaseServer;
-use Swokit\Server\Component\ModifyWatcher;
+use Toolkit\File\ModifyWatcher;
 use Swoole\Coroutine;
 use Swoole\Process;
 use Swoole\Timer;

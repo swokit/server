@@ -46,12 +46,12 @@ class KitServer extends BaseServer
      * start server logic
      ******************************************************************************/
 
-    public function info()
+    public function info(): void
     {
         $this->showInformation();
     }
 
-    public function status()
+    public function status(): void
     {
         $this->showRuntimeStatus();
     }
@@ -59,7 +59,7 @@ class KitServer extends BaseServer
     /**
      * Show server info
      */
-    protected function showInformation()
+    protected function showInformation(): void
     {
         $swOpts = $this->swooleSettings;
         $settings = $this->serverSettings;
@@ -104,7 +104,7 @@ class KitServer extends BaseServer
     /**
      * show server runtime status information
      */
-    protected function showRuntimeStatus()
+    protected function showRuntimeStatus(): void
     {
         Show::notice('Sorry, The function un-completed!', 0);
     }

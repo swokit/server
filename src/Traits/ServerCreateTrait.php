@@ -8,7 +8,7 @@
 
 namespace Swokit\Server\Traits;
 
-use Inhere\Console\Utils\Show;
+use Inhere\Console\Util\Show;
 use Swokit\Server\Component\HotReloading;
 use Swokit\Server\Event\ServerEvent;
 use Swokit\Server\Event\SwooleEvent;
@@ -114,7 +114,7 @@ trait ServerCreateTrait
      * create Main Server
      * @inheritdoc
      */
-    protected function createServer()
+    protected function createServer(): void
     {
         $server = null;
         $opts = $this->serverSettings;
@@ -181,7 +181,7 @@ trait ServerCreateTrait
      * register Swoole Events
      * @param array $events
      */
-    protected function registerServerEvents(array $events)
+    protected function registerServerEvents(array $events): void
     {
         $eventInfo = [];
 
@@ -223,7 +223,7 @@ trait ServerCreateTrait
     /**
      * attach user's custom process
      */
-    protected function attachUserProcesses()
+    protected function attachUserProcesses(): void
     {
         // create Reload Worker
         if ($reloader = $this->createHotReloader()) {
@@ -239,7 +239,7 @@ trait ServerCreateTrait
      * @param string $name
      * @return null|Process
      */
-    public function getProcess(string $name)
+    public function getProcess(string $name): ?Process
     {
         return $this->processes[$name] ?? null;
     }
@@ -255,7 +255,7 @@ trait ServerCreateTrait
     /**
      * @param array $processes
      */
-    public function addProcesses(array $processes)
+    public function addProcesses(array $processes): void
     {
         foreach ($processes as $name => $callback) {
             $this->addProcess($name, $callback);
@@ -266,7 +266,7 @@ trait ServerCreateTrait
      * @param string $name
      * @param \Closure $callback
      */
-    public function addProcess(string $name, \Closure $callback)
+    public function addProcess(string $name, \Closure $callback): void
     {
         $this->processNames[$name] = true;
         $this->processCallbacks[$name] = $callback;
@@ -276,7 +276,7 @@ trait ServerCreateTrait
      * @param string $name
      * @param \Closure $callback
      */
-    public function createProcess(string $name, \Closure $callback)
+    public function createProcess(string $name, \Closure $callback): void
     {
         $this->fire(ServerEvent::PROCESS_CREATE, $this, $name);
 
@@ -354,7 +354,7 @@ trait ServerCreateTrait
      * create Listen Port Servers
      * @param Server $server
      */
-    protected function createListenServers(Server $server)
+    protected function createListenServers(Server $server): void
     {
         $this->fire(ServerEvent::PORT_CREATE, $this);
 
@@ -389,7 +389,7 @@ trait ServerCreateTrait
      * @param \Closure|array|PortListenerInterface $config
      * @throws \InvalidArgumentException
      */
-    public function attachListener(string $name, $config)
+    public function attachListener(string $name, $config): void
     {
         $this->attachPort($name, $config);
     }
@@ -400,7 +400,7 @@ trait ServerCreateTrait
      * @param \Closure|array|PortListenerInterface $config
      * @throws \InvalidArgumentException
      */
-    public function attachPort(string $name, $config)
+    public function attachPort(string $name, $config): void
     {
         if (isset($this->attachedNames[strtolower($name)])) {
             throw new \InvalidArgumentException("The add listen port server [$name] has been exists!");
@@ -466,7 +466,7 @@ trait ServerCreateTrait
      * @param null|string $protocol
      * @return array|null
      */
-    public function getSwooleProtocolEvents($protocol = null)
+    public function getSwooleProtocolEvents($protocol = null): ?array
     {
         if (null === $protocol) {
             return self::$swooleProtocolEvents;

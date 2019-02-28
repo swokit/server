@@ -44,7 +44,7 @@ class RedisServer extends BaseServer
 
     /**
      */
-    protected function init()
+    protected function init(): void
     {
         $this->serverSettings['type'] = self::PROTOCOL_RDS;
         $this->dataFile = $this->config['dataFile'];
@@ -54,7 +54,7 @@ class RedisServer extends BaseServer
      * create Main Server
      * @inheritdoc
      */
-    public function afterCreateServer()
+    public function afterCreateServer(): void
     {
         // load task data
         if (\is_file($this->dataFile)) {
@@ -82,7 +82,7 @@ class RedisServer extends BaseServer
     /**
      * @param Server $server
      */
-    private function registerCommands(Server $server)
+    private function registerCommands(Server $server): void
     {
         foreach ($this->commands as $command => $callback) {
             $server->setHandler($command, function ($fd, $data) use ($server, $callback) {
@@ -96,7 +96,7 @@ class RedisServer extends BaseServer
     /**
      * @param Server $server
      */
-    public function onStart(Server $server)
+    public function onStart(Server $server): void
     {
         parent::onStart($server);
 
@@ -107,7 +107,7 @@ class RedisServer extends BaseServer
      * @param Server $server
      * @param int $workerId
      */
-    public function onWorkerStart(Server $server, $workerId)
+    public function onWorkerStart(Server $server, $workerId): void
     {
         parent::onWorkerStart($server, $workerId);
 
@@ -117,7 +117,7 @@ class RedisServer extends BaseServer
     /**
      * @param Server $server
      */
-    public function onShutdown(Server $server)
+    public function onShutdown(Server $server): void
     {
         parent::onShutdown($server);
 
@@ -131,7 +131,7 @@ class RedisServer extends BaseServer
         $server->finish('OK');
     }
 
-    public function onFinish(Server $server, $taskId, $data)
+    public function onFinish(Server $server, $taskId, $data): void
     {
         parent::onFinish($server, $taskId, $data);
     }

@@ -28,7 +28,7 @@ abstract class AbstractListener implements ServerListenerInterface
     /**
      * @param array $params
      */
-    public function setParams(array $params)
+    public function setParams(array $params): void
     {
         $this->params = $params;
     }

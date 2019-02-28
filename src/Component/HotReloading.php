@@ -98,7 +98,7 @@ class HotReloading
      * @param $mPid
      * @return HotReloading
      */
-    public static function make($mPid)
+    public static function make($mPid): HotReloading
     {
         return new self($mPid);
     }
@@ -115,12 +115,12 @@ class HotReloading
         $this->addWatchEvent();
     }
 
-    public function run()
+    public function run(): void
     {
         swoole_event_wait();
     }
 
-    protected function addWatchEvent()
+    protected function addWatchEvent(): void
     {
         \swoole_event_add($this->inotify, function ($ifd) {
             if (!$events = \inotify_read($this->inotify)) {
@@ -157,7 +157,7 @@ class HotReloading
     /**
      * reload
      */
-    public function reload()
+    public function reload(): void
     {
         // 调用自定义的回调处理reload
         if ($cb = $this->reloadHandler) {
@@ -190,7 +190,7 @@ class HotReloading
      * @param $type
      * @return $this
      */
-    public function addFileType($type)
+    public function addFileType($type): self
     {
         $type = '.' . trim($type, '. ');
 
@@ -205,7 +205,7 @@ class HotReloading
      * 添加 inotify 事件
      * @param $inotifyEvent
      */
-    public function addInotifyEvent($inotifyEvent)
+    public function addInotifyEvent($inotifyEvent): void
     {
         $this->eventMask |= $inotifyEvent;
     }
@@ -217,7 +217,7 @@ class HotReloading
      * @return $this
      * @throws \RuntimeException
      */
-    public function addWatches(array $dirs, $basePath = '')
+    public function addWatches(array $dirs, $basePath = ''): self
     {
         $basePath = $basePath ? rtrim($basePath, '/') . '/' : '';
 
@@ -234,7 +234,7 @@ class HotReloading
      * @return bool
      * @throws \RuntimeException
      */
-    public function addWatch($target, $root = true)
+    public function addWatch($target, $root = true): bool
     {
         // empty
         if (!$target) {
@@ -292,7 +292,7 @@ class HotReloading
      * 清理所有inotify监听
      * @return $this
      */
-    public function clearWatched()
+    public function clearWatched(): self
     {
         foreach ($this->watchedFiles as $wd) {
             inotify_rm_watch($this->inotify, $wd);
@@ -307,7 +307,7 @@ class HotReloading
      * set Reload Handler
      * @param callable $cb
      */
-    public function setReloadHandler(callable $cb)
+    public function setReloadHandler(callable $cb): void
     {
         $this->reloadHandler = $cb;
     }
@@ -316,7 +316,7 @@ class HotReloading
      * getWatchedDirs
      * @return array
      */
-    public function getWatchedDirs()
+    public function getWatchedDirs(): array
     {
         return $this->watchedDirs;
     }
@@ -325,12 +325,12 @@ class HotReloading
      * getWatchedFiles
      * @return array
      */
-    public function getWatchedFiles()
+    public function getWatchedFiles(): array
     {
         return $this->watchedFiles;
     }
 
-    public function putLog($log)
+    public function putLog($log): void
     {
         echo '[' . date('Y-m-d H:i:s') . "]\t" . $log . "\n";
     }

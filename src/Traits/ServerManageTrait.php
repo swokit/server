@@ -55,7 +55,7 @@ trait ServerManageTrait
      * @param null|bool $daemon
      * @throws \Throwable
      */
-    public function restart($daemon = null)
+    public function restart($daemon = null): void
     {
         if ($this->getPidFromFile(true)) {
             $this->stop(false);
@@ -89,7 +89,7 @@ trait ServerManageTrait
         return Show::write("The swoole server({$this->name}) process stop success", $quit);
     }
 
-    public function version()
+    public function version(): void
     {
         Show::write(sprintf('Swoole server manager tool, Version <comment>%s</comment> Update time %s', self::VERSION, self::UPDATE_TIME));
     }

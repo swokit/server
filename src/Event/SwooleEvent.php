@@ -124,7 +124,7 @@ final class SwooleEvent
      * @param string $event
      * @return string|null
      */
-    public static function getHandler(string $event)
+    public static function getHandler(string $event): ?string
     {
         return self::DEFAULT_HANDLERS[$event] ?? $event;
     }

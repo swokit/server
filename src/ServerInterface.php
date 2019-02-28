@@ -70,7 +70,7 @@ interface ServerInterface
      * @param int $level
      * @return void
      */
-    public function log(string $msg, array $data = [], $level = Logger::INFO);
+    public function log(string $msg, array $data = [], $level = Logger::INFO): void;
 
     /**
      * @return array

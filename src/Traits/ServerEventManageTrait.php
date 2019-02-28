@@ -48,11 +48,11 @@ trait ServerEventManageTrait
      * @param callable|mixed $handler
      * @param bool $once
      */
-    public function on(string $event, $handler, bool $once = false)
+    public function on(string $event, $handler, bool $once = false): void
     {
         if (self::isSupportedEvent($event)) {
             self::$eventHandlers[$event][] = $handler;
-            self::$events[$event] = (bool)$once;
+            self::$events[$event] = $once;
         }
     }
 
@@ -61,7 +61,7 @@ trait ServerEventManageTrait
      * @param $event
      * @param callable $handler
      */
-    public function once($event, callable $handler)
+    public function once($event, callable $handler): void
     {
         $this->on($event, $handler, true);
     }
@@ -71,7 +71,7 @@ trait ServerEventManageTrait
      * @param string $event
      * @param array ...$args
      */
-    public function fire(string $event, ...$args)
+    public function fire(string $event, ...$args): void
     {
         if (!isset(self::$events[$event])) {
             return;
@@ -95,7 +95,7 @@ trait ServerEventManageTrait
      * remove event and it's handlers
      * @param $event
      */
-    public function off(string $event)
+    public function off(string $event): void
     {
         if ($this->hasEvent($event)) {
             unset(self::$events[$event], self::$eventHandlers[$event]);
@@ -136,7 +136,7 @@ trait ServerEventManageTrait
     /**
      * @param array $allowedEvents
      */
-    public static function setSupportEvents(array $allowedEvents)
+    public static function setSupportEvents(array $allowedEvents): void
     {
         self::$allowedEvents = $allowedEvents;
     }
@@ -172,7 +172,7 @@ trait ServerEventManageTrait
     /**
      * @param array $swooleEvents
      */
-    public function setSwooleEvents(array $swooleEvents)
+    public function setSwooleEvents(array $swooleEvents): void
     {
         self::$swooleEvents = \array_merge(self::$swooleEvents, $swooleEvents);
     }
@@ -191,7 +191,7 @@ trait ServerEventManageTrait
      * @param callable|string $handler
      * @throws \InvalidArgumentException
      */
-    public function onSwoole(string $event, $handler)
+    public function onSwoole(string $event, $handler): void
     {
         $this->setSwooleEvent($event, $handler);
     }
@@ -201,7 +201,7 @@ trait ServerEventManageTrait
      * @param string|\Closure $cb The callback name
      * @throws \InvalidArgumentException
      */
-    public function setSwooleEvent(string $event, $cb)
+    public function setSwooleEvent(string $event, $cb): void
     {
         $event = \trim($event);
 

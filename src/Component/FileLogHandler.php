@@ -69,7 +69,7 @@ class FileLogHandler extends AbstractProcessingHandler
     /**
      * @param KitServer $server
      */
-    public function setServer(KitServer $server)
+    public function setServer(KitServer $server): void
     {
         $this->server = $server;
     }
@@ -77,7 +77,7 @@ class FileLogHandler extends AbstractProcessingHandler
     /**
      * {@inheritdoc}
      */
-    protected function write(array $record)
+    protected function write(array $record): void
     {
         if (null === $this->file || '' === $this->file) {
             throw new \LogicException('Missing stream file, the stream can not be opened. This may be caused by a premature call to close().');
@@ -112,7 +112,7 @@ class FileLogHandler extends AbstractProcessingHandler
      * @param  array $record
      * @return array
      */
-    protected function processRecord(array $record)
+    protected function processRecord(array $record): array
     {
         if ($this->processors) {
             foreach ($this->processors as $processor) {
@@ -123,7 +123,7 @@ class FileLogHandler extends AbstractProcessingHandler
         return $record;
     }
 
-    protected function asyncIsEnabled()
+    protected function asyncIsEnabled(): bool
     {
         return class_exists(Async::class, false) &&
             $this->server &&
@@ -134,7 +134,7 @@ class FileLogHandler extends AbstractProcessingHandler
     /**
      * {@inheritdoc}
      */
-    public function close()
+    public function close(): void
     {
         $this->file = null;
         $this->server = null;
@@ -144,12 +144,12 @@ class FileLogHandler extends AbstractProcessingHandler
      * Return the stream URL if it was configured with a URL and not an active resource
      * @return string|null
      */
-    public function getFile()
+    public function getFile(): ?string
     {
         return $this->file;
     }
 
-    private function customErrorHandler($code, $msg)
+    private function customErrorHandler($code, $msg): void
     {
         $this->errorMessage = "(code: $code)" . preg_replace('{^(fopen|mkdir)\(.*?\): }', '', $msg);
     }
@@ -158,7 +158,7 @@ class FileLogHandler extends AbstractProcessingHandler
      * @param string $stream
      * @return null|string
      */
-    private function getDirFromStream($stream)
+    private function getDirFromStream($stream): ?string
     {
         $pos = strpos($stream, '://');
         if ($pos === false) {
@@ -172,7 +172,7 @@ class FileLogHandler extends AbstractProcessingHandler
         return null;
     }
 
-    private function createDir()
+    private function createDir(): void
     {
         // Do not try to create dir if it has already been tried.
         if ($this->dirCreated) {
@@ -196,7 +196,7 @@ class FileLogHandler extends AbstractProcessingHandler
      * @param string $file
      * @return bool
      */
-    protected function fileIsChanged($file)
+    protected function fileIsChanged($file): bool
     {
         if (!$this->splitType) {
             return false;
@@ -210,7 +210,7 @@ class FileLogHandler extends AbstractProcessingHandler
     /**
      * @return string
      */
-    public function getFilenameSuffix()
+    public function getFilenameSuffix(): string
     {
         $str = '';
 
